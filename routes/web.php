@@ -34,7 +34,7 @@ Route::middleware('auth')->group(function () {
 
     // Monitoring Drive
     Route::get('/drive', [DriveController::class, 'index'])->name('drive.index');
-    Route::post('/drive/scan', [DriveController::class, 'scan'])->name('drive.scan');
+    Route::match(['GET', 'POST'], '/drive/scan', [DriveController::class, 'scan'])->name('drive.scan');
 
     // Admin routes
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

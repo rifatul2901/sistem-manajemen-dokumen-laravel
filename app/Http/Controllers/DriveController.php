@@ -21,6 +21,10 @@ class DriveController extends Controller
 
     public function scan(Request $request)
     {
+        if ($request->isMethod('GET')) {
+            return redirect()->route('drive.index');
+        }
+
         $request->validate([
             'folder_link' => 'nullable|string',
         ]);

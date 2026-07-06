@@ -17,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.limit' => \App\Http\Middleware\RateLimitApi::class,
         ]);
 
+        $middleware->trustProxies(at: '*');
+
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\RateLimitApi::class,
