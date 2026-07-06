@@ -26,7 +26,7 @@ class SecurityHeaders
              . "style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com 'unsafe-inline'; "
              . "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com data:; "
              . "img-src 'self' data: blob:; "
-             . "connect-src 'self'; "
+             . "connect-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
              . "form-action 'self'; "
              . "frame-ancestors 'none'; "
              . "base-uri 'self'; "
