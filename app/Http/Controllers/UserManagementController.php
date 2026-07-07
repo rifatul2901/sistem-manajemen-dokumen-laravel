@@ -18,9 +18,13 @@ class UserManagementController extends Controller
     {
         $request->validate([
             'username' => 'required|string|min:3|max:50|unique:users,username|regex:/^[a-zA-Z0-9_]+$/',
-            'nama'     => 'required|string|max:255',
+            'nama'     => 'required|string|max:255|unique:users,nama',
             'password' => 'required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/',
+            'password_confirmation' => 'required|same:password',
             'role'     => 'required|in:admin,user',
+        ], [
+            'password.regex' => 'Password harus mengandung minimal 1 huruf besar dan 1 angka.',
+            'password.min' => 'Password minimal 8 karakter.',
         ]);
 
         User::create([
@@ -40,6 +44,9 @@ class UserManagementController extends Controller
             'user_id'       => 'required|exists:users,id',
             'password'      => 'required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/',
             'password_confirmation' => 'required|same:password',
+        ], [
+            'password.regex' => 'Password harus mengandung minimal 1 huruf besar dan 1 angka.',
+            'password.min' => 'Password minimal 8 karakter.',
         ]);
 
         $user = User::findOrFail($request->user_id);

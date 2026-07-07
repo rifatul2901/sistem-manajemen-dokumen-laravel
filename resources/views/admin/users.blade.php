@@ -11,6 +11,18 @@
         </div>
     </div>
 
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2">
+            <i class="bi bi-exclamation-triangle"></i>
+            <ul class="mb-0 ps-3">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     @session('success')
         <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2">{{ $value }}<button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button></div>
     @endsession
@@ -70,7 +82,7 @@
         </div>
     </div>
 
-    <div class="collapse mb-4" id="addUserCollapse">
+    <div class="collapse mb-4 {{ $errors->hasAny(['username', 'nama', 'role']) ? 'show' : '' }}" id="addUserCollapse">
         <div class="card">
             <div class="card-header"><i class="bi bi-person-plus me-1"></i> Tambah User Baru</div>
             <div class="card-body">
@@ -79,21 +91,25 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Username</label>
-                            <input type="text" name="username" class="form-control" required>
+                            <input type="text" name="username" class="form-control" value="{{ old('username') }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Nama</label>
-                            <input type="text" name="nama" class="form-control" required>
+                            <input type="text" name="nama" class="form-control" value="{{ old('nama') }}" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Password</label>
                             <input type="password" name="password" class="form-control" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <label class="form-label">Konfirmasi Password</label>
+                            <input type="password" name="password_confirmation" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label">Role</label>
                             <select name="role" class="form-select" required>
-                                <option value="user">User</option>
-                                <option value="admin">Admin</option>
+                                <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>User</option>
+                                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                             </select>
                         </div>
                         <div class="col-12">
@@ -105,7 +121,7 @@
         </div>
     </div>
 
-    <div class="collapse mb-4" id="resetPassCollapse">
+    <div class="collapse mb-4 {{ $errors->has('user_id') ? 'show' : '' }}" id="resetPassCollapse">
         <div class="card">
             <div class="card-header"><i class="bi bi-key me-1"></i> Reset Password</div>
             <div class="card-body">
@@ -117,7 +133,7 @@
                             <select name="user_id" class="form-select" required>
                                 <option value="">-- Pilih User --</option>
                                 @foreach ($users ?? [] as $user)
-                                    <option value="{{ $user->id }}">{{ $user->username }} ({{ $user->nama ?? '-' }})</option>
+                                    <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>{{ $user->username }} ({{ $user->nama ?? '-' }})</option>
                                 @endforeach
                             </select>
                         </div>
