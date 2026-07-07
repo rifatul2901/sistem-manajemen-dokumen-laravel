@@ -8,6 +8,8 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\DriveController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\RiwayatRevisiController;
+use App\Http\Controllers\AdminGenerateController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -61,5 +63,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
         Route::post('/users', [UserManagementController::class, 'store'])->name('users.store');
         Route::post('/users/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
+        Route::post('/users/toggle-active/{user}', [UserManagementController::class, 'toggleActive'])->name('users.toggle-active');
+
+        // Generate Dokumen
+        Route::get('/generate', [AdminGenerateController::class, 'index'])->name('generate');
+        Route::post('/generate/fetch-spreadsheet', [AdminGenerateController::class, 'fetchSpreadsheet'])->name('generate.fetch-spreadsheet');
+        Route::post('/generate/fetch-excel', [AdminGenerateController::class, 'fetchExcel'])->name('generate.fetch-excel');
+        Route::post('/generate/generate', [AdminGenerateController::class, 'generate'])->name('generate.generate');
+
+        // Riwayat Revisi
+        Route::get('/riwayat-revisi', [RiwayatRevisiController::class, 'index'])->name('riwayat-revisi');
+
+        // Rekapitulasi
+        Route::get('/rekapitulasi', [RiwayatRevisiController::class, 'rekapIndex'])->name('rekapitulasi');
+        Route::get('/rekapitulasi/download/{user}', [RiwayatRevisiController::class, 'downloadRekap'])->name('rekapitulasi.download');
     });
 });

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DriveToken;
 use Google\Client;
 use Google\Service\Drive;
+use Google\Service\Sheets;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -21,7 +22,7 @@ class GoogleAuthController extends Controller
 
         $client = new Client();
         $client->setApplicationName('Sistem Manajemen Dokumen');
-        $client->setScopes([Drive::DRIVE]);
+        $client->setScopes([Drive::DRIVE, Sheets::SPREADSHEETS_READONLY]);
         $client->setAuthConfig($clientSecretPath);
         $client->setAccessType('offline');
         $client->setPrompt('select_account consent');

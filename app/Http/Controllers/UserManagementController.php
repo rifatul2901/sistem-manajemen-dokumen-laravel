@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class UserManagementController extends Controller
@@ -12,6 +13,21 @@ class UserManagementController extends Controller
     {
         $users = User::orderBy('created_at', 'desc')->paginate(50);
         return view('admin.users', compact('users'));
+    }
+
+    public function toggleActive(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Tidak bisa menonaktifkan akun sendiri.');
+        }
+
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        Log::info('User ' . $status, ['admin' => auth()->id(), 'target' => $user->id]);
+
+        return back()->with('success', "User '@{$user->username}' berhasil {$status}.");
     }
 
     public function store(Request $request)

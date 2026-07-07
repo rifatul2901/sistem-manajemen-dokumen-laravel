@@ -78,7 +78,11 @@ class AdminController extends Controller
 
     public function scanFolder(Request $request)
     {
-        $request->validate(['folder' => 'required|string']);
+        $request->validate([
+            'parent_id'   => 'nullable|string',
+            'parent_name' => 'nullable|string',
+            'scan_all'    => 'nullable|boolean',
+        ]);
 
         $driveConfig = DriveConfig::first();
         if (!$driveConfig || !$driveConfig->folder_id) {
@@ -88,24 +92,18 @@ class AdminController extends Controller
         try {
             $driveService = new GoogleDriveService();
 
-            if ($request->folder === '(folder utama)') {
-                $files = $driveService->listFilesInRoot($driveConfig->folder_id, '(folder utama)');
+            $folderId   = $request->parent_id ?: $driveConfig->folder_id;
+            $folderName = $request->parent_name ?: '(folder utama)';
+
+            $subfolders = $driveService->listSubfolders($folderId);
+
+            if ($request->scan_all) {
+                $files = $driveService->listFilesRecursive($folderId, $folderName);
             } else {
-                $subfolders = $driveService->listSubfolders($driveConfig->folder_id);
-                $targetId = null;
-                foreach ($subfolders as $sf) {
-                    if ($sf->getName() === $request->folder) {
-                        $targetId = $sf->getId();
-                        break;
-                    }
-                }
-                if (!$targetId) {
-                    return response()->json(['error' => 'Folder tidak ditemukan'], 404);
-                }
-                $files = $driveService->listFilesRecursive($targetId, $request->folder);
+                $files = $driveService->listFilesInRoot($folderId, $folderName);
             }
 
-            $uploads = Upload::with('revisionHistories', 'user')
+            $uploads = Upload::with('revisionHistories', 'user', 'assignedUser')
                 ->whereIn('drive_file_id', collect($files)->pluck('id'))
                 ->get()
                 ->keyBy('drive_file_id');
@@ -121,6 +119,7 @@ class AdminController extends Controller
                     $meta->subfolder = $f['subfolder'];
                     $row = $meta->toArray();
                     $row['database_id'] = $meta->id;
+                    $row['assigned_user_id'] = $meta->assigned_user_id;
                     $row['subfolder'] = $f['subfolder'];
                     $row['uploader_name'] = $meta->user->nama ?? $meta->user->username ?? '(tanpa nama)';
                     $row['revision_histories'] = $meta->revisionHistories->map(function ($r) {
@@ -131,29 +130,42 @@ class AdminController extends Controller
                     });
                     $gabungan[] = $row;
                 } else {
-                    $gabungan[] = [
-                        'id'                => $f['id'],
-                        'database_id'       => null,
-                        'drive_file_id'     => $f['id'],
-                        'filename'          => $f['name'],
-                        'subfolder'         => $f['subfolder'],
-                        'uploader_name'     => '(tidak tercatat di sistem)',
-                        'upload_time'       => isset($f['createdTime']) ? substr(str_replace('T', ' ', $f['createdTime']), 0, 16) : '',
-                        'status'            => 'untracked',
-                        'catatan_user'      => '',
-                        'catatan_admin'     => '',
-                        'notifikasi_pdf'    => '',
-                        'revision_histories' => [],
-                    ];
+                    $upload = Upload::create([
+                        'user_id'        => auth()->id(),
+                        'drive_file_id'  => $f['id'],
+                        'filename'       => $f['name'],
+                        'subfolder'      => $f['subfolder'],
+                        'uploader_name'  => 'Eksternal',
+                        'upload_time'    => isset($f['createdTime']) ? substr(str_replace('T', ' ', $f['createdTime']), 0, 16) : now()->format('Y-m-d H:i'),
+                        'status'         => 'pending',
+                    ]);
+                    $row = $upload->toArray();
+                    $row['database_id'] = $upload->id;
+                    $row['drive_file_id'] = $f['id'];
+                    $row['subfolder'] = $f['subfolder'];
+                    $row['uploader_name'] = 'Eksternal';
+                    $row['revision_histories'] = [];
+                    $gabungan[] = $row;
                 }
             }
 
+            $subfolderData = [];
+            foreach ($subfolders as $sf) {
+                $subfolderData[] = [
+                    'id'   => $sf->getId(),
+                    'name' => $sf->getName(),
+                ];
+            }
+
             return response()->json([
-                'files' => $gabungan,
-                'waktu' => now()->format('d-m-Y H:i'),
+                'files'       => $gabungan,
+                'subfolders'  => $subfolderData,
+                'folder_id'   => $folderId,
+                'folder_name' => $folderName,
+                'waktu'       => now()->format('d-m-Y H:i'),
             ]);
         } catch (\Exception $e) {
-            Log::error('Admin scan folder failed', ['error' => $e->getMessage()]);
+            Log::error('Admin scan folder failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json(['error' => 'Gagal memindai folder. Silakan coba lagi.'], 500);
         }
     }
@@ -173,11 +185,13 @@ class AdminController extends Controller
         $request->validate([
             'catatan' => 'required|array|min:1|max:20',
             'catatan.*' => 'required|string|max:500',
+            'user_id' => 'required|exists:users,id',
         ]);
 
         $upload = Upload::findOrFail($id);
         $upload->status = 'revision';
         $upload->catatan_admin = $request->catatan;
+        $upload->assigned_user_id = $request->user_id;
         $upload->save();
 
         try {

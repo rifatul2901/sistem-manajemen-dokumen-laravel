@@ -51,12 +51,14 @@
                             <th>Username</th>
                             <th>Nama</th>
                             <th>Role</th>
+                            <th>Status</th>
                             <th>Dibuat</th>
+                            <th style="width:120px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($users ?? [] as $index => $user)
-                            <tr>
+                            <tr class="{{ $user->is_active ? '' : 'table-warning' }}">
                                 <td>{{ $index + 1 }}</td>
                                 <td class="fw-medium">@<span>{{ $user->username }}</span></td>
                                 <td>{{ $user->nama ?? '-' }}</td>
@@ -67,11 +69,28 @@
                                         <span class="badge badge-pending"><i class="bi bi-person me-1"></i>User</span>
                                     @endif
                                 </td>
+                                <td>
+                                    @if ($user->is_active)
+                                        <span class="badge badge-approved"><i class="bi bi-check-circle me-1"></i>Aktif</span>
+                                    @else
+                                        <span class="badge badge-revision"><i class="bi bi-x-circle me-1"></i>Nonaktif</span>
+                                    @endif
+                                </td>
                                 <td class="text-muted small">{{ $user->created_at ? $user->created_at->format('d/m/Y H:i') : '-' }}</td>
+                                <td>
+                                    <form method="POST" action="{{ route('admin.users.toggle-active', $user) }}" style="display:inline;">
+                                        @csrf
+                                        @if ($user->is_active)
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Nonaktifkan user {{ $user->username }}?')"><i class="bi bi-pause-circle me-1"></i> Nonaktifkan</button>
+                                        @else
+                                            <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Aktifkan kembali user {{ $user->username }}?')"><i class="bi bi-play-circle me-1"></i> Aktifkan</button>
+                                        @endif
+                                    </form>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5">
+                                <td colspan="7">
                                     <div class="empty-state"><i class="bi bi-people"></i><p class="mb-0">Tidak ada user.</p></div>
                                 </td>
                             </tr>

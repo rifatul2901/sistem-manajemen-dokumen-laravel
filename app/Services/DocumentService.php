@@ -108,6 +108,61 @@ class DocumentService
         $templateProcessor->saveAs($outputPath);
     }
 
+    public function generateFromData(string $templatePath, array $selectedData, array $extraContext, string $outputPath): void
+    {
+        $tempDir = dirname($outputPath) . '/_temp_' . uniqid();
+        $this->extractDocx($templatePath, $tempDir);
+
+        $docXmlPath = $tempDir . '/word/document.xml';
+        if (!file_exists($docXmlPath)) {
+            throw new \RuntimeException('Format template DOCX tidak valid.');
+        }
+
+        $dom = new \DOMDocument();
+        $dom->load($docXmlPath);
+        $xpath = new \DOMXPath($dom);
+        $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+
+        $paragraphs = $xpath->query('//w:p');
+        foreach ($paragraphs as $para) {
+            $textNodes = $xpath->query('.//w:t', $para);
+            if ($textNodes->length === 0) continue;
+
+            $fullText = '';
+            foreach ($textNodes as $tn) {
+                $fullText .= $tn->textContent;
+            }
+
+            if (!preg_match('/\{\{/', $fullText)) continue;
+
+            $fullText = preg_replace_callback('/\{\{\s*data\s+(\d+)\s*\}\}/', function ($match) use ($selectedData) {
+                $idx = (int)$match[1] - 1;
+                return $selectedData[$idx] ?? $match[0];
+            }, $fullText);
+
+            $fullText = preg_replace_callback('/\{\{\s*(\w+(?:\s+\w+)*)\s*\}\}/', function ($match) use ($extraContext) {
+                $tag = trim($match[1]);
+                return $extraContext[$tag] ?? $match[0];
+            }, $fullText);
+
+            $textNodes->item(0)->nodeValue = $fullText;
+            for ($i = 1; $i < $textNodes->length; $i++) {
+                $tn = $textNodes->item($i);
+                $tn->parentNode->removeChild($tn);
+            }
+        }
+
+        $dom->save($docXmlPath);
+        $this->zipDocx($tempDir, $outputPath);
+        $this->rrmdir($tempDir);
+
+        $templateProcessor = new TemplateProcessor($outputPath);
+        foreach ($extraContext as $key => $val) {
+            $templateProcessor->setValue($key, $val);
+        }
+        $templateProcessor->saveAs($outputPath);
+    }
+
     public function convertDocxToPdf(string $docxPath, string $pdfPath): void
     {
         Settings::setPdfRendererPath(base_path('vendor/dompdf/dompdf'));

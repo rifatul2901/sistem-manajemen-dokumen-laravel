@@ -27,6 +27,11 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         $histories = GenerateHistory::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->limit(50)

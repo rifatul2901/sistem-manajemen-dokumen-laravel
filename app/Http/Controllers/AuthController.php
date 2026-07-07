@@ -41,12 +41,31 @@ class AuthController extends Controller
         $credentials = $request->only('username', 'password');
 
         if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+
+            if (!$user->is_active) {
+                Auth::logout();
+                RateLimiter::hit($throttleKey, 180);
+                Log::warning('Login ditolak (akun nonaktif)', [
+                    'username' => $request->input('username'),
+                    'ip' => $request->ip(),
+                ]);
+                return back()->withErrors([
+                    'username' => 'Akun Anda telah dinonaktifkan. Silakan hubungi admin.',
+                ])->onlyInput('username');
+            }
+
             RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
             Log::info('Login berhasil', [
                 'username' => $request->input('username'),
                 'ip' => $request->ip(),
             ]);
+
+            if ($user->isAdmin()) {
+                return redirect()->intended('/admin/dashboard');
+            }
+
             return redirect()->intended('/');
         }
 

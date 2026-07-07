@@ -46,7 +46,7 @@ class StatusController extends Controller
                 try {
                     return \Carbon\Carbon::createFromFormat('d-m-Y H:i', $t);
                 } catch (\Exception $e) {
-                    return \Carbon\Carbon::minValue();
+                    return new \Carbon\Carbon('1000-01-01');
                 }
             })->max();
 

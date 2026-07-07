@@ -235,20 +235,30 @@
         </div>
         <div class="sidebar-divider"></div>
         <div class="sidebar-nav">
-            <div class="nav-item">
-                <a href="{{ route('dashboard.index') }}" class="nav-link {{ request()->routeIs('dashboard*') ? 'active' : '' }}">
-                    <i class="bi bi-file-earmark-text"></i> Generator &amp; Upload
-                </a>
-            </div>
             @if (Auth::user()->role === 'admin')
             <div class="nav-item">
                 <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                    <i class="bi bi-clipboard-data"></i> Monitoring Dokumen
+                    <i class="bi bi-clipboard-data"></i> Dashboard
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.generate') }}" class="nav-link {{ request()->routeIs('admin.generate*') ? 'active' : '' }}">
+                    <i class="bi bi-file-earmark-plus"></i> Generate Dokumen
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.riwayat-revisi') }}" class="nav-link {{ request()->routeIs('admin.riwayat-revisi') ? 'active' : '' }}">
+                    <i class="bi bi-clock-history"></i> Riwayat Revisi
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.rekapitulasi') }}" class="nav-link {{ request()->routeIs('admin.rekapitulasi*') ? 'active' : '' }}">
+                    <i class="bi bi-bar-chart"></i> Rekapitulasi
                 </a>
             </div>
             <div class="nav-item">
                 <a href="{{ route('admin.drive-config') }}" class="nav-link {{ request()->routeIs('admin.drive-config') ? 'active' : '' }}">
-                    <i class="bi bi-google"></i> Google Drive
+                    <i class="bi bi-google"></i> Drive Config
                 </a>
             </div>
             <div class="nav-item">
@@ -260,11 +270,6 @@
             <div class="nav-item">
                 <a href="{{ route('status.index') }}" class="nav-link {{ request()->routeIs('status*') ? 'active' : '' }}">
                     <i class="bi bi-check-circle"></i> Status Berkas
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="{{ route('drive.index') }}" class="nav-link {{ request()->routeIs('drive*') ? 'active' : '' }}">
-                    <i class="bi bi-hdd-stack"></i> Monitoring Drive
                 </a>
             </div>
         </div>
