@@ -8,6 +8,7 @@ use App\Models\Upload;
 use App\Models\DriveIgnored;
 use App\Services\GoogleDriveService;
 use App\Services\DocumentService;
+use Google\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -254,6 +255,36 @@ class AdminController extends Controller
         $driveConfig = DriveConfig::first();
         $driveToken = DriveToken::where('user_id', Auth::id())->first();
         $clientExists = file_exists(storage_path('app/oauth_client_secret.json'));
+
+        if ($driveToken && $driveToken->refresh_token && $clientExists) {
+            try {
+                $googleClient = new Client();
+                $googleClient->setAuthConfig(storage_path('app/oauth_client_secret.json'));
+                $googleClient->setAccessToken([
+                    'access_token'  => $driveToken->access_token,
+                    'refresh_token' => $driveToken->refresh_token,
+                    'token_type'    => $driveToken->token_type ?? 'Bearer',
+                    'expires_in'    => $driveToken->expires_in ?? 3600,
+                    'created'       => $driveToken->created_at?->timestamp ?? time(),
+                ]);
+
+                if ($googleClient->isAccessTokenExpired()) {
+                    $newToken = $googleClient->fetchAccessTokenWithRefreshToken($driveToken->refresh_token);
+                    $driveToken->update([
+                        'access_token' => $newToken['access_token'],
+                        'expires_in'   => $newToken['expires_in'] ?? null,
+                        'expires_at'   => isset($newToken['expires_in'])
+                            ? now()->addSeconds($newToken['expires_in'])
+                            : null,
+                    ]);
+                    $driveToken->refresh();
+                }
+            } catch (\Exception $e) {
+                Log::warning('Gagal refresh token Drive saat akses drive config', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         $config = [
             'folder_size' => $this->getFolderSize(storage_path('app/hasil_generate')),

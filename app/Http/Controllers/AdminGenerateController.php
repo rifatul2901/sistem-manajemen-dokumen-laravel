@@ -139,10 +139,13 @@ class AdminGenerateController extends Controller
 
             $customName = $request->input('document_name');
             if ($customName) {
-                $filename = preg_replace('/[^a-zA-Z0-9\s\-_\.]/', '', $customName);
+                $baseName = preg_replace('/[^a-zA-Z0-9\s\-_\.]/', '', $customName);
             } else {
-                $filename = pathinfo($request->file('template')->getClientOriginalName(), PATHINFO_FILENAME);
+                $baseName = pathinfo($request->file('template')->getClientOriginalName(), PATHINFO_FILENAME);
             }
+            $baseName = $baseName ?: 'Dokumen';
+            $uniqueSuffix = now()->format('Ymd_His') . '_' . uniqid();
+            $filename = $baseName . '_' . $uniqueSuffix;
             $outputPath = $outputDir . '/' . $filename . '.docx';
 
             $extraContext = [
@@ -161,22 +164,22 @@ class AdminGenerateController extends Controller
 
                 GenerateHistory::create([
                     'user_id'  => auth()->id(),
-                    'filename' => $filename . '.pdf',
+                    'filename' => $baseName . '.pdf',
                     'filepath' => $pdfPath,
                     'waktu'    => now(),
                 ]);
 
-                return response()->download($pdfPath, $filename . '.pdf');
+                return response()->download($pdfPath, $baseName . '.pdf');
             }
 
             GenerateHistory::create([
                 'user_id'  => auth()->id(),
-                'filename' => $filename . '.docx',
+                'filename' => $baseName . '.docx',
                 'filepath' => $outputPath,
                 'waktu'    => now(),
             ]);
 
-            return response()->download($outputPath, $filename . '.docx');
+            return response()->download($outputPath, $baseName . '.docx');
         } catch (\Exception $e) {
             Log::error('Admin generate failed', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal generate dokumen: ' . $e->getMessage());

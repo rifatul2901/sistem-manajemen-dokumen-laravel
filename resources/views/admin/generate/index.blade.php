@@ -186,9 +186,15 @@
                                 <td>{{ $h->filename }}</td>
                                 <td>{{ \Carbon\Carbon::parse($h->waktu)->format('d M Y H:i') }}</td>
                                 <td>
-                                    <a href="{{ route('admin.generate.download', $h->id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-download"></i>
-                                    </a>
+                                    @if (file_exists($h->filepath))
+                                        <a href="{{ route('admin.generate.download', $h->id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                    @else
+                                        <span class="text-muted small" title="File sudah tidak tersedia">
+                                            <i class="bi bi-x-lg"></i>
+                                        </span>
+                                    @endif
                                 </td>
                             </tr>
                             @empty
