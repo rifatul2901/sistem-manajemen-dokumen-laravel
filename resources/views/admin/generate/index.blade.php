@@ -10,14 +10,14 @@
     .selected-item { padding: 4px 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid var(--primary); margin-bottom: 4px; font-size: .8rem; }
     .selected-item .num { font-weight: 600; color: var(--primary); margin-right: 6px; }
     #selectedPanel { max-height: 300px; overflow-y: auto; }
-    .data-table-wrap { max-height: 500px; overflow: auto; }
-    .data-table-wrap table { font-size: .75rem; }
-    .data-table-wrap td, .data-table-wrap th { padding: .3rem .5rem !important; vertical-align: top; white-space: nowrap; }
+    .data-table-wrap { max-height: 600px; overflow: auto; }
+    .data-table-wrap table { font-size: .8rem; }
+    .data-table-wrap td, .data-table-wrap th { padding: .5rem .7rem !important; vertical-align: top; white-space: normal; min-width: 120px; }
     .col-header-check { cursor: pointer; }
     .col-toggle { cursor: pointer; user-select: none; }
     .col-toggle:hover { text-decoration: line-through; }
-    .history-table { font-size: .85rem; }
-    .history-table td { vertical-align: middle; }
+    .history-table { font-size: .75rem; }
+    .history-table td, .history-table th { padding: .35rem .5rem !important; vertical-align: middle; }
 </style>
 @endpush
 
@@ -156,7 +156,7 @@
                             <th>#</th>
                             <th>Nama File</th>
                             <th>Waktu</th>
-                            <th>Oleh</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -165,7 +165,11 @@
                             <td>{{ $loop->iteration + ($history->currentPage() - 1) * $history->perPage() }}</td>
                             <td>{{ $h->filename }}</td>
                             <td>{{ \Carbon\Carbon::parse($h->waktu)->format('d M Y H:i') }}</td>
-                            <td>{{ $h->user?->name ?? '-' }}</td>
+                            <td>
+                                <a href="{{ route('admin.generate.download', $h->id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            </td>
                         </tr>
                         @empty
                         <tr>
@@ -201,6 +205,14 @@ $(document).ready(function() {
             $('#spreadsheetSection').hide();
             $('#excelSection').show();
         }
+        // Reset data sebelumnya saat ganti sumber
+        selectedData = [];
+        currentRows = [];
+        selectionIdCounter = 0;
+        dataCounter = 1;
+        $('#dataCard').hide();
+        $('#colFilterPanel').html('<p class="text-muted small mb-0 fst-italic">Muat data terlebih dahulu.</p>');
+        updateSelectedPanel();
     });
 });
 
@@ -327,8 +339,9 @@ function renderDataTable(res) {
     $('.col-header-check').on('change', function() {
         var col = $(this).data('col');
         var checked = $(this).is(':checked');
-        var cells = $('.cell-checkbox[data-col="' + esc(col) + '"]');
-        cells.each(function() {
+        $('.cell-checkbox').filter(function() {
+            return $(this).data('col') === col;
+        }).each(function() {
             if ($(this).is(':checked') !== checked) {
                 $(this).prop('checked', checked).trigger('change');
             }
@@ -338,11 +351,10 @@ function renderDataTable(res) {
     // Column filter toggle
     $('.col-toggle-check').on('change', function() {
         var col = $(this).closest('.col-toggle').data('col');
-        if ($(this).is(':checked')) {
-            $('th[data-colkey="' + col + '"], td[data-colkey="' + col + '"]').show();
-        } else {
-            $('th[data-colkey="' + col + '"], td[data-colkey="' + col + '"]').hide();
-        }
+        var visible = $(this).is(':checked');
+        $('#dataTable th[data-colkey], #dataTable td[data-colkey]').filter(function() {
+            return $(this).data('colkey') === col;
+        }).toggle(visible);
     });
 
     $('#dataCard').show();

@@ -48,6 +48,8 @@ class RiwayatRevisiController extends Controller
             ->orderBy('subfolder')
             ->pluck('subfolder');
 
+        $folders = collect(['(folder utama)'])->merge($folders);
+
         return view('admin.riwayat-revisi.index', compact('uploads', 'folders'));
     }
 

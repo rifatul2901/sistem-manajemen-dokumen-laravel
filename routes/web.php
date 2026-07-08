@@ -70,6 +70,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/generate/fetch-spreadsheet', [AdminGenerateController::class, 'fetchSpreadsheet'])->name('generate.fetch-spreadsheet');
         Route::post('/generate/fetch-excel', [AdminGenerateController::class, 'fetchExcel'])->name('generate.fetch-excel');
         Route::post('/generate/generate', [AdminGenerateController::class, 'generate'])->name('generate.generate');
+        Route::get('/generate/download/{id}', [AdminGenerateController::class, 'downloadHistory'])->name('generate.download');
 
         // Riwayat Revisi
         Route::get('/riwayat-revisi', [RiwayatRevisiController::class, 'index'])->name('riwayat-revisi');

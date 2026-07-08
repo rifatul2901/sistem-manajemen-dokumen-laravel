@@ -160,7 +160,7 @@ class AdminGenerateController extends Controller
                     'waktu'    => now(),
                 ]);
 
-                return response()->download($pdfPath, $filename . '.pdf')->deleteFileAfterSend(true);
+                return response()->download($pdfPath, $filename . '.pdf');
             }
 
             GenerateHistory::create([
@@ -170,10 +170,25 @@ class AdminGenerateController extends Controller
                 'waktu'    => now(),
             ]);
 
-            return response()->download($outputPath, $filename . '.docx')->deleteFileAfterSend(true);
+            return response()->download($outputPath, $filename . '.docx');
         } catch (\Exception $e) {
             Log::error('Admin generate failed', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal generate dokumen: ' . $e->getMessage());
         }
+    }
+
+    public function downloadHistory($id)
+    {
+        $history = GenerateHistory::findOrFail($id);
+
+        if ($history->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if (!file_exists($history->filepath)) {
+            return back()->with('error', 'File sudah tidak tersedia.');
+        }
+
+        return response()->download($history->filepath, $history->filename);
     }
 }

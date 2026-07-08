@@ -26,6 +26,7 @@
 
     .filter-bar { background: #f8fafc; border-radius: 8px; padding: .75rem 1rem; }
     .filter-bar .form-control, .filter-bar .form-select { font-size: .8rem; }
+    .filter-bar .expand-toggle { font-size: .75rem; white-space: nowrap; }
 </style>
 @endpush
 
@@ -43,14 +44,14 @@
     @endsession
 
     {{-- Filter --}}
-    <form method="GET" class="filter-bar d-flex flex-wrap align-items-center gap-2 mb-3">
+    <form method="GET" class="filter-bar d-flex flex-wrap align-items-center gap-2 mb-3" id="filterForm">
         <div class="d-flex align-items-center gap-1">
             <i class="bi bi-search text-muted"></i>
             <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari dokumen atau user..." value="{{ request('search') }}" style="width:200px;">
         </div>
         <div class="d-flex align-items-center gap-1">
             <i class="bi bi-folder text-muted"></i>
-            <select name="folder" class="form-select form-select-sm" style="width:auto;">
+            <select name="folder" class="form-select form-select-sm" style="width:200px;">
                 <option value="">Semua Folder</option>
                 @foreach ($folders ?? [] as $f)
                     <option value="{{ $f }}" {{ request('folder') == $f ? 'selected' : '' }}>{{ $f }}</option>
@@ -61,6 +62,7 @@
         @if (request('search') || request('folder'))
             <a href="{{ route('admin.riwayat-revisi') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-lg me-1"></i> Reset</a>
         @endif
+        <button type="button" class="btn btn-sm btn-outline-secondary expand-toggle" id="expandAllBtn"><i class="bi bi-arrows-expand me-1"></i> <span>Buka Semua</span></button>
         <span class="badge bg-light text-dark ms-auto px-3 py-2">{{ $uploads->total() }} dokumen</span>
     </form>
 
@@ -68,6 +70,7 @@
         $grouped = ($uploads ?? collect())->groupBy(function ($u) {
             return $u->subfolder ?? '(folder utama)';
         });
+        $isFiltered = request('search') || request('folder');
     @endphp
 
     @forelse ($grouped as $folder => $items)
@@ -78,7 +81,7 @@
                 <span class="badge bg-light text-dark ms-auto">{{ $items->count() }} dokumen</span>
                 <i class="bi bi-chevron-down text-muted small"></i>
             </div>
-            <div class="collapse show" id="folder{{ Str::slug(md5($folder)) }}">
+            <div class="collapse{{ $isFiltered ? ' show' : '' }}" id="folder{{ Str::slug(md5($folder)) }}">
                 <div class="card-body p-0">
                     <table class="table table-hover mb-0">
                         <thead>
@@ -185,3 +188,21 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+var expanded = {{ $isFiltered ? 'true' : 'false' }};
+
+$('#expandAllBtn').on('click', function() {
+    expanded = !expanded;
+    var method = expanded ? 'show' : 'hide';
+    $('.card-header[data-bs-toggle="collapse"]').each(function() {
+        var target = $(this).data('bs-target');
+        $(target).collapse(method);
+    });
+    var btn = $(this);
+    btn.find('span').text(expanded ? 'Tutup Semua' : 'Buka Semua');
+    btn.find('i').toggleClass('bi-arrows-expand bi-arrows-collapse');
+});
+</script>
+@endpush

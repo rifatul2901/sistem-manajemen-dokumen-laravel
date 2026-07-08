@@ -148,7 +148,8 @@
 var navStack = []; // {id, name}
 
 $(document).ready(function() {
-    scanFolder('', '(folder utama)', false);
+    // Card sudah terlihat dengan prompt "Pilih folder dan klik Pindai"
+    // User harus klik Root, folder, atau tombol Pindai untuk memulai
 });
 
 $(document).on('click', '.addCatatan', function() {

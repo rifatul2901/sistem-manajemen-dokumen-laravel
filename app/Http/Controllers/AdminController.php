@@ -121,7 +121,7 @@ class AdminController extends Controller
                     $row['database_id'] = $meta->id;
                     $row['assigned_user_id'] = $meta->assigned_user_id;
                     $row['subfolder'] = $f['subfolder'];
-                    $row['uploader_name'] = $meta->user->nama ?? $meta->user->username ?? '(tanpa nama)';
+                    $row['uploader_name'] = $meta->user?->nama ?? $meta->user?->username ?? '(tanpa nama)';
                     $row['revision_histories'] = $meta->revisionHistories->map(function ($r) {
                         return [
                             'tanggal' => ($r->tanggal ?? $r->created_at?->format('d/m/Y H:i')),
@@ -173,8 +173,14 @@ class AdminController extends Controller
     public function approve($id)
     {
         $upload = Upload::findOrFail($id);
+
+        if ($upload->notifikasi_pdf && file_exists($upload->notifikasi_pdf)) {
+            unlink($upload->notifikasi_pdf);
+        }
+
         $upload->status = 'approved';
         $upload->catatan_admin = [];
+        $upload->notifikasi_pdf = null;
         $upload->save();
 
         return back()->with('success', 'Berkas berhasil disetujui.');
@@ -217,6 +223,11 @@ class AdminController extends Controller
     public function deleteUpload($id)
     {
         $upload = Upload::findOrFail($id);
+
+        if ($upload->notifikasi_pdf && file_exists($upload->notifikasi_pdf)) {
+            unlink($upload->notifikasi_pdf);
+        }
+
         $upload->revisionHistories()->delete();
         $upload->delete();
 
