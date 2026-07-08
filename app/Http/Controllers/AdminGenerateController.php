@@ -117,9 +117,10 @@ class AdminGenerateController extends Controller
     public function generate(Request $request)
     {
         $request->validate([
-            'selected_data' => 'required|json',
-            'template'      => 'required|file|mimes:docx|max:10240',
-            'format'        => 'required|in:docx,pdf',
+            'selected_data'  => 'required|json',
+            'template'       => 'required|file|mimes:docx|max:10240',
+            'format'         => 'required|in:docx,pdf',
+            'document_name'  => 'nullable|string|max:200',
         ]);
 
         try {
@@ -136,7 +137,12 @@ class AdminGenerateController extends Controller
                 mkdir($outputDir, 0755, true);
             }
 
-            $filename = 'Generate_' . now()->format('Ymd_His') . '_' . uniqid();
+            $customName = $request->input('document_name');
+            if ($customName) {
+                $filename = preg_replace('/[^a-zA-Z0-9\s\-_\.]/', '', $customName);
+            } else {
+                $filename = pathinfo($request->file('template')->getClientOriginalName(), PATHINFO_FILENAME);
+            }
             $outputPath = $outputDir . '/' . $filename . '.docx';
 
             $extraContext = [

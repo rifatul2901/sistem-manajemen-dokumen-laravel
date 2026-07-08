@@ -7,9 +7,11 @@
     .cell-checkbox:checked + .cell-content { background: #d4edda; border-radius: 4px; padding: 0 4px; }
     .cell-content { cursor: pointer; }
     .cell-content:hover { background: #e8f4fd; border-radius: 4px; }
-    .selected-item { padding: 4px 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid var(--primary); margin-bottom: 4px; font-size: .8rem; }
+    .selected-item { padding: 4px 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid var(--primary); margin-bottom: 4px; font-size: .75rem; }
     .selected-item .num { font-weight: 600; color: var(--primary); margin-right: 6px; }
-    #selectedPanel { max-height: 220px; overflow-y: auto; }
+    #selectedPanel { flex: 1 1 0; min-height: 0; overflow: auto; }
+    #colFilterPanel { flex: 1 1 0; min-height: 0; overflow: auto; }
+    #dataCard { display: block; }
     .data-table-wrap { max-height: 320px; overflow: auto; }
     .data-table-wrap table { font-size: .75rem; }
     .data-table-wrap td, .data-table-wrap th { padding: .35rem .5rem !important; vertical-align: top; white-space: nowrap; }
@@ -17,7 +19,6 @@
     .col-filter-badge { display: inline-block; padding: 3px 10px; margin: 2px; font-size: .75rem; border-radius: 12px; cursor: pointer; border: 1px solid #dee2e6; user-select: none; white-space: nowrap; }
     .col-filter-badge.active { background: #0d6efd; color: #fff; border-color: #0d6efd; }
     .col-filter-badge.inactive { background: #f8f9fa; color: #6c757d; }
-    #colFilterPanel { max-height: 180px; overflow-y: auto; }
     .history-table-wrap { max-height: 250px; overflow: auto; }
     .history-table { font-size: .75rem; }
     .history-table td, .history-table th { padding: .3rem .5rem !important; vertical-align: middle; white-space: nowrap; }
@@ -76,7 +77,7 @@
             </div>
         </div>
         <div class="col-lg-4 d-flex">
-            <div class="card h-100 w-100">
+            <div class="card h-100 w-100 d-flex flex-column">
                 <div class="card-header"><i class="bi bi-funnel me-1"></i> Filter Kolom</div>
                 <div class="card-body py-2" id="colFilterPanel">
                     <p class="text-muted small mb-0 fst-italic">Muat data terlebih dahulu.</p>
@@ -106,7 +107,7 @@
     {{-- ROW 3: Data Terpilih | Generate Dokumen --}}
     <div class="row g-4 mb-4">
         <div class="col-lg-8 d-flex">
-            <div class="card h-100 w-100">
+            <div class="card h-100 w-100 d-flex flex-column">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <span><i class="bi bi-check2-square me-1"></i> Data Terpilih</span>
                     <span class="badge bg-primary" id="selectedCount">0</span>
@@ -128,6 +129,16 @@
                             <label class="form-label">Upload Template (.docx)</label>
                             <input type="file" name="template" class="form-control" accept=".docx" required>
                             <div class="form-text">Gunakan placeholder @{{data 1}}, @{{data 2}} sesuai urutan centang.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Nama Dokumen
+                                <span class="text-muted fw-light" style="font-size:.75rem;">(opsional)</span>
+                            </label>
+                            <input type="text" name="document_name" class="form-control"
+                                   placeholder="Kosongkan untuk mengikuti nama template" maxlength="200">
+                            <div class="form-text">Jika dikosongkan, nama file akan mengikuti nama template yang diupload.</div>
                         </div>
 
                         <div class="mb-3">
