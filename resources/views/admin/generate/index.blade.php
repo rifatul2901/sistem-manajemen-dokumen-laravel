@@ -9,15 +9,18 @@
     .cell-content:hover { background: #e8f4fd; border-radius: 4px; }
     .selected-item { padding: 4px 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid var(--primary); margin-bottom: 4px; font-size: .8rem; }
     .selected-item .num { font-weight: 600; color: var(--primary); margin-right: 6px; }
-    #selectedPanel { max-height: 300px; overflow-y: auto; }
-    .data-table-wrap { max-height: 600px; overflow: auto; }
-    .data-table-wrap table { font-size: .8rem; }
-    .data-table-wrap td, .data-table-wrap th { padding: .5rem .7rem !important; vertical-align: top; white-space: normal; min-width: 120px; }
+    #selectedPanel { max-height: 220px; overflow-y: auto; }
+    .data-table-wrap { max-height: 320px; overflow: auto; }
+    .data-table-wrap table { font-size: .75rem; }
+    .data-table-wrap td, .data-table-wrap th { padding: .35rem .5rem !important; vertical-align: top; white-space: nowrap; }
     .col-header-check { cursor: pointer; }
-    .col-toggle { cursor: pointer; user-select: none; }
-    .col-toggle:hover { text-decoration: line-through; }
+    .col-filter-badge { display: inline-block; padding: 3px 10px; margin: 2px; font-size: .75rem; border-radius: 12px; cursor: pointer; border: 1px solid #dee2e6; user-select: none; white-space: nowrap; }
+    .col-filter-badge.active { background: #0d6efd; color: #fff; border-color: #0d6efd; }
+    .col-filter-badge.inactive { background: #f8f9fa; color: #6c757d; }
+    #colFilterPanel { max-height: 180px; overflow-y: auto; }
+    .history-table-wrap { max-height: 250px; overflow: auto; }
     .history-table { font-size: .75rem; }
-    .history-table td, .history-table th { padding: .35rem .5rem !important; vertical-align: middle; }
+    .history-table td, .history-table th { padding: .3rem .5rem !important; vertical-align: middle; white-space: nowrap; }
 </style>
 @endpush
 
@@ -37,10 +40,10 @@
         <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2">{{ $value }}<button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button></div>
     @endsession
 
-    <div class="row g-4">
-        {{-- Left: Source & Data --}}
+    {{-- ROW 1: Sumber Data | Filter Kolom --}}
+    <div class="row g-4 mb-4">
         <div class="col-lg-8">
-            <div class="card mb-3">
+            <div class="card">
                 <div class="card-header"><i class="bi bi-database me-1"></i> Sumber Data</div>
                 <div class="card-body">
                     <div class="mb-3">
@@ -71,35 +74,39 @@
                     </div>
                 </div>
             </div>
-
-            <div class="card mb-3" id="dataCard" style="display:none;">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <span><i class="bi bi-table me-1"></i> Data Tersedia</span>
-                    <span class="badge bg-light text-dark" id="totalCells">0 sel</span>
-                </div>
-                <div class="card-body p-0">
-                    <div class="data-table-wrap">
-                        <table class="table table-bordered mb-0" id="dataTable">
-                            <thead id="dataTableHead"></thead>
-                            <tbody id="dataTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
         </div>
-
-        {{-- Right: Selected Data, Column Filter & Generate --}}
-        <div class="col-lg-4">
-            <div class="card mb-3">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <span><i class="bi bi-funnel me-1"></i> Filter Kolom</span>
-                </div>
+        <div class="col-lg-4 d-flex">
+            <div class="card h-100 w-100">
+                <div class="card-header"><i class="bi bi-funnel me-1"></i> Filter Kolom</div>
                 <div class="card-body py-2" id="colFilterPanel">
                     <p class="text-muted small mb-0 fst-italic">Muat data terlebih dahulu.</p>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="card mb-3">
+    {{-- ROW 2: Data Tersedia --}}
+    <div class="mb-4">
+        <div class="card" id="dataCard" style="display:none;">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <span><i class="bi bi-table me-1"></i> Data Tersedia</span>
+                <span class="badge bg-light text-dark" id="totalCells">0 sel</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="data-table-wrap">
+                    <table class="table table-bordered mb-0" id="dataTable">
+                        <thead id="dataTableHead"></thead>
+                        <tbody id="dataTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ROW 3: Data Terpilih | Generate Dokumen --}}
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8 d-flex">
+            <div class="card h-100 w-100">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <span><i class="bi bi-check2-square me-1"></i> Data Terpilih</span>
                     <span class="badge bg-primary" id="selectedCount">0</span>
@@ -108,8 +115,9 @@
                     <p class="text-muted small mb-0 fst-italic">Centang sel pada tabel data untuk memilih.</p>
                 </div>
             </div>
-
-            <div class="card">
+        </div>
+        <div class="col-lg-4 d-flex">
+            <div class="card h-100 w-100">
                 <div class="card-header"><i class="bi bi-file-earmark-arrow-up me-1"></i> Generate Dokumen</div>
                 <div class="card-body">
                     <form method="POST" action="{{ route('admin.generate.generate') }}" id="generateForm" enctype="multipart/form-data">
@@ -145,45 +153,47 @@
         </div>
     </div>
 
-    {{-- Riwayat Generate --}}
-    <div class="card mt-4">
-        <div class="card-header"><i class="bi bi-clock-history me-1"></i> Riwayat Generate</div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover history-table mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Nama File</th>
-                            <th>Waktu</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($history as $h)
-                        <tr>
-                            <td>{{ $loop->iteration + ($history->currentPage() - 1) * $history->perPage() }}</td>
-                            <td>{{ $h->filename }}</td>
-                            <td>{{ \Carbon\Carbon::parse($h->waktu)->format('d M Y H:i') }}</td>
-                            <td>
-                                <a href="{{ route('admin.generate.download', $h->id) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-download"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" class="text-muted text-center py-3">Belum ada riwayat generate.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+    {{-- ROW 4: Riwayat Generate --}}
+    <div>
+        <div class="card">
+            <div class="card-header"><i class="bi bi-clock-history me-1"></i> Riwayat Generate</div>
+            <div class="card-body p-0">
+                <div class="history-table-wrap">
+                    <table class="table table-hover history-table mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Nama File</th>
+                                <th>Waktu</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($history as $h)
+                            <tr>
+                                <td>{{ $loop->iteration + ($history->currentPage() - 1) * $history->perPage() }}</td>
+                                <td>{{ $h->filename }}</td>
+                                <td>{{ \Carbon\Carbon::parse($h->waktu)->format('d M Y H:i') }}</td>
+                                <td>
+                                    <a href="{{ route('admin.generate.download', $h->id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="text-muted text-center py-3">Belum ada riwayat generate.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                @if($history->hasPages())
+                <div class="px-3 py-2 border-top">
+                    {{ $history->links() }}
+                </div>
+                @endif
             </div>
-            @if($history->hasPages())
-            <div class="px-3 py-2 border-top">
-                {{ $history->links() }}
-            </div>
-            @endif
         </div>
     </div>
 </div>
@@ -276,13 +286,10 @@ function renderDataTable(res) {
         return;
     }
 
-    // Column filter panel
+    // Column filter panel — badge style
     var filterHtml = '';
     cols.forEach(function(c) {
-        filterHtml += '<div class="form-check form-check-inline col-toggle me-1" data-col="' + esc(c) + '">';
-        filterHtml += '<input class="form-check-input col-toggle-check" type="checkbox" checked id="colck-' + esc(c).replace(/\s+/g, '-') + '">';
-        filterHtml += '<label class="form-check-label small" for="colck-' + esc(c).replace(/\s+/g, '-') + '">' + esc(c) + '</label>';
-        filterHtml += '</div>';
+        filterHtml += '<span class="col-filter-badge active" data-col="' + esc(c) + '">' + esc(c) + ' <i class="bi bi-eye"></i></span>';
     });
     $('#colFilterPanel').html(filterHtml);
 
@@ -348,13 +355,15 @@ function renderDataTable(res) {
         });
     });
 
-    // Column filter toggle
-    $('.col-toggle-check').on('change', function() {
-        var col = $(this).closest('.col-toggle').data('col');
-        var visible = $(this).is(':checked');
+    // Column filter toggle — badge click
+    $('#colFilterPanel').on('click', '.col-filter-badge', function() {
+        var col = $(this).data('col');
+        var visible = $(this).hasClass('active');
+        $(this).toggleClass('active inactive');
+        $(this).find('i').toggleClass('bi-eye bi-eye-slash');
         $('#dataTable th[data-colkey], #dataTable td[data-colkey]').filter(function() {
             return $(this).data('colkey') === col;
-        }).toggle(visible);
+        }).toggle(!visible);
     });
 
     $('#dataCard').show();
