@@ -45,25 +45,92 @@ class AdminGenerateController extends Controller
 
             $sheetNames = $sheetsService->getSheetNames($spreadsheetId);
             $firstSheet = $sheetNames[0] ?? 'Sheet1';
-            $data = $sheetsService->readRange($spreadsheetId, $firstSheet);
+            $allRows = $sheetsService->readRange($spreadsheetId, $firstSheet);
 
-            if (empty($data) || count($data) < 1) {
+            if (empty($allRows) || count($allRows) < 1) {
                 return response()->json(['error' => 'Spreadsheet kosong atau tidak dapat dibaca.'], 400);
             }
 
-            $headers = $data[0];
-            $rows = array_slice($data, 1);
+            // Pad rows to sheet's actual column count (API truncates trailing empty cells)
+            $totalCols = $sheetsService->getSheetTotalColumns($spreadsheetId, $firstSheet);
+            foreach ($allRows as $ri => $row) {
+                $allRows[$ri] = array_pad($row, $totalCols, '');
+            }
 
-            $columns = array_map('trim', $headers);
+            // 1. Skip leading rows with < 2 non-empty cells (judul, empty rows)
+            $headerIdx = null;
+            foreach ($allRows as $i => $row) {
+                $nonEmpty = count(array_filter($row, fn($v) => trim($v ?? '') !== ''));
+                if ($nonEmpty >= 2) {
+                    $headerIdx = $i;
+                    break;
+                }
+            }
 
+            if ($headerIdx === null) {
+                return response()->json(['error' => 'Tidak ditemukan baris header yang valid.'], 400);
+            }
+
+            $headers = $allRows[$headerIdx];
+            $dataRows = array_slice($allRows, $headerIdx + 1);
+
+            // 2. Build flat column names: merge cells as Nama_1, Nama_2, etc.
+            //    solo empty columns: Kolom_A, Kolom_B, etc.
+            $columns = [];
+            $columnIndices = [];
+            $currentGroup = null;
+            $currentGroupStart = null;
+            $groupCounter = 0;
+
+            foreach ($headers as $ci => $h) {
+                $trimmed = trim($h ?? '');
+                if ($trimmed !== '') {
+                    $currentGroup = $trimmed;
+                    $currentGroupStart = $ci;
+                    $groupCounter = 1;
+                    $columns[$ci] = $currentGroup;
+                } else {
+                    if ($currentGroup !== null) {
+                        $groupCounter++;
+                        if ($groupCounter === 2) {
+                            $columns[$currentGroupStart] = $currentGroup . '_1';
+                        }
+                        $columns[$ci] = $currentGroup . '_' . $groupCounter;
+                    } else {
+                        $columns[$ci] = 'Kolom_' . chr(65 + $ci);
+                    }
+                }
+                $columnIndices[] = $ci;
+            }
+
+            // 4. Filter columns where all data rows are empty (merge cell leftovers)
+            $activeColumnIndices = [];
+            foreach ($columnIndices as $ci) {
+                $hasData = false;
+                foreach ($dataRows as $row) {
+                    if (isset($row[$ci]) && trim($row[$ci]) !== '') {
+                        $hasData = true;
+                        break;
+                    }
+                }
+                if ($hasData) {
+                    $activeColumnIndices[] = $ci;
+                }
+            }
+            $columnIndices = $activeColumnIndices;
+            $columns = array_intersect_key($columns, array_flip($columnIndices));
+
+            // 3. Build table data using flat column keys
             $tableData = [];
-            foreach ($rows as $ri => $row) {
-                $entry = ['_row' => $ri + 2];
-                foreach ($columns as $ci => $col) {
-                    $entry[$col] = isset($row[$ci]) ? trim($row[$ci]) : '';
+            foreach ($dataRows as $ri => $row) {
+                $entry = ['_row' => $headerIdx + $ri + 2];
+                foreach ($columnIndices as $ci) {
+                    $entry[$columns[$ci]] = isset($row[$ci]) ? trim($row[$ci]) : '';
                 }
                 $tableData[] = $entry;
             }
+
+            $columns = array_values($columns);
 
             return response()->json([
                 'columns' => $columns,
@@ -84,25 +151,86 @@ class AdminGenerateController extends Controller
         try {
             $spreadsheet = IOFactory::load($request->file('file')->getRealPath());
             $worksheet = $spreadsheet->getActiveSheet();
-            $data = $worksheet->toArray();
+            $allRows = $worksheet->toArray();
 
-            if (empty($data) || count($data) < 1) {
+            if (empty($allRows) || count($allRows) < 1) {
                 return response()->json(['error' => 'File Excel kosong.'], 400);
             }
 
-            $headers = $data[0];
-            $rows = array_slice($data, 1);
+            // 1. Skip leading rows with < 2 non-empty cells (judul, empty rows)
+            $headerIdx = null;
+            foreach ($allRows as $i => $row) {
+                $nonEmpty = count(array_filter($row, fn($v) => trim($v ?? '') !== ''));
+                if ($nonEmpty >= 2) {
+                    $headerIdx = $i;
+                    break;
+                }
+            }
 
-            $columns = array_map(fn($h) => trim($h ?? ''), $headers);
+            if ($headerIdx === null) {
+                return response()->json(['error' => 'Tidak ditemukan baris header yang valid.'], 400);
+            }
 
+            $headers = $allRows[$headerIdx];
+            $dataRows = array_slice($allRows, $headerIdx + 1);
+
+            // 2. Build flat column names: merge cells as Nama_1, Nama_2, etc.
+            //    solo empty columns: Kolom_A, Kolom_B, etc.
+            $columns = [];
+            $columnIndices = [];
+            $currentGroup = null;
+            $currentGroupStart = null;
+            $groupCounter = 0;
+
+            foreach ($headers as $ci => $h) {
+                $trimmed = trim($h ?? '');
+                if ($trimmed !== '') {
+                    $currentGroup = $trimmed;
+                    $currentGroupStart = $ci;
+                    $groupCounter = 1;
+                    $columns[$ci] = $currentGroup;
+                } else {
+                    if ($currentGroup !== null) {
+                        $groupCounter++;
+                        if ($groupCounter === 2) {
+                            $columns[$currentGroupStart] = $currentGroup . '_1';
+                        }
+                        $columns[$ci] = $currentGroup . '_' . $groupCounter;
+                    } else {
+                        $columns[$ci] = 'Kolom_' . chr(65 + $ci);
+                    }
+                }
+                $columnIndices[] = $ci;
+            }
+
+            // 4. Filter columns where all data rows are empty (merge cell leftovers)
+            $activeColumnIndices = [];
+            foreach ($columnIndices as $ci) {
+                $hasData = false;
+                foreach ($dataRows as $row) {
+                    if (isset($row[$ci]) && trim((string)$row[$ci]) !== '') {
+                        $hasData = true;
+                        break;
+                    }
+                }
+                if ($hasData) {
+                    $activeColumnIndices[] = $ci;
+                }
+            }
+            $columnIndices = $activeColumnIndices;
+            $columns = array_intersect_key($columns, array_flip($columnIndices));
+
+            // 3. Build table data using flat column keys
             $tableData = [];
-            foreach ($rows as $ri => $row) {
-                $entry = ['_row' => $ri + 2];
-                foreach ($columns as $ci => $col) {
-                    $entry[$col] = isset($row[$ci]) ? trim((string)$row[$ci]) : '';
+            foreach ($dataRows as $ri => $row) {
+                $entry = ['_row' => $headerIdx + $ri + 2];
+                foreach ($columnIndices as $ci) {
+                    $entry[$columns[$ci]] = isset($row[$ci]) ? trim((string)$row[$ci]) : '';
                 }
                 $tableData[] = $entry;
             }
+
+            $columns = array_values($columns);
 
             return response()->json([
                 'columns' => $columns,

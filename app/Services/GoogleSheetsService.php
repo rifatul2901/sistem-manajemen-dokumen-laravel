@@ -99,4 +99,15 @@ class GoogleSheetsService
         $response = $this->service->spreadsheets_values->get($spreadsheetId, $sheetName . '!' . $range);
         return $response->getValues() ?? [];
     }
+
+    public function getSheetTotalColumns(string $spreadsheetId, string $sheetName): int
+    {
+        $spreadsheet = $this->service->spreadsheets->get($spreadsheetId);
+        foreach ($spreadsheet->getSheets() as $sheet) {
+            if ($sheet->getProperties()->getTitle() === $sheetName) {
+                return $sheet->getProperties()->getGridProperties()->getColumnCount();
+            }
+        }
+        return 26;
+    }
 }
