@@ -6,7 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\StatusController;
-use App\Http\Controllers\DriveController;
+use App\Http\Controllers\RiwayatController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\RiwayatRevisiController;
 use App\Http\Controllers\AdminGenerateController;
@@ -19,24 +19,24 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // User Dashboard
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
-    Route::post('/excel', [DashboardController::class, 'bacaExcel'])->name('dashboard.excel');
-    Route::post('/detect-placeholders', [DashboardController::class, 'detectPlaceholders'])->name('dashboard.detect-placeholders');
-    Route::post('/generate', [DashboardController::class, 'generate'])->name('dashboard.generate');
-    Route::get('/download/{id}', [DashboardController::class, 'downloadGenerated'])->name('dashboard.download');
+    // Redirect root
+    Route::get('/', function () {
+        return auth()->user()->isAdmin()
+            ? redirect()->route('admin.dashboard')
+            : redirect()->route('status.index');
+    });
+
+    // Upload
     Route::post('/upload', [DashboardController::class, 'uploadBerkas'])->name('dashboard.upload');
     Route::post('/upload-revisi', [DashboardController::class, 'uploadRevisi'])->name('dashboard.upload-revisi');
     Route::get('/subfolders', [DashboardController::class, 'getSubfolders'])->name('dashboard.subfolders');
-    Route::post('/scan-folder', [DashboardController::class, 'scanFolder'])->name('dashboard.scan-folder');
 
     // Status Berkas
     Route::get('/status', [StatusController::class, 'index'])->name('status.index');
     Route::get('/status/notif/{id}', [StatusController::class, 'downloadNotif'])->name('status.download-notif');
 
-    // Monitoring Drive
-    Route::get('/drive', [DriveController::class, 'index'])->name('drive.index');
-    Route::match(['GET', 'POST'], '/drive/scan', [DriveController::class, 'scan'])->name('drive.scan');
+    // Riwayat
+    Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat.index');
 
     // Admin routes
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

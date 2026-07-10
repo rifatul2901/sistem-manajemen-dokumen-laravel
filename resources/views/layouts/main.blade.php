@@ -272,6 +272,11 @@
                     <i class="bi bi-check-circle"></i> Status Berkas
                 </a>
             </div>
+            <div class="nav-item">
+                <a href="{{ route('riwayat.index') }}" class="nav-link {{ request()->routeIs('riwayat*') ? 'active' : '' }}">
+                    <i class="bi bi-archive"></i> Riwayat
+                </a>
+            </div>
         </div>
         <div class="sidebar-footer">
             <form method="POST" action="{{ route('logout') }}">

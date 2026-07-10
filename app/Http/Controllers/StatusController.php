@@ -55,6 +55,9 @@ class StatusController extends Controller
                 'statusLabel'    => $label,
                 'kejadian'       => $kejadian,
                 'tanggalTerbaru' => $tanggalTerbaru,
+                'status'         => $item->status,
+                'subfolder'      => $item->subfolder ?? '(folder utama)',
+                'uploadId'       => $item->id,
             ];
         }
 
