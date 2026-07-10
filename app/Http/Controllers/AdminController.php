@@ -182,6 +182,7 @@ class AdminController extends Controller
         $upload->status = 'approved';
         $upload->catatan_admin = [];
         $upload->notifikasi_pdf = null;
+        $upload->approved_at = now();
         $upload->save();
 
         return back()->with('success', 'Berkas berhasil disetujui.');
@@ -199,6 +200,7 @@ class AdminController extends Controller
         $upload->status = 'revision';
         $upload->catatan_admin = $request->catatan;
         $upload->assigned_user_id = $request->user_id;
+        $upload->revision_requested_at = now();
         $upload->save();
 
         try {

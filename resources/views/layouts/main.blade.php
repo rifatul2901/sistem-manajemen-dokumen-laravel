@@ -247,11 +247,6 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('admin.riwayat-revisi') }}" class="nav-link {{ request()->routeIs('admin.riwayat-revisi') ? 'active' : '' }}">
-                    <i class="bi bi-clock-history"></i> Riwayat Revisi
-                </a>
-            </div>
-            <div class="nav-item">
                 <a href="{{ route('admin.rekapitulasi') }}" class="nav-link {{ request()->routeIs('admin.rekapitulasi*') ? 'active' : '' }}">
                     <i class="bi bi-bar-chart"></i> Rekapitulasi
                 </a>
@@ -264,6 +259,11 @@
             <div class="nav-item">
                 <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
                     <i class="bi bi-people"></i> Manajemen User
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.riwayat-revisi') }}" class="nav-link {{ request()->routeIs('admin.riwayat-revisi') ? 'active' : '' }}">
+                    <i class="bi bi-clock-history"></i> Riwayat Revisi
                 </a>
             </div>
             @else

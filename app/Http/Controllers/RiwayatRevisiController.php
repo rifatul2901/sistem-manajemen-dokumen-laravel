@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RevisionHistory;
 use App\Models\Upload;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -18,8 +17,23 @@ class RiwayatRevisiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Upload::with(['user', 'revisionHistories'])
-            ->whereIn('status', ['approved', 'revision', 'pending']);
+        $query = Upload::with('user')
+            ->where(function ($q) {
+                $q->whereNotNull('approved_at')
+                  ->orWhereNotNull('revision_requested_at');
+            });
+
+        $currentActivity = $request->activity;
+
+        if ($currentActivity === 'disetujui') {
+            $query->whereNotNull('approved_at');
+        } elseif ($currentActivity === 'minta_revisi') {
+            $query->whereNotNull('revision_requested_at');
+        }
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
 
         if ($request->filled('folder')) {
             $query->where('subfolder', $request->folder);
@@ -35,12 +49,63 @@ class RiwayatRevisiController extends Controller
             });
         }
 
-        $uploads = $query->orderBy('subfolder')
-            ->orderBy('filename')
-            ->paginate(50)
-            ->withQueryString();
+        $uploads = $query->orderBy('created_at', 'desc')->get();
 
-        $folders = Upload::whereIn('status', ['approved', 'revision', 'pending'])
+        $activities = collect();
+
+        foreach ($uploads as $u) {
+            if ($u->revision_requested_at) {
+                $activities->push([
+                    'type'      => 'minta_revisi',
+                    'timestamp' => $u->revision_requested_at,
+                    'filename'  => $u->filename,
+                    'subfolder' => $u->subfolder ?? '(folder utama)',
+                    'user_nama' => $u->user?->nama ?? 'Eksternal',
+                    'catatan'   => $u->catatan_admin,
+                    'upload_id' => $u->id,
+                ]);
+            }
+            if ($u->approved_at) {
+                $activities->push([
+                    'type'      => 'disetujui',
+                    'timestamp' => $u->approved_at,
+                    'filename'  => $u->filename,
+                    'subfolder' => $u->subfolder ?? '(folder utama)',
+                    'user_nama' => $u->user?->nama ?? 'Eksternal',
+                    'catatan'   => null,
+                    'upload_id' => $u->id,
+                ]);
+            }
+        }
+
+        if ($request->filled('date_from')) {
+            $from = \Carbon\Carbon::parse($request->date_from)->startOfDay();
+            $activities = $activities->filter(fn($a) => \Carbon\Carbon::parse($a['timestamp'])->greaterThanOrEqualTo($from));
+        }
+
+        if ($request->filled('date_to')) {
+            $to = \Carbon\Carbon::parse($request->date_to)->endOfDay();
+            $activities = $activities->filter(fn($a) => \Carbon\Carbon::parse($a['timestamp'])->lessThanOrEqualTo($to));
+        }
+
+        $activities = $activities->sortByDesc('timestamp')->values();
+
+        $total = $activities->count();
+        $perPage = 30;
+        $page = Paginator::resolveCurrentPage('page');
+        $slice = $activities->slice(($page - 1) * $perPage, $perPage)->values();
+
+        $activities = new LengthAwarePaginator($slice, $total, $perPage, $page, [
+            'path'  => Paginator::resolveCurrentPath(),
+            'query' => $request->query(),
+        ]);
+
+        $users = User::where('role', 'user')->orderBy('nama')->get();
+
+        $folders = Upload::where(function ($q) {
+                $q->whereNotNull('approved_at')
+                  ->orWhereNotNull('revision_requested_at');
+            })
             ->whereNotNull('subfolder')
             ->where('subfolder', '!=', '(folder utama)')
             ->select('subfolder')
@@ -50,7 +115,7 @@ class RiwayatRevisiController extends Controller
 
         $folders = collect(['(folder utama)'])->merge($folders);
 
-        return view('admin.riwayat-revisi.index', compact('uploads', 'folders'));
+        return view('admin.riwayat-revisi.index', compact('activities', 'users', 'folders', 'total'));
     }
 
     public function rekapIndex()
@@ -61,7 +126,7 @@ class RiwayatRevisiController extends Controller
 
     public function downloadRekap(User $user)
     {
-        $riwayat = RevisionHistory::whereHas('upload', function ($q) use ($user) {
+        $riwayat = \App\Models\RevisionHistory::whereHas('upload', function ($q) use ($user) {
             $q->where('user_id', $user->id);
         })->with('upload')->orderBy('created_at', 'desc')->get();
 
@@ -71,32 +136,29 @@ class RiwayatRevisiController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Rekapitulasi');
 
-        // Title
         $sheet->setCellValue('A1', 'REKAPITULASI CATATAN DOKUMEN');
-        $sheet->mergeCells('A1:F1');
+        $sheet->mergeCells('A1:H1');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16)->getColor()->setARGB('FF1F4E79');
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         $sheet->setCellValue('A2', 'User: ' . $user->nama . ' (@' . $user->username . ')');
-        $sheet->mergeCells('A2:F2');
+        $sheet->mergeCells('A2:H2');
         $sheet->getStyle('A2')->getFont()->setSize(12)->getColor()->setARGB('FF4472C4');
         $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-        // Header row
         $headerRow = 4;
-        $headers = ['No', 'Nama Folder', 'Nama Dokumen', 'Status', 'Catatan', 'Tanggal'];
+        $headers = ['No', 'Nama Folder', 'Nama Dokumen', 'Status', 'Tanggal Upload', 'Tanggal Approve', 'Tanggal Minta Revisi', 'Catatan'];
         foreach ($headers as $i => $h) {
             $col = chr(65 + $i);
             $sheet->setCellValue($col . $headerRow, $h);
         }
 
-        $headerStyle = $sheet->getStyle('A' . $headerRow . ':F' . $headerRow);
+        $headerStyle = $sheet->getStyle('A' . $headerRow . ':H' . $headerRow);
         $headerStyle->getFont()->setBold(true)->setSize(11)->getColor()->setARGB('FFFFFFFF');
         $headerStyle->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F4E79');
         $headerStyle->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $headerStyle->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
-        // Data
         $row = 5;
         $no = 1;
 
@@ -121,17 +183,19 @@ class RiwayatRevisiController extends Controller
             $sheet->setCellValue('B' . $row, $upload->subfolder ?? '(folder utama)');
             $sheet->setCellValue('C' . $row, $upload->filename);
             $sheet->setCellValue('D' . $row, $statusLabel);
-            $sheet->setCellValue('E' . $row, $catatan);
-            $sheet->setCellValue('F' . $row, $upload->created_at ? $upload->created_at->format('d/m/Y H:i') : '-');
+            $sheet->setCellValue('E' . $row, $upload->created_at ? $upload->created_at->format('d/m/Y H:i') : '-');
+            $sheet->setCellValue('F' . $row, $upload->approved_at ? $upload->approved_at->format('d/m/Y H:i') : '-');
+            $sheet->setCellValue('G' . $row, $upload->revision_requested_at ? $upload->revision_requested_at->format('d/m/Y H:i') : '-');
+            $sheet->setCellValue('H' . $row, $catatan);
 
-            $dataStyle = $sheet->getStyle('A' . $row . ':F' . $row);
+            $dataStyle = $sheet->getStyle('A' . $row . ':H' . $row);
             $dataStyle->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
             if ($upload->status === 'approved') {
                 $dataStyle->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE8F5E9');
             } elseif ($upload->status === 'revision') {
                 $dataStyle->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFEBEE');
             }
-            $sheet->getStyle('E' . $row)->getAlignment()->setWrapText(true);
+            $sheet->getStyle('H' . $row)->getAlignment()->setWrapText(true);
             $row++;
 
             foreach ($riwayat->where('upload_id', $upload->id) as $rev) {
@@ -145,22 +209,24 @@ class RiwayatRevisiController extends Controller
                 $sheet->setCellValue('B' . $row, '');
                 $sheet->setCellValue('C' . $row, '  ↳ Revisi: ' . ($rev->nama_file_sebelumnya ?? ''));
                 $sheet->setCellValue('D' . $row, 'Revisi');
-                $sheet->setCellValue('E' . $row, $revText);
-                $sheet->setCellValue('F' . $row, $rev->tanggal ?? ($rev->created_at?->format('d/m/Y H:i') ?? '-'));
+                $sheet->setCellValue('E' . $row, $rev->tanggal ?? ($rev->created_at?->format('d/m/Y H:i') ?? '-'));
+                $sheet->setCellValue('F' . $row, '');
+                $sheet->setCellValue('G' . $row, '');
+                $sheet->setCellValue('H' . $row, $revText);
 
-                $revStyle = $sheet->getStyle('A' . $row . ':F' . $row);
+                $revStyle = $sheet->getStyle('A' . $row . ':H' . $row);
                 $revStyle->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
                 $revStyle->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFF5F5F5');
                 $sheet->getStyle('C' . $row)->getFont()->setItalic(true)->getColor()->setARGB('FF666666');
-                $sheet->getStyle('E' . $row)->getAlignment()->setWrapText(true);
+                $sheet->getStyle('H' . $row)->getAlignment()->setWrapText(true);
                 $row++;
             }
         }
 
-        foreach (range('A', 'F') as $col) {
+        foreach (range('A', 'H') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
-        $sheet->getColumnDimension('E')->setWidth(50);
+        $sheet->getColumnDimension('H')->setWidth(50);
 
         $tempPath = storage_path('app/rekapitulasi_temp');
         if (!is_dir($tempPath)) {
