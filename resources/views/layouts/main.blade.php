@@ -266,7 +266,7 @@
                     <i class="bi bi-people"></i> Manajemen User
                 </a>
             </div>
-            @endif
+            @else
             <div class="nav-item">
                 <a href="{{ route('status.index') }}" class="nav-link {{ request()->routeIs('status*') ? 'active' : '' }}">
                     <i class="bi bi-check-circle"></i> Status Berkas
@@ -277,6 +277,7 @@
                     <i class="bi bi-archive"></i> Riwayat
                 </a>
             </div>
+            @endif
         </div>
         <div class="sidebar-footer">
             <form method="POST" action="{{ route('logout') }}">

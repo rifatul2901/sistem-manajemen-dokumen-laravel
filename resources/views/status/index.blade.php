@@ -7,7 +7,7 @@
     <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
             <h4 class="page-title mb-0">Status Berkas</h4>
-            <p class="text-muted small mb-0 mt-1">Pantau status dan upload berkas untuk direview Admin.</p>
+            <p class="text-muted small mb-0 mt-1">Pantau status berkas yang kamu kirim.</p>
         </div>
         <a href="{{ route('status.index') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-clockwise me-1"></i> Refresh</a>
     </div>
@@ -22,38 +22,6 @@
         <div class="alert alert-info alert-dismissible fade show d-flex align-items-center gap-2">{{ session('upload_result') }}<button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button></div>
     @endif
 
-    {{-- Upload Berkas Baru --}}
-    <div class="card mb-4">
-        <div class="card-header d-flex align-items-center gap-2">
-            <i class="bi bi-cloud-upload text-warning"></i> Upload Berkas Baru
-        </div>
-        <div class="card-body">
-            <form method="POST" action="{{ route('dashboard.upload') }}" enctype="multipart/form-data">
-                @csrf
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Folder Tujuan</label>
-                        <select name="folder_tujuan" class="form-select" id="folderSelect">
-                            <option value="">-- Pilih Folder --</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">File (.docx / .pdf)</label>
-                        <input type="file" name="file" class="form-control" accept=".docx,.pdf" required>
-                    </div>
-                    <div class="col-md-4 d-flex align-items-end gap-2">
-                        <button type="submit" class="btn btn-warning"><i class="bi bi-cloud-arrow-up me-1"></i> Upload</button>
-                    </div>
-                </div>
-                <div class="mt-2">
-                    <label class="form-label">Catatan <span class="text-muted fw-normal">(opsional)</span></label>
-                    <textarea name="catatan" class="form-control" rows="1" placeholder="Catatan untuk Admin..."></textarea>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- Daftar Dokumen --}}
     @forelse ($kejadianPerDokumen ?? [] as $doc)
         <div class="card mb-3">
             <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
@@ -89,7 +57,7 @@
                     });
                 @endphp
 
-                {{-- Catatan Admin & Upload Revisi --}}
+                {{-- Catatan Admin & Upload Revisi (hanya untuk status 'revision') --}}
                 @if ($relatedUpload && $relatedUpload->status == 'revision')
                     {{-- Catatan Admin (collapse) --}}
                     @if (!empty($relatedUpload->catatan_admin))
@@ -121,13 +89,17 @@
                         <form method="POST" action="{{ route('dashboard.upload-revisi') }}" enctype="multipart/form-data">
                             @csrf
                             <input type="hidden" name="upload_id" value="{{ $relatedUpload->id }}">
-                            <div class="row g-2 align-items-end">
-                                <div class="col-md-8">
+                            <div class="row g-2">
+                                <div class="col-12">
                                     <label class="form-label mb-0">Upload File Revisi (.docx / .pdf)</label>
-                                    <input type="file" name="file" class="form-control form-control-sm" accept=".docx,.pdf" required>
+                                    <input type="file" name="file" class="form-control" accept=".docx,.pdf" required>
                                 </div>
-                                <div class="col-md-4">
-                                    <button type="submit" class="btn btn-danger btn-sm w-100"><i class="bi bi-arrow-repeat me-1"></i> Kirim Revisi</button>
+                                <div class="col-12">
+                                    <label class="form-label mb-0">Catatan <span class="text-muted fw-normal">(opsional)</span></label>
+                                    <textarea name="catatan" class="form-control" rows="1" placeholder="Catatan untuk Admin..."></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-arrow-repeat me-1"></i> Kirim Revisi</button>
                                 </div>
                             </div>
                         </form>
@@ -145,19 +117,3 @@
     @endforelse
 </div>
 @endsection
-
-@push('scripts')
-<script>
-$(document).ready(function() {
-    $.ajax({
-        url: '{{ route("dashboard.subfolders") }}',
-        method: 'GET',
-        success: function(res) {
-            const sel = $('#folderSelect').empty().append('<option value="">-- Pilih Folder --</option>');
-            const items = Array.isArray(res) ? res : (res.folders || []);
-            items.forEach(function(f) { sel.append('<option value="' + (f.id || f.name) + '">' + f.name + '</option>'); });
-        }
-    });
-});
-</script>
-@endpush

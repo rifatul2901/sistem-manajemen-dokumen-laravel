@@ -106,6 +106,7 @@ class DashboardController extends Controller
         $request->validate([
             'upload_id' => 'required|exists:uploads,id',
             'file' => 'required|file|mimes:docx,pdf|max:10240',
+            'catatan' => 'nullable|string|max:2000',
         ]);
 
         $user = Auth::user();
@@ -170,6 +171,7 @@ class DashboardController extends Controller
             $upload->catatan_admin = [];
             $upload->notifikasi_pdf = '';
             $upload->upload_time = now()->format('d-m-Y H:i');
+            $upload->catatan_user = strip_tags($request->catatan ?? '');
             $upload->save();
 
             return back()->with('success', 'Berkas revisi berhasil diupload dan menunggu review Admin.');
