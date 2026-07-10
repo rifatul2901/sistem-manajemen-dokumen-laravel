@@ -140,12 +140,17 @@
                                 <i class="bi bi-person me-1"></i> {{ $activity['user_nama'] }}
                             </div>
                             @if ($activity['type'] === 'minta_revisi' && !empty($activity['catatan']))
-                                <div class="log-note">
-                                    @foreach ((array) $activity['catatan'] as $note)
-                                        @if (trim($note))
-                                            <div>{{ trim($note) }}</div>
-                                        @endif
-                                    @endforeach
+                                <button class="btn btn-sm btn-link text-danger p-0 mt-1" type="button" data-bs-toggle="collapse" data-bs-target="#catatanAdm{{ $loop->parent->index }}_{{ $loop->index }}">
+                                    <i class="bi bi-chat-dots me-1"></i> Lihat Catatan
+                                </button>
+                                <div class="collapse mt-1" id="catatanAdm{{ $loop->parent->index }}_{{ $loop->index }}">
+                                    <div class="log-note">
+                                        @foreach ((array) $activity['catatan'] as $note)
+                                            @if (trim($note))
+                                                <div>{{ trim($note) }}</div>
+                                            @endif
+                                        @endforeach
+                                    </div>
                                 </div>
                             @endif
                         </div>

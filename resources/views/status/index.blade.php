@@ -35,21 +35,26 @@
                 <span class="badge {{ $badgeClass }}">{{ $doc['statusLabel'] ?? 'Pending' }}</span>
             </div>
             <div class="card-body">
-                {{-- Timeline --}}
-                @if (!empty($doc['kejadian']))
-                    <div class="timeline">
-                        @foreach ($doc['kejadian'] as $kej)
-                            <div class="timeline-item">
-                                <div class="dot"></div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <strong class="small">{{ $kej['jenis'] ?? '-' }}</strong>
-                                    <span class="time-text">{{ $kej['tanggal'] ?? '-' }}</span>
+                {{-- Timeline (collapse) --}}
+                <button class="btn btn-sm btn-outline-secondary mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#timelineUser{{ $doc['uploadId'] }}" aria-expanded="false">
+                    <i class="bi bi-chevron-down me-1"></i> Lihat Riwayat Pengiriman
+                </button>
+                <div class="collapse mt-2" id="timelineUser{{ $doc['uploadId'] }}">
+                    @if (!empty($doc['kejadian']))
+                        <div class="timeline">
+                            @foreach ($doc['kejadian'] as $kej)
+                                <div class="timeline-item">
+                                    <div class="dot"></div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <strong class="small">{{ $kej['jenis'] ?? '-' }}</strong>
+                                        <span class="time-text">{{ $kej['tanggal'] ?? '-' }}</span>
+                                    </div>
+                                    <div class="text-muted small">{{ $kej['nama'] ?? '-' }}</div>
                                 </div>
-                                <div class="text-muted small">{{ $kej['nama'] ?? '-' }}</div>
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
 
                 @php
                     $relatedUpload = $uploads->first(function($u) use ($doc) {
