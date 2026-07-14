@@ -19,6 +19,9 @@
     <hr>
     <div class="info">
         <p><strong>Nama Berkas:</strong> {{ $namaBerkas ?? '-' }}</p>
+        <p><strong>Folder:</strong> {{ $subfolder ?? '(folder utama)' }}</p>
+        <p><strong>Ditugaskan Kepada:</strong> {{ $userNama ?? '-' }}</p>
+        <p><strong>Oleh Admin:</strong> {{ $adminNama ?? '-' }}</p>
         <p><strong>Tanggal:</strong> {{ $tanggal ?? date('d/m/Y H:i') }}</p>
     </div>
     <div class="catatan">

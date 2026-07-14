@@ -26,8 +26,7 @@ Route::middleware('auth')->group(function () {
             : redirect()->route('status.index');
     });
 
-    // Upload
-    Route::post('/upload', [DashboardController::class, 'uploadBerkas'])->name('dashboard.upload');
+    // Upload Revisi
     Route::post('/upload-revisi', [DashboardController::class, 'uploadRevisi'])->name('dashboard.upload-revisi');
     Route::get('/subfolders', [DashboardController::class, 'getSubfolders'])->name('dashboard.subfolders');
 

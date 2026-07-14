@@ -14,7 +14,10 @@ class StatusController extends Controller
         $uploads = Upload::with(['revisionHistories' => function($q) {
                 $q->orderBy('created_at');
             }])
-            ->where('user_id', $user->id)
+            ->where(function($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('assigned_user_id', $user->id);
+            })
             ->orderBy('created_at', 'desc')
             ->limit(100)
             ->get();
@@ -61,7 +64,16 @@ class StatusController extends Controller
             ];
         }
 
-        usort($kejadianPerDokumen, fn($a, $b) => $b['tanggalTerbaru'] <=> $a['tanggalTerbaru']);
+        $urutanStatus = ['revision' => 0, 'pending' => 1, 'approved' => 2];
+
+        usort($kejadianPerDokumen, function ($a, $b) use ($urutanStatus) {
+            $aPrio = $urutanStatus[$a['status']] ?? 99;
+            $bPrio = $urutanStatus[$b['status']] ?? 99;
+            if ($aPrio !== $bPrio) {
+                return $aPrio <=> $bPrio;
+            }
+            return $b['tanggalTerbaru'] <=> $a['tanggalTerbaru'];
+        });
 
         return view('status.index', compact('uploads', 'kejadianPerDokumen', 'statusLabel'));
     }
@@ -70,7 +82,7 @@ class StatusController extends Controller
     {
         $upload = Upload::findOrFail($id);
 
-        if ($upload->user_id !== Auth::id()) {
+        if ($upload->user_id !== Auth::id() && $upload->assigned_user_id !== Auth::id()) {
             abort(403);
         }
 

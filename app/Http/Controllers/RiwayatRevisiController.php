@@ -32,7 +32,10 @@ class RiwayatRevisiController extends Controller
         }
 
         if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
+            $query->where(function ($q) use ($request) {
+                $q->where('user_id', $request->user_id)
+                  ->orWhere('assigned_user_id', $request->user_id);
+            });
         }
 
         if ($request->filled('folder')) {
@@ -121,16 +124,43 @@ class RiwayatRevisiController extends Controller
     public function rekapIndex()
     {
         $users = User::where('role', 'user')->orderBy('nama')->get();
-        return view('admin.rekapitulasi.index', compact('users'));
+
+        $docCounts = Upload::selectRaw('user_id, assigned_user_id, COUNT(*) as total')
+            ->where(function ($q) {
+                $q->whereNotNull('user_id')
+                  ->orWhereNotNull('assigned_user_id');
+            })
+            ->groupBy('user_id', 'assigned_user_id')
+            ->get();
+
+        $countMap = [];
+        foreach ($docCounts as $row) {
+            if ($row->user_id) {
+                $countMap[$row->user_id] = ($countMap[$row->user_id] ?? 0) + $row->total;
+            }
+            if ($row->assigned_user_id && $row->assigned_user_id !== $row->user_id) {
+                $countMap[$row->assigned_user_id] = ($countMap[$row->assigned_user_id] ?? 0) + $row->total;
+            }
+        }
+
+        return view('admin.rekapitulasi.index', compact('users', 'countMap'));
     }
 
     public function downloadRekap(User $user)
     {
         $riwayat = \App\Models\RevisionHistory::whereHas('upload', function ($q) use ($user) {
-            $q->where('user_id', $user->id);
+            $q->where(function ($qq) use ($user) {
+                $qq->where('user_id', $user->id)
+                   ->orWhere('assigned_user_id', $user->id);
+            });
         })->with('upload')->orderBy('created_at', 'desc')->get();
 
-        $uploads = $user->uploads()->orderBy('created_at', 'desc')->get();
+        $uploads = Upload::where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('assigned_user_id', $user->id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();

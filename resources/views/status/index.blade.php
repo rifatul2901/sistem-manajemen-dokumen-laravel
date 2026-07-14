@@ -22,7 +22,32 @@
         <div class="alert alert-info alert-dismissible fade show d-flex align-items-center gap-2">{{ session('upload_result') }}<button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button></div>
     @endif
 
+    @php $currentSection = ''; @endphp
+
     @forelse ($kejadianPerDokumen ?? [] as $doc)
+        @php
+            $sectionKey = $doc['status'] ?? 'pending';
+        @endphp
+
+        @if ($sectionKey !== $currentSection)
+            @php $currentSection = $sectionKey; @endphp
+            <div class="d-flex align-items-center gap-2 mb-3 mt-4">
+                @if ($sectionKey === 'revision')
+                    <span class="badge badge-revision" style="font-size:.85rem;padding:.4rem .8rem;">
+                        <i class="bi bi-exclamation-triangle me-1"></i> Butuh Revisi
+                    </span>
+                @elseif ($sectionKey === 'pending')
+                    <span class="badge badge-pending" style="font-size:.85rem;padding:.4rem .8rem;">
+                        <i class="bi bi-clock me-1"></i> Menunggu
+                    </span>
+                @else
+                    <span class="badge badge-approved" style="font-size:.85rem;padding:.4rem .8rem;">
+                        <i class="bi bi-check-circle me-1"></i> Disetujui
+                    </span>
+                @endif
+            </div>
+        @endif
+
         <div class="card mb-3">
             <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <div>

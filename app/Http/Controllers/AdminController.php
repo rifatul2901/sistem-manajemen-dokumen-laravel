@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DriveConfig;
 use App\Models\DriveToken;
 use App\Models\Upload;
+use App\Models\User;
 use App\Models\DriveIgnored;
 use App\Services\GoogleDriveService;
 use App\Services\DocumentService;
@@ -211,8 +212,19 @@ class AdminController extends Controller
 
             $pdfPath = $notifFolder . '/Revisi_' . $upload->filename . '_' . now()->format('His') . '.pdf';
 
+            $assignedUser = User::find($request->user_id);
+            $userNama = $assignedUser?->nama ?? '(tidak dikenal)';
+            $adminNama = Auth::user()->nama;
+
             $docService = new DocumentService();
-            $docService->createRevisionPdf($upload->filename, $request->catatan, $pdfPath);
+            $docService->createRevisionPdf(
+                $upload->filename,
+                $request->catatan,
+                $pdfPath,
+                $upload->subfolder ?? '(folder utama)',
+                $userNama,
+                $adminNama
+            );
 
             $upload->notifikasi_pdf = $pdfPath;
             $upload->save();

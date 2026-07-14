@@ -173,13 +173,13 @@ class DocumentService
         $xmlWriter->save($pdfPath);
     }
 
-    public function createRevisionPdf(string $filename, array $catatan, string $outputPath): string
+    public function createRevisionPdf(string $filename, array $catatan, string $outputPath, string $subfolder = '(folder utama)', string $userNama = '-', string $adminNama = '-'): string
     {
         $tanggal = now()->format('d/m/Y H:i');
         $namaBerkas = $filename;
         $catatanList = $catatan;
         $pdf = app('dompdf.wrapper');
-        $html = view('admin.revision-notification', compact('namaBerkas', 'tanggal', 'catatanList'))->render();
+        $html = view('admin.revision-notification', compact('namaBerkas', 'tanggal', 'catatanList', 'subfolder', 'userNama', 'adminNama'))->render();
         $pdf->loadHTML($html);
         $pdf->save($outputPath);
         return $outputPath;

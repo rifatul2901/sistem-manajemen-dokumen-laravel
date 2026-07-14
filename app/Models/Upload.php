@@ -16,6 +16,8 @@ class Upload extends Model
     {
         return [
             'catatan_admin' => 'array',
+            'approved_at' => 'datetime',
+            'revision_requested_at' => 'datetime',
         ];
     }
 

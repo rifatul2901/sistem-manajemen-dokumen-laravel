@@ -15,7 +15,10 @@ class RiwayatController extends Controller
         $query = Upload::with(['revisionHistories' => function ($q) {
                 $q->orderBy('created_at');
             }])
-            ->where('user_id', $user->id);
+            ->where(function($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('assigned_user_id', $user->id);
+            });
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -34,7 +37,10 @@ class RiwayatController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $folders = Upload::where('user_id', $user->id)
+        $folders = Upload::where(function($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('assigned_user_id', $user->id);
+            })
             ->whereNotNull('subfolder')
             ->where('subfolder', '!=', '(folder utama)')
             ->select('subfolder')

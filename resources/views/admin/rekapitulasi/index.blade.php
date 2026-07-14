@@ -35,7 +35,7 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td class="fw-medium">{{ $user->nama ?? '-' }}</td>
                                 <td>@<span>{{ $user->username }}</span></td>
-                                <td>{{ $user->uploads()->count() }} dokumen</td>
+                                <td>{{ ($countMap[$user->id] ?? 0) }} dokumen</td>
                                 <td>
                                     <a href="{{ route('admin.rekapitulasi.download', $user) }}" class="btn btn-sm btn-outline-success">
                                         <i class="bi bi-file-earmark-excel me-1"></i> Download Excel

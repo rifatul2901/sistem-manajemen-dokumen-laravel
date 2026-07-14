@@ -19,88 +19,6 @@ class DashboardController extends Controller
             : redirect()->route('status.index');
     }
 
-    public function uploadBerkas(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|file|mimes:docx,pdf|max:10240',
-            'folder_tujuan' => 'required|string|max:255',
-            'catatan' => 'nullable|string|max:2000',
-        ]);
-
-        $user = Auth::user();
-        $driveConfig = DriveConfig::first();
-
-        if (!$driveConfig || !$driveConfig->folder_id) {
-            return back()->with('error', 'Admin belum mengatur folder Google Drive tim.');
-        }
-
-        $adminToken = DriveToken::first();
-        if (!$adminToken) {
-            return back()->with('error', 'Admin belum menghubungkan Google Drive.');
-        }
-
-        try {
-            $driveService = new GoogleDriveService($adminToken);
-        } catch (\Exception $e) {
-            Log::error('Google Drive connection failed', ['user' => $user->id, 'error' => $e->getMessage()]);
-            return back()->with('error', 'Gagal koneksi Google Drive. Silakan coba lagi.');
-        }
-
-        $folderIdTujuan = $driveConfig->folder_id;
-        if ($request->folder_tujuan !== '(folder utama)') {
-            try {
-                $subfolders = $driveService->listSubfolders($driveConfig->folder_id);
-                foreach ($subfolders as $sf) {
-                    if ($sf->getName() === $request->folder_tujuan) {
-                        $folderIdTujuan = $sf->getId();
-                        break;
-                    }
-                }
-            } catch (\Exception $e) {
-                Log::error('List subfolders failed', ['user' => $user->id, 'error' => $e->getMessage()]);
-                return back()->with('error', 'Gagal mengambil daftar folder.');
-            }
-        }
-
-        $file = $request->file('file');
-        $originalName = $file->getClientOriginalName();
-        $safeName = static::sanitizeFilename($originalName);
-
-        try {
-            $existing = $driveService->checkFileExists($folderIdTujuan, $safeName);
-            if (!empty($existing)) {
-                return back()->with('upload_result', 'File ditolak: nama "' . $safeName . '" sudah ada di folder tersebut.');
-            }
-
-            $fileId = $driveService->uploadFile(
-                file_get_contents($file->getPathname()),
-                $safeName,
-                $folderIdTujuan
-            );
-
-            $waktuSekarang = now()->format('d-m-Y H:i');
-
-            Upload::create([
-                'user_id'            => $user->id,
-                'drive_file_id'      => $fileId,
-                'filename'           => $safeName,
-                'subfolder'          => $request->folder_tujuan,
-                'uploader_name'      => $user->nama,
-                'upload_time'        => $waktuSekarang,
-                'status'             => 'pending',
-                'catatan_user'       => strip_tags($request->catatan ?? ''),
-                'catatan_admin'      => [],
-                'notifikasi_pdf'     => '',
-                'tanggal_kirim_awal' => $waktuSekarang,
-            ]);
-
-            return back()->with('upload_result', 'Berkas "' . $safeName . '" berhasil diupload dan menunggu review Admin.');
-        } catch (\Exception $e) {
-            Log::error('Upload failed', ['user' => $user->id, 'error' => $e->getMessage()]);
-            return back()->with('upload_result', 'Gagal upload ke Drive. Silakan coba lagi.');
-        }
-    }
-
     public function uploadRevisi(Request $request)
     {
         $request->validate([
@@ -112,7 +30,7 @@ class DashboardController extends Controller
         $user = Auth::user();
         $upload = Upload::findOrFail($request->upload_id);
 
-        if ($upload->user_id !== $user->id || $upload->status !== 'revision') {
+        if (($upload->user_id !== $user->id && $upload->assigned_user_id !== $user->id) || $upload->status !== 'revision') {
             return back()->with('error', 'Berkas tidak valid untuk direvisi.');
         }
 
