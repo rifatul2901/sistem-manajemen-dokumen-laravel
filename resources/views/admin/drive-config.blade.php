@@ -189,7 +189,7 @@
                         <i class="bi bi-person-check text-muted"></i>
                         <div>
                             <small class="text-muted d-block">Akun Google Drive</small>
-                            <span class="fw-medium">{{ $driveToken->drive_email ?? 'Belum terhubung' }}</span>
+                            <span class="fw-medium">{{ optional($driveToken)->drive_email ?? 'Belum terhubung' }}</span>
                         </div>
                     </div>
                 </div>

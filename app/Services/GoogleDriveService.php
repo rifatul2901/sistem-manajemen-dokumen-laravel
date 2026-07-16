@@ -6,7 +6,6 @@ use App\Models\DriveToken;
 use Google\Client;
 use Google\Service\Drive;
 use Google\Service\Drive\DriveFile;
-use Google\Http\MediaFileUpload;
 use Illuminate\Support\Facades\Auth;
 
 class GoogleDriveService
@@ -184,8 +183,7 @@ class GoogleDriveService
 
     public function checkFileExists(string $folderId, string $filename): array
     {
-        $safeName = preg_replace('/[^\w\s\-.()\[\]]/u', '_', $filename);
-        $quotedName = str_replace("'", "\\'", $safeName);
+        $quotedName = str_replace("'", "\\'", $filename);
         $items = $this->service->files->listFiles([
             'q'        => "'{$folderId}' in parents and trashed=false and name='{$quotedName}'",
             'fields'   => 'files(id, name)',

@@ -14,7 +14,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -133,7 +132,7 @@ class AdminController extends Controller
                     $gabungan[] = $row;
                 } else {
                     $upload = Upload::create([
-                        'user_id'        => auth()->id(),
+                        'user_id'        => null,
                         'drive_file_id'  => $f['id'],
                         'filename'       => $f['name'],
                         'subfolder'      => $f['subfolder'],
@@ -229,7 +228,10 @@ class AdminController extends Controller
             $upload->notifikasi_pdf = $pdfPath;
             $upload->save();
         } catch (\Exception $e) {
-            // PDF notifikasi gagal dibuat, tapi status tetap berubah
+            Log::error('Gagal membuat PDF notifikasi', [
+                'upload_id' => $upload->id,
+                'error' => $e->getMessage(),
+            ]);
         }
 
         return back()->with('success', 'Status berkas diubah menjadi "Butuh Revisi".');
