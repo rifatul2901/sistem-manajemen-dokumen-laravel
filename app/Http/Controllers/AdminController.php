@@ -251,21 +251,6 @@ class AdminController extends Controller
         return back()->with('success', 'Berkas dihapus dari riwayat sistem.');
     }
 
-    public function hideFile(Request $request)
-    {
-        $request->validate(['file_id' => 'required|string']);
-
-        DriveIgnored::firstOrCreate(['file_id' => $request->file_id]);
-
-        return back()->with('success', 'File disembunyikan dari dashboard.');
-    }
-
-    public function unhideFile($fileId)
-    {
-        DriveIgnored::where('file_id', $fileId)->delete();
-        return back()->with('success', 'File dimunculkan kembali.');
-    }
-
     public function driveConfig()
     {
         $driveConfig = DriveConfig::first();
@@ -293,7 +278,6 @@ class AdminController extends Controller
                             ? now()->addSeconds($newToken['expires_in'])
                             : null,
                     ]);
-                    $driveToken->refresh();
                 }
             } catch (\Exception $e) {
                 Log::warning('Gagal refresh token Drive saat akses drive config', [
@@ -375,7 +359,7 @@ class AdminController extends Controller
             if (!is_dir($previewFolder)) {
                 mkdir($previewFolder, 0755, true);
             }
-            $pdfPath = $previewFolder . '/' . pathinfo($upload->filename, PATHINFO_FILENAME) . '.pdf';
+            $pdfPath = $previewFolder . '/' . $upload->id . '__' . pathinfo($upload->filename, PATHINFO_FILENAME) . '.pdf';
 
             if (!file_exists($pdfPath) || filemtime($cachePath) > filemtime($pdfPath)) {
                 try {

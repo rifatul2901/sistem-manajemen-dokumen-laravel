@@ -108,6 +108,7 @@ class GoogleDriveService
 
     public function listSubfolders(string $folderId): array
     {
+        $folderId = str_replace("'", "\\'", $folderId);
         $results = $this->service->files->listFiles([
             'q'        => "'{$folderId}' in parents and trashed=false and mimeType='application/vnd.google-apps.folder'",
             'fields'   => 'files(id, name)',
@@ -127,6 +128,7 @@ class GoogleDriveService
 
     protected function scanRecursive(string $folderId, string $label, array &$results): void
     {
+        $folderId = str_replace("'", "\\'", $folderId);
         $pageToken = null;
         do {
             $opt = [
@@ -160,29 +162,43 @@ class GoogleDriveService
 
     public function listFilesInRoot(string $folderId, string $label = '(folder utama)'): array
     {
+        $folderId = str_replace("'", "\\'", $folderId);
         $results = [];
-        $items = $this->service->files->listFiles([
-            'q'        => "'{$folderId}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'",
-            'fields'   => 'files(id, name, createdTime, owners)',
-            'orderBy'  => 'createdTime desc',
-            'pageSize' => 200,
-        ]);
+        $pageToken = null;
 
-        foreach ($items->getFiles() as $item) {
-            $results[] = [
-                'id'          => $item->getId(),
-                'name'        => $item->getName(),
-                'subfolder'   => $label,
-                'createdTime' => $item->getCreatedTime(),
-                'owners'      => $item->getOwners(),
+        do {
+            $opt = [
+                'q'        => "'{$folderId}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'",
+                'fields'   => 'nextPageToken, files(id, name, createdTime, owners)',
+                'orderBy'  => 'createdTime desc',
+                'pageSize' => 200,
             ];
-        }
+
+            if ($pageToken) {
+                $opt['pageToken'] = $pageToken;
+            }
+
+            $items = $this->service->files->listFiles($opt);
+
+            foreach ($items->getFiles() as $item) {
+                $results[] = [
+                    'id'          => $item->getId(),
+                    'name'        => $item->getName(),
+                    'subfolder'   => $label,
+                    'createdTime' => $item->getCreatedTime(),
+                    'owners'      => $item->getOwners(),
+                ];
+            }
+
+            $pageToken = $items->getNextPageToken();
+        } while ($pageToken);
 
         return $results;
     }
 
     public function checkFileExists(string $folderId, string $filename): array
     {
+        $folderId = str_replace("'", "\\'", $folderId);
         $quotedName = str_replace("'", "\\'", $filename);
         $items = $this->service->files->listFiles([
             'q'        => "'{$folderId}' in parents and trashed=false and name='{$quotedName}'",

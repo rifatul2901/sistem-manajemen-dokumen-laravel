@@ -103,7 +103,6 @@
 </div>
 
 <form id="approveForm" method="POST" style="display:none;">@csrf</form>
-<form id="hideForm" method="POST" style="display:none;">@csrf</form>
 <form id="deleteForm" method="POST" style="display:none;">@csrf</form>
 
 <div class="modal fade" id="revisionModal" tabindex="-1">
@@ -173,16 +172,6 @@ window.approve = function(id) {
 window.showRevision = function(id) {
     $('#revisionForm').attr('action', '{{ url("admin/revision") }}/' + id);
     $('#revisionModal').modal('show');
-};
-
-window.hideFile = function(fileId) {
-    if (confirm('Sembunyikan berkas ini dari dashboard?')) {
-        const form = $('#hideForm');
-        form.attr('action', '{{ route("admin.hide-file") }}');
-        form.empty().append('@csrf');
-        form.append('<input type="hidden" name="file_id" value="' + fileId + '">');
-        form.submit();
-    }
 };
 
 window.deleteUpload = function(id) {

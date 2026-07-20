@@ -48,8 +48,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/approve/{id}', [AdminController::class, 'approve'])->name('approve');
         Route::post('/revision/{id}', [AdminController::class, 'requestRevision'])->name('revision');
         Route::post('/delete-upload/{id}', [AdminController::class, 'deleteUpload'])->name('delete-upload');
-        Route::post('/hide-file', [AdminController::class, 'hideFile'])->name('hide-file');
-        Route::post('/unhide-file/{fileId}', [AdminController::class, 'unhideFile'])->name('unhide-file');
         Route::get('/download/{id}', [AdminController::class, 'downloadDriveFile'])->name('download');
         Route::get('/preview/{id}', [AdminController::class, 'previewDriveFile'])->name('preview');
 
