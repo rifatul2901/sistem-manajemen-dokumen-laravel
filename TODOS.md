@@ -18,3 +18,6 @@
 - [ ] Button Download File Asli di Status Berkas
 - [ ] Dashboard landing page untuk user (opsional)
 - [x] Hapus command `cleanup:temp-files` dan `cleanup:orphan-notifications` — sudah dilakukan
+
+## Mungkin
+- [ ] Cache hasil scan terakhir di session (agar tidak hilang saat pindah menu lalu balik)

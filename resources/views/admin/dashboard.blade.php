@@ -13,8 +13,78 @@
     word-break: break-word;
     line-height: 1.3;
 }
-#poinPopup .list-group-item {
-    padding: .4rem .6rem !important;
+
+.poin-badge {
+    transition: all .15s ease;
+}
+.poin-badge:hover {
+    transform: scale(1.05);
+}
+.poin-badge-empty {
+    border: 2px dashed #adb5bd !important;
+    background: #f8f9fa !important;
+    color: #6c757d !important;
+}
+.poin-badge-empty:hover {
+    border-color: #6c757d !important;
+    background: #e9ecef !important;
+}
+.poin-badge-full {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(245,158,11,0.35);
+}
+
+@keyframes poinPopupFade {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+#poinPopup {
+    animation: poinPopupFade .18s ease-out;
+    font-size: .85rem;
+}
+#poinPopup .poin-popup-arrow {
+    position: absolute;
+    top: -6px;
+    width: 12px;
+    height: 12px;
+    background: inherit;
+    border-left: 1px solid #dee2e6;
+    border-top: 1px solid #dee2e6;
+    transform: rotate(45deg);
+    z-index: 1;
+    pointer-events: none;
+}
+#poinPopup .poin-popup-header {
+    background: #f8f9fa;
+    border-radius: 6px 6px 0 0;
+}
+#poinPopup .poin-popup-body {
+    padding: .4rem 0;
+}
+#poinPopup .poin-popup-body .list-group-item {
+    padding: .5rem .75rem !important;
+    font-size: .8rem;
+}
+#poinPopup .poin-popup-body .list-group-item:hover {
+    background-color: #f0f7ff !important;
+}
+
+.tooltip-inner > div {
+    border-left: 3px solid #62B846;
+    padding-left: 8px;
+    margin-bottom: 2px;
+}
+
+#poinFilterBar .btn.active {
+    background: #e7f1ff;
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+#poinFilterBar .btn.active::before {
+    content: "\F26A";
+    font-family: "bootstrap-icons";
+    margin-right: 4px;
 }
 </style>
 @endpush
@@ -241,9 +311,22 @@ function doScan(folderId, folderName, scanAll) {
             if (res.files && res.files.length > 0) {
                 $('#scanTime').show().find('span').text(res.waktu || '-');
                 $('#fileCount').show().find('span').text(res.files.length + ' berkas');
-                $('#poinFilterBar').show();
-                $('[data-filter="all"]').addClass('active').siblings().removeClass('active');
-                initPoinTooltips();
+        $('#poinFilterBar').show();
+        $('[data-filter="all"]').addClass('active').siblings().removeClass('active');
+        initPoinTooltips();
+        var poinCounts = {};
+        var totalFiles = res.files.length;
+        res.files.forEach(function(f) {
+            poinKeys.forEach(function(k) {
+                if (f[k]) poinCounts[k] = (poinCounts[k] || 0) + 1;
+            });
+        });
+        $('#poinFilterBar [data-filter]').each(function() {
+            var btn = $(this);
+            var filter = btn.data('filter');
+            var label = btn.text().replace(/\s*\(\d+\)$/, '');
+            btn.text(label + ' (' + (filter === 'all' ? totalFiles : (poinCounts[filter] || 0)) + ')');
+        });
             } else {
                 $('#scanTime').hide();
                 $('#fileCount').hide();
@@ -373,7 +456,7 @@ function buildPoinCell(f) {
     var badgeHtml = '';
 
     if (count === 0) {
-        badgeHtml = '<span class="badge bg-light text-dark px-2 py-1 border poin-badge" style="cursor:pointer;" title="Poin" data-popin-id="' + popId + '"><i class="bi bi-square me-1"></i>Poin</span>';
+        badgeHtml = '<span class="badge bg-light text-dark px-2 py-1 border poin-badge poin-badge-empty" style="cursor:pointer;" title="Poin" data-popin-id="' + popId + '"><i class="bi bi-square me-1"></i>Poin</span>';
     } else if (count === 1) {
         var key = firstCheckedPoin(f);
         badgeHtml = '<span class="badge bg-success px-2 py-1 poin-badge" style="cursor:pointer;" title="' + esc(poinLabels[key]) + '" data-popin-id="' + popId + '"><i class="bi bi-check-square me-1"></i>' + esc(poinShortLabels[key]) + '</span>';
@@ -386,7 +469,8 @@ function buildPoinCell(f) {
                 tipHtml += '<div class="d-flex align-items-center gap-1 py-1"><i class="bi bi-check-circle-fill text-success"></i> ' + esc(poinLabels[poinKeys[ti]]) + '</div>';
             }
         }
-        badgeHtml = '<span class="badge bg-success px-2 py-1 poin-badge" style="cursor:pointer;" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title=\'' + tipHtml + '\' data-popin-id="' + popId + '"><i class="bi bi-check-square me-1"></i>' + esc(poinShortLabels[key]) + ' +' + rest + '</span>';
+        var cls = count === 5 ? 'poin-badge-full' : 'bg-success';
+        badgeHtml = '<span class="badge ' + cls + ' px-2 py-1 poin-badge" style="cursor:pointer;" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title=\'' + tipHtml + '\' data-popin-id="' + popId + '"><i class="bi bi-check-square me-1"></i>' + esc(poinShortLabels[key]) + ' +' + rest + '</span>';
     }
 
     var popoverContent = '<div class="poin-popin-content" id="' + popId + '" style="display:none;"><div class="list-group list-group-flush">';
@@ -417,13 +501,30 @@ $(document).on('click', '.poin-badge', function(e) {
     $('#poinPopup').remove();
     var badge = $(this);
     var contentId = badge.data('popin-id');
-    var content = $('#' + contentId).html();
-    var popup = $('<div id="poinPopup">').html(content).appendTo('body');
+    var $contentDiv = $('#' + contentId);
+    var checkedCount = $contentDiv.find('input.poin-check:checked').length;
+    var totalItems = poinKeys.length;
+    var pct = Math.round(checkedCount / totalItems * 100);
+
+    var arrowHtml = '<div class="poin-popup-arrow"></div>';
+    var headerHtml = '<div class="poin-popup-header d-flex align-items-center justify-content-between px-3 py-2 border-bottom">';
+    headerHtml += '<strong class="small"><i class="bi bi-check2-square me-1"></i>Poin Checklist</strong>';
+    headerHtml += '<button type="button" class="btn-close btn-close-sm" id="poinPopupClose" aria-label="Close"></button>';
+    headerHtml += '</div>';
+    headerHtml += '<div class="px-3 pt-2 pb-1" style="background:#fff;">';
+    headerHtml += '<div class="d-flex align-items-center gap-2"><small class="text-muted">' + checkedCount + '/' + totalItems + '</small><div class="progress flex-grow-1" style="height:6px;"><div class="progress-bar" role="progressbar" style="width:' + pct + '%;" aria-valuenow="' + checkedCount + '" aria-valuemin="0" aria-valuemax="' + totalItems + '"></div></div></div>';
+    headerHtml += '</div>';
+
+    var bodyHtml = '<div class="poin-popup-body">' + $contentDiv.html() + '</div>';
+    var popup = $('<div id="poinPopup">').html(arrowHtml + headerHtml + bodyHtml).appendTo('body');
     var pos = badge.offset();
+    var popupLeft = Math.max(4, pos.left + badge.outerWidth() - 420);
+    var badgeCenter = pos.left + badge.outerWidth() / 2;
+    var arrowLeft = badgeCenter - popupLeft - 6;
     popup.css({
         position: 'absolute',
         top: pos.top + badge.outerHeight() + 4,
-        left: Math.max(4, pos.left + badge.outerWidth() - 420),
+        left: popupLeft,
         zIndex: 1060,
         background: '#fff',
         border: '1px solid #dee2e6',
@@ -431,6 +532,11 @@ $(document).on('click', '.poin-badge', function(e) {
         boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
         width: '420px'
     });
+    popup.find('.poin-popup-arrow').css('left', Math.max(10, Math.min(arrowLeft, 408)));
+});
+
+$(document).on('click', '#poinPopupClose', function() {
+    $('#poinPopup').remove();
 });
 
 $(document).on('click', '#poinPopup label', function(e) {
@@ -462,6 +568,20 @@ $(document).on('change', '.poin-check', function() {
             file[poin] = res.value;
             row.find('.poin-cell').replaceWith(buildPoinCell(file));
             initPoinTooltips();
+            var poinCounts = {}, totalFiles = 0;
+            $('#uploadsBody tr').each(function() {
+                totalFiles++;
+                poinKeys.forEach(function(k) {
+                    var cb = $(this).find('.poin-check[data-poin="' + k + '"]');
+                    if (cb.length && cb.is(':checked')) poinCounts[k] = (poinCounts[k] || 0) + 1;
+                });
+            });
+            $('#poinFilterBar [data-filter]').each(function() {
+                var btn = $(this);
+                var filter = btn.data('filter');
+                var label = btn.text().replace(/\s*\(\d+\)$/, '');
+                btn.text(label + ' (' + (filter === 'all' ? totalFiles : (poinCounts[filter] || 0)) + ')');
+            });
             var activeFilter = $('#poinFilterBar .active').data('filter');
             if (activeFilter && activeFilter !== 'all') {
                 var fc = row.find('.poin-check[data-poin="' + activeFilter + '"]');
