@@ -139,7 +139,7 @@ class AdminController extends Controller
                         'uploader_name'  => 'Eksternal',
                         'upload_time'    => isset($f['createdTime']) ? substr(str_replace('T', ' ', $f['createdTime']), 0, 16) : now()->format('Y-m-d H:i'),
                         'status'         => 'pending',
-                    ]);
+                    ])->fresh();
                     $row = $upload->toArray();
                     $row['database_id'] = $upload->id;
                     $row['drive_file_id'] = $f['id'];
@@ -169,6 +169,29 @@ class AdminController extends Controller
             Log::error('Admin scan folder failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json(['error' => 'Gagal memindai folder. Silakan coba lagi.'], 500);
         }
+    }
+
+    public function togglePoin(Request $request)
+    {
+        $validPoin = array_keys(Upload::poinLabels());
+
+        $request->validate([
+            'upload_id' => 'required|exists:uploads,id',
+            'poin' => 'required|in:' . implode(',', $validPoin),
+        ]);
+
+        $upload = Upload::findOrFail($request->upload_id);
+        $poin = $request->poin;
+        $upload->$poin = !$upload->$poin;
+        $upload->save();
+
+        return response()->json([
+            'success' => true,
+            'poin' => $poin,
+            'value' => $upload->$poin,
+            'checkedCount' => collect($validPoin)->filter(fn($p) => $upload->$p)->count(),
+            'poinLabels' => Upload::poinLabels(),
+        ]);
     }
 
     public function approve($id)

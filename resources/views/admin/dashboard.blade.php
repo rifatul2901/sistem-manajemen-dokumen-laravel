@@ -2,6 +2,23 @@
 
 @section('page-title', 'Dashboard')
 
+@push('styles')
+<style>
+.poin-label-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    line-height: 1.3;
+}
+#poinPopup .list-group-item {
+    padding: .4rem .6rem !important;
+}
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid px-0">
     <div class="d-flex align-items-center justify-content-between mb-4">
@@ -73,6 +90,15 @@
             </div>
         </div>
         <div class="card-body p-0">
+            <div class="px-3 pt-2 pb-1 border-bottom d-flex flex-wrap align-items-center gap-1" id="poinFilterBar" style="display:none;">
+                <span class="text-muted small me-1">Filter Poin:</span>
+                <button class="btn btn-sm btn-outline-secondary active" data-filter="all">Semua</button>
+                <button class="btn btn-sm btn-outline-secondary" data-filter="poin_pengukuran_kinerja">Pengukuran Kinerja</button>
+                <button class="btn btn-sm btn-outline-secondary" data-filter="poin_dokumen_sumber">Dok. Sumber</button>
+                <button class="btn btn-sm btn-outline-secondary" data-filter="poin_rencana_tindak_lanjut">RTL</button>
+                <button class="btn btn-sm btn-outline-secondary" data-filter="poin_bukti_kegiatan">Kegiatan</button>
+                <button class="btn btn-sm btn-outline-secondary" data-filter="poin_bukti_media_kinerja">Media Kinerja</button>
+            </div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0" id="uploadsTable">
                     <thead>
@@ -81,6 +107,7 @@
                             <th>Nama Berkas</th>
                             <th>Subfolder</th>
                             <th>Status</th>
+                            <th>Poin</th>
                             <th>Diupload</th>
                             <th>Oleh</th>
                             <th style="width:180px;">Aksi</th>
@@ -88,7 +115,7 @@
                     </thead>
                     <tbody id="uploadsBody">
                         <tr id="scanPromptRow">
-                            <td colspan="7">
+                            <td colspan="8">
                                 <div class="empty-state">
                                     <i class="bi bi-search"></i>
                                     <p class="mb-0">Pilih folder dan klik <strong>Pindai</strong> untuk melihat daftar berkas.</p>
@@ -147,8 +174,12 @@
 var navStack = []; // {id, name}
 
 $(document).ready(function() {
-    // Card sudah terlihat dengan prompt "Pilih folder dan klik Pindai"
-    // User harus klik Root, folder, atau tombol Pindai untuk memulai
+    $(document).on('click', function(e) {
+        var popup = $('#poinPopup');
+        if (popup.length && !$(e.target).closest('.poin-badge, #poinPopup').length) {
+            popup.remove();
+        }
+    });
 });
 
 $(document).on('click', '.addCatatan', function() {
@@ -203,16 +234,20 @@ function doScan(folderId, folderName, scanAll) {
             scan_all: scanAll ? 1 : 0
         },
         beforeSend: function() {
-            $('#uploadsBody').html('<tr><td colspan="7"><div class="empty-state"><div class="spinner-border text-primary mb-2" role="status"></div><p class="mb-0">Memindai folder...</p></div></td></tr>');
+            $('#uploadsBody').html('<tr><td colspan="8"><div class="empty-state"><div class="spinner-border text-primary mb-2" role="status"></div><p class="mb-0">Memindai folder...</p></div></td></tr>');
         },
         success: function(res) {
             $('#uploadsBody').html(buildTableRows(res.files));
             if (res.files && res.files.length > 0) {
                 $('#scanTime').show().find('span').text(res.waktu || '-');
                 $('#fileCount').show().find('span').text(res.files.length + ' berkas');
+                $('#poinFilterBar').show();
+                $('[data-filter="all"]').addClass('active').siblings().removeClass('active');
+                initPoinTooltips();
             } else {
                 $('#scanTime').hide();
                 $('#fileCount').hide();
+                $('#poinFilterBar').hide();
             }
 
             $('#currentFolderId').val(res.folder_id || '');
@@ -232,7 +267,7 @@ function doScan(folderId, folderName, scanAll) {
         },
         error: function(xhr) {
             const msg = xhr.responseJSON?.error || 'Gagal memindai folder.';
-            $('#uploadsBody').html('<tr><td colspan="7"><div class="empty-state text-danger"><i class="bi bi-exclamation-triangle"></i><p class="mb-0">' + msg + '</p></div></td></tr>');
+            $('#uploadsBody').html('<tr><td colspan="8"><div class="empty-state text-danger"><i class="bi bi-exclamation-triangle"></i><p class="mb-0">' + msg + '</p></div></td></tr>');
         }
     });
 }
@@ -310,9 +345,158 @@ function buildActions(f) {
     return h;
 }
 
+var poinKeys = ['poin_pengukuran_kinerja', 'poin_dokumen_sumber', 'poin_rencana_tindak_lanjut', 'poin_bukti_kegiatan', 'poin_bukti_media_kinerja'];
+var poinLabels = @json(\App\Models\Upload::poinLabels());
+var poinShortLabels = {
+    'poin_pengukuran_kinerja': 'Pengukuran Kinerja',
+    'poin_dokumen_sumber': 'Dok. Sumber',
+    'poin_rencana_tindak_lanjut': 'RTL',
+    'poin_bukti_kegiatan': 'Kegiatan',
+    'poin_bukti_media_kinerja': 'Media Kinerja',
+};
+
+function poinCount(f) {
+    return poinKeys.filter(function(k) { return f[k]; }).length;
+}
+
+function firstCheckedPoin(f) {
+    for (var i = 0; i < poinKeys.length; i++) {
+        if (f[poinKeys[i]]) return poinKeys[i];
+    }
+    return null;
+}
+
+function buildPoinCell(f) {
+    var count = poinCount(f);
+    var dbId = f.database_id;
+    var popId = 'poin-pop-' + esc(String(dbId || ''));
+    var badgeHtml = '';
+
+    if (count === 0) {
+        badgeHtml = '<span class="badge bg-light text-dark px-2 py-1 border poin-badge" style="cursor:pointer;" title="Poin" data-popin-id="' + popId + '"><i class="bi bi-square me-1"></i>Poin</span>';
+    } else if (count === 1) {
+        var key = firstCheckedPoin(f);
+        badgeHtml = '<span class="badge bg-success px-2 py-1 poin-badge" style="cursor:pointer;" title="' + esc(poinLabels[key]) + '" data-popin-id="' + popId + '"><i class="bi bi-check-square me-1"></i>' + esc(poinShortLabels[key]) + '</span>';
+    } else {
+        var key = firstCheckedPoin(f);
+        var rest = count - 1;
+        var tipHtml = '';
+        for (var ti = 0; ti < poinKeys.length; ti++) {
+            if (f[poinKeys[ti]]) {
+                tipHtml += '<div class="d-flex align-items-center gap-1 py-1"><i class="bi bi-check-circle-fill text-success"></i> ' + esc(poinLabels[poinKeys[ti]]) + '</div>';
+            }
+        }
+        badgeHtml = '<span class="badge bg-success px-2 py-1 poin-badge" style="cursor:pointer;" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title=\'' + tipHtml + '\' data-popin-id="' + popId + '"><i class="bi bi-check-square me-1"></i>' + esc(poinShortLabels[key]) + ' +' + rest + '</span>';
+    }
+
+    var popoverContent = '<div class="poin-popin-content" id="' + popId + '" style="display:none;"><div class="list-group list-group-flush">';
+    for (var i = 0; i < poinKeys.length; i++) {
+        var k = poinKeys[i];
+        var checked = f[k] ? 'checked' : '';
+        popoverContent += '<label class="list-group-item list-group-item-action d-flex align-items-start gap-2 px-2 py-1" style="cursor:pointer;font-size:.8rem;">';
+        popoverContent += '<input type="checkbox" class="form-check-input mt-1 poin-check" data-upload-id="' + esc(String(dbId || '')) + '" data-poin="' + k + '" ' + checked + '>';
+        popoverContent += '<span class="poin-label-text">' + esc(poinLabels[k]) + '</span>';
+        popoverContent += '</label>';
+    }
+    popoverContent += '</div></div>';
+
+    return '<td class="poin-cell">' + badgeHtml + popoverContent + '</td>';
+}
+
+function initPoinTooltips() {
+    $('.poin-cell .poin-badge[data-bs-toggle="tooltip"]').tooltip('dispose');
+    $('.poin-cell .poin-badge[data-bs-toggle="tooltip"]').tooltip({ html: true, sanitize: false });
+}
+
+$(document).on('click', '.poin-badge', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    if ($(this).data('bs.tooltip')) {
+        $(this).tooltip('hide');
+    }
+    $('#poinPopup').remove();
+    var badge = $(this);
+    var contentId = badge.data('popin-id');
+    var content = $('#' + contentId).html();
+    var popup = $('<div id="poinPopup">').html(content).appendTo('body');
+    var pos = badge.offset();
+    popup.css({
+        position: 'absolute',
+        top: pos.top + badge.outerHeight() + 4,
+        left: Math.max(4, pos.left + badge.outerWidth() - 420),
+        zIndex: 1060,
+        background: '#fff',
+        border: '1px solid #dee2e6',
+        borderRadius: '6px',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+        width: '420px'
+    });
+});
+
+$(document).on('click', '#poinPopup label', function(e) {
+    e.preventDefault();
+    var cb = $(this).find('.poin-check');
+    if (cb.length) {
+        cb.prop('checked', !cb.prop('checked')).trigger('change');
+    }
+});
+
+$(document).on('change', '.poin-check', function() {
+    var cb = $(this);
+    var uploadId = cb.data('upload-id');
+    var poin = cb.data('poin');
+    var row = $('.poin-check[data-upload-id="' + uploadId + '"]').first().closest('tr');
+
+    $.ajax({
+        url: '{{ route("admin.toggle-poin") }}',
+        method: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            upload_id: uploadId,
+            poin: poin
+        },
+        success: function(res) {
+            $('#poinPopup').remove();
+            var file = { database_id: uploadId };
+            poinKeys.forEach(function(k) { file[k] = row.find('.poin-check[data-poin="' + k + '"]').is(':checked'); });
+            file[poin] = res.value;
+            row.find('.poin-cell').replaceWith(buildPoinCell(file));
+            initPoinTooltips();
+            var activeFilter = $('#poinFilterBar .active').data('filter');
+            if (activeFilter && activeFilter !== 'all') {
+                var fc = row.find('.poin-check[data-poin="' + activeFilter + '"]');
+                if (!fc.length || !fc.is(':checked')) row.hide();
+            }
+        },
+        error: function() {
+            cb.prop('checked', !cb.prop('checked'));
+        }
+    });
+});
+
+$(document).on('click', '#poinFilterBar [data-filter]', function() {
+    var btn = $(this);
+    var filter = btn.data('filter');
+    btn.addClass('active').siblings().removeClass('active');
+
+    if (filter === 'all') {
+        $('#uploadsBody tr').show();
+    } else {
+        $('#uploadsBody tr').each(function() {
+            var row = $(this);
+            var cb = row.find('.poin-check[data-poin="' + filter + '"]');
+            if (cb.length && cb.is(':checked')) {
+                row.show();
+            } else {
+                row.hide();
+            }
+        });
+    }
+});
+
 function buildTableRows(files) {
     if (!files || files.length === 0) {
-        return '<tr><td colspan="7"><div class="empty-state"><i class="bi bi-inbox"></i><p class="mb-0">Tidak ada berkas ditemukan.</p></div></td></tr>';
+        return '<tr><td colspan="8"><div class="empty-state"><i class="bi bi-inbox"></i><p class="mb-0">Tidak ada berkas ditemukan.</p></div></td></tr>';
     }
     let h = '';
     files.forEach(function(f, i) {
@@ -321,6 +505,7 @@ function buildTableRows(files) {
         h += '<td class="fw-medium">' + esc(f.filename || '-') + '</td>';
         h += '<td><span class="chip chip-subfolder"><i class="bi bi-folder"></i> ' + esc(f.subfolder || '(folder utama)') + '</span></td>';
         h += '<td>' + badgeHtml(f.status) + '</td>';
+        h += buildPoinCell(f);
         h += '<td class="text-muted small">' + esc(f.upload_time ? f.upload_time.replace('T', ' ').substring(0, 16) : '-') + '</td>';
         h += '<td class="text-muted small">' + esc(f.uploader_name || '-') + '</td>';
         h += '<td>' + buildActions(f) + '</td>';
