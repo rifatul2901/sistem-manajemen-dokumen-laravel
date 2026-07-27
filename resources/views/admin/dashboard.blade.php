@@ -339,6 +339,22 @@
 <form id="approveForm" method="POST" style="display:none;">@csrf</form>
 <form id="deleteForm" method="POST" style="display:none;">@csrf</form>
 
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-check-circle text-success" style="font-size:3rem;"></i>
+                <h5 class="mt-3">Setujui Berkas</h5>
+                <p class="text-muted mb-0 small" id="approveModalFileName"></p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pt-0 pb-4">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-success px-4" id="approveModalConfirm"><i class="bi bi-check-lg me-1"></i>Ya, Setujui</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="revisionModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -378,34 +394,223 @@
 
 @push('scripts')
 <script>
-var navStack = []; // {id, name}
+var navStack = [];
 
-$(document).ready(function() {
+function pageInit() {
+    navStack = [];
+    updateBreadcrumb('', '(folder utama)');
+}
+
+$(document).off('turbo:load.dashboard').on('turbo:load.dashboard', pageInit);
+if (!window.Turbo) $(document).ready(pageInit);
+
+if (!window._dashboardEvents) {
+    window._dashboardEvents = true;
+
     $(document).on('click', function(e) {
         var popup = $('#poinPopup');
         if (popup.length && !$(e.target).closest('.poin-badge, #poinPopup').length) {
             popup.remove();
         }
     });
-});
 
-$(document).on('click', '.addCatatan', function() {
-    const container = $('#catatanContainer');
-    const group = $('<div class="input-group mb-2">');
-    group.append('<input type="text" name="catatan[]" class="form-control" placeholder="Catatan revisi..." required>');
-    group.append('<button type="button" class="btn btn-outline-danger removeCatatan"><i class="bi bi-x-lg"></i></button>');
-    container.append(group);
-});
+    $(document).on('click', '.addCatatan', function() {
+        const container = $('#catatanContainer');
+        const group = $('<div class="input-group mb-2">');
+        group.append('<input type="text" name="catatan[]" class="form-control" placeholder="Catatan revisi..." required>');
+        group.append('<button type="button" class="btn btn-outline-danger removeCatatan"><i class="bi bi-x-lg"></i></button>');
+        container.append(group);
+    });
 
-$(document).on('click', '.removeCatatan', function() {
-    $(this).closest('.input-group').remove();
-});
+    $(document).on('click', '.removeCatatan', function() {
+        $(this).closest('.input-group').remove();
+    });
+
+    $(document).on('click', '#approveModalConfirm', doApprove);
+
+    $(document).on('click', '.btn-scan-folder', function() {
+        scanFolder($(this).data('folder-id'), $(this).data('folder-name'), false);
+    });
+
+    $(document).on('click', '.btn-breadcrumb-folder', function() {
+        scanFolder($(this).data('folder-id'), $(this).data('folder-name'), false);
+    });
+
+    $(document).on('click', '.poin-badge', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        if ($(this).data('bs.tooltip')) {
+            $(this).tooltip('hide');
+        }
+        $('#poinPopup').remove();
+        var badge = $(this);
+        var contentId = badge.data('popin-id');
+        var $contentDiv = $('#' + contentId);
+        var checkedCount = $contentDiv.find('input.poin-check:checked').length;
+        var totalItems = poinKeys.length;
+        var pct = Math.round(checkedCount / totalItems * 100);
+
+        var arrowHtml = '<div class="poin-popup-arrow"></div>';
+        var headerHtml = '<div class="poin-popup-header d-flex align-items-center justify-content-between px-3 py-2 border-bottom">';
+        headerHtml += '<strong class="small"><i class="bi bi-check2-square me-1"></i>Poin Checklist</strong>';
+        headerHtml += '<button type="button" class="btn-close btn-close-sm" id="poinPopupClose" aria-label="Close"></button>';
+        headerHtml += '</div>';
+        headerHtml += '<div class="px-3 pt-2 pb-1" style="background:#fff;">';
+        headerHtml += '<div class="d-flex align-items-center gap-2"><small class="text-muted">' + checkedCount + '/' + totalItems + '</small><div class="progress flex-grow-1" style="height:6px;"><div class="progress-bar" role="progressbar" style="width:' + pct + '%;" aria-valuenow="' + checkedCount + '" aria-valuemax="' + totalItems + '"></div></div></div>';
+        headerHtml += '</div>';
+
+        var bodyHtml = '<div class="poin-popup-body">' + $contentDiv.html() + '</div>';
+        var popup = $('<div id="poinPopup">').html(arrowHtml + headerHtml + bodyHtml).appendTo('body');
+        var pos = badge.offset();
+        var popupLeft = Math.max(4, pos.left + badge.outerWidth() - 420);
+        var badgeCenter = pos.left + badge.outerWidth() / 2;
+        var arrowLeft = badgeCenter - popupLeft - 6;
+        popup.css({
+            position: 'absolute',
+            top: pos.top + badge.outerHeight() + 4,
+            left: popupLeft,
+            zIndex: 1060,
+            background: '#fff',
+            border: '1px solid #dee2e6',
+            borderRadius: '6px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            width: '420px'
+        });
+        popup.find('.poin-popup-arrow').css('left', Math.max(10, Math.min(arrowLeft, 408)));
+    });
+
+    $(document).on('click', '#poinPopupClose', function() {
+        $('#poinPopup').remove();
+    });
+
+    $(document).on('change', '.poin-check', function() {
+        var cb = $(this);
+        var uploadId = cb.data('upload-id');
+        var poin = cb.data('poin');
+        var row = $('.poin-check[data-upload-id="' + uploadId + '"]').first().closest('tr');
+
+        $.ajax({
+            url: '{{ route("admin.toggle-poin") }}',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                upload_id: uploadId,
+                poin: poin
+            },
+            success: function(res) {
+                var $popup = $('#poinPopup');
+                $popup.find('.poin-check[data-poin="' + poin + '"]').prop('checked', res.value);
+
+                var checkedCount = $popup.find('.poin-check:checked').length;
+                var totalItems = poinKeys.length;
+                var pct = Math.round(checkedCount / totalItems * 100);
+                $popup.find('.text-muted').first().text(checkedCount + '/' + totalItems);
+                $popup.find('.progress-bar').css('width', pct + '%').attr('aria-valuenow', checkedCount);
+
+                row.find('.poin-check[data-poin="' + poin + '"]').prop('checked', res.value);
+
+                var file = { database_id: uploadId };
+                poinKeys.forEach(function(k) { file[k] = row.find('.poin-check[data-poin="' + k + '"]').is(':checked'); });
+                row.find('.poin-cell').replaceWith(buildPoinCell(file));
+                initPoinTooltips();
+
+                var poinCounts = {}, totalFiles = 0;
+                $('#uploadsBody tr').each(function() {
+                    totalFiles++;
+                    var $tr = $(this);
+                    poinKeys.forEach(function(k) {
+                        var cb = $tr.find('.poin-check[data-poin="' + k + '"]');
+                        if (cb.length && cb.is(':checked')) poinCounts[k] = (poinCounts[k] || 0) + 1;
+                    });
+                });
+                $('#poinFilterBar [data-filter]').each(function() {
+                    var btn = $(this);
+                    var filter = btn.data('filter');
+                    var label = btn.text().replace(/\s*\(\d+\)$/, '');
+                    btn.text(label + ' (' + (filter === 'all' ? totalFiles : (poinCounts[filter] || 0)) + ')');
+                });
+
+                var activeFilter = $('#poinFilterBar .active').data('filter');
+                if (activeFilter && activeFilter !== 'all') {
+                    var fc = row.find('.poin-check[data-poin="' + activeFilter + '"]');
+                    if (!fc.length || !fc.is(':checked')) row.hide();
+                }
+            },
+            error: function() {
+                cb.prop('checked', !cb.prop('checked'));
+                row.find('.poin-check[data-poin="' + poin + '"]').prop('checked', cb.prop('checked'));
+            }
+        });
+    });
+
+    $(document).on('click', '#poinFilterBar [data-filter]', function() {
+        var btn = $(this);
+        var filter = btn.data('filter');
+        btn.addClass('active').siblings().removeClass('active');
+
+        if (filter === 'all') {
+            $('#uploadsBody tr').show();
+        } else {
+            $('#uploadsBody tr').each(function() {
+                var row = $(this);
+                var cb = row.find('.poin-check[data-poin="' + filter + '"]');
+                if (cb.length && cb.is(':checked')) {
+                    row.show();
+                } else {
+                    row.hide();
+                }
+            });
+        }
+    });
+
+    $(document).on('submit', '#revisionForm', function(e) {
+        e.preventDefault();
+        var $form = $(this);
+        var $btn = $form.find('[type="submit"]');
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>');
+        $.ajax({
+            url: $form.attr('action'),
+            method: 'POST',
+            dataType: 'json',
+            data: $form.serialize(),
+            success: function(res) {
+                if (!res.success) return;
+                var f = res.file;
+                var $row = $('tr[data-db-id="' + f.database_id + '"]');
+                $row.attr('data-status', 'revision');
+                $row.find('td').eq(3).html(badgeHtml('revision'));
+                $row.find('td').eq(7).html(buildActions(f));
+                $('#revisionModal').modal('hide');
+                updateProgress();
+                updateStatCards();
+            },
+            error: function() {
+                alert('Gagal mengirim revisi.');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html('<i class="bi bi-send me-1"></i> Kirim Revisi');
+            }
+        });
+    });
+}
+
+var approveTargetId = null;
 
 window.approve = function(id) {
-    if (!confirm('Setujui berkas ini?')) return;
+    approveTargetId = id;
+    var fileName = $('tr[data-db-id="' + id + '"] td').eq(1).text();
+    $('#approveModalFileName').text(fileName || 'Berkas ini');
+    $('#approveModal').modal('show');
+};
+
+function doApprove() {
+    var id = approveTargetId;
+    if (!id) return;
+    $('#approveModal').modal('hide');
     $.ajax({
         url: '{{ url("admin/approve") }}/' + id,
         method: 'POST',
+        dataType: 'json',
         data: { _token: '{{ csrf_token() }}' },
         success: function(res) {
             if (!res.success) return;
@@ -413,29 +618,12 @@ window.approve = function(id) {
             var $row = $('tr[data-db-id="' + id + '"]');
             $row.attr('data-status', 'approved');
             $row.find('td').eq(3).html(badgeHtml('approved'));
-            var actions = '<div class="action-group">';
-            if (f.database_id) {
-                actions += '<a href="{{ url("admin/download") }}/' + f.database_id + '" class="btn btn-sm btn-outline-primary btn-icon" title="Download"><i class="bi bi-download"></i></a>';
-                actions += '<a href="{{ url("admin/preview") }}/' + f.database_id + '" class="btn btn-sm btn-outline-info btn-icon" title="Preview" target="_blank"><i class="bi bi-eye"></i></a>';
-                actions += '<button type="button" class="btn btn-sm btn-outline-danger btn-icon" title="Hapus" onclick="deleteUpload(\'' + f.database_id + '\')"><i class="bi bi-trash"></i></button>';
-            }
-            if (f.revision_histories && f.revision_histories.length > 0) {
-                var revId = 'rev-' + f.database_id;
-                actions += '<div class="mt-2"><button class="btn btn-sm btn-link text-muted p-0 text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#' + revId + '" aria-expanded="false">';
-                actions += '<i class="bi bi-arrow-clockwise me-1"></i> Riwayat Revisi (' + f.revision_histories.length + ')</button>';
-                actions += '<div class="collapse mt-1" id="' + revId + '"><div class="bg-light rounded-2 p-2 small">';
-                f.revision_histories.forEach(function(r) {
-                    var notes = Array.isArray(r.catatan_admin) ? r.catatan_admin.join('; ') : (r.catatan_admin || '-');
-                    actions += '<div class="d-flex align-items-start gap-2 mb-1 pb-1 border-bottom border-light"><span class="text-nowrap text-muted" style="font-size:.7rem;">' + esc(r.tanggal || '-') + '</span><span>' + esc(notes) + '</span></div>';
-                });
-                actions += '</div></div></div>';
-            }
-            if (f.catatan_user) {
-                actions += '<div class="mt-1 small text-muted"><i class="bi bi-chat-dots me-1"></i> <strong>Catatan:</strong> ' + esc(f.catatan_user) + '</div>';
-            }
-            $row.find('td').eq(7).html(actions);
+            $row.find('td').eq(7).html(buildActions(f));
             updateProgress();
             updateStatCards();
+        },
+        error: function() {
+            alert('Gagal menyetujui berkas. Silakan coba lagi.');
         }
     });
 };
@@ -446,9 +634,23 @@ window.showRevision = function(id) {
 };
 
 window.deleteUpload = function(id) {
-    if (confirm('Hapus berkas ini dari sistem? (File di Drive tidak akan terhapus)')) {
-        $('#deleteForm').attr('action', '{{ url("admin/delete-upload") }}/' + id).submit();
-    }
+    if (!confirm('Hapus berkas ini dari sistem? (File di Drive tidak akan terhapus)')) return;
+    $.ajax({
+        url: '{{ url("admin/delete-upload") }}/' + id,
+        method: 'POST',
+        dataType: 'json',
+        data: { _token: '{{ csrf_token() }}' },
+        success: function(res) {
+            if (!res.success) return;
+            var $row = $('tr[data-db-id="' + id + '"]');
+            $row.remove();
+            updateProgress();
+            updateStatCards();
+        },
+        error: function() {
+            alert('Gagal menghapus berkas. Silakan coba lagi.');
+        }
+    });
 };
 
 window.scanFolder = function(folderId, folderName, scanAll) {
@@ -584,7 +786,8 @@ function buildActions(f) {
     }
     h += '</div>';
     if (f.revision_histories && f.revision_histories.length > 0) {
-        const revId = 'rev-' + esc(dbId || driveId).replace(/[^a-zA-Z0-9]/g, '');
+        var revId = 'rev-' + esc(String(dbId || driveId || '')).replace(/[^a-zA-Z0-9]/g, '');
+        if (!revId || revId === 'rev-') revId = 'rev-' + Date.now();
         h += '<div class="mt-2"><button class="btn btn-sm btn-link text-muted p-0 text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#' + revId + '" aria-expanded="false">';
         h += '<i class="bi bi-arrow-clockwise me-1"></i> Riwayat Revisi (' + f.revision_histories.length + ')</button>';
         h += '<div class="collapse mt-1" id="' + revId + '"><div class="bg-light rounded-2 p-2 small">';
@@ -666,150 +869,6 @@ function initPoinTooltips() {
         $('.poin-cell .poin-badge[data-bs-toggle="tooltip"]').tooltip({ html: true, sanitize: false });
     }, 50);
 }
-
-$(document).on('click', '.poin-badge', function(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    if ($(this).data('bs.tooltip')) {
-        $(this).tooltip('hide');
-    }
-    $('#poinPopup').remove();
-    var badge = $(this);
-    var contentId = badge.data('popin-id');
-    var $contentDiv = $('#' + contentId);
-    var checkedCount = $contentDiv.find('input.poin-check:checked').length;
-    var totalItems = poinKeys.length;
-    var pct = Math.round(checkedCount / totalItems * 100);
-
-    var arrowHtml = '<div class="poin-popup-arrow"></div>';
-    var headerHtml = '<div class="poin-popup-header d-flex align-items-center justify-content-between px-3 py-2 border-bottom">';
-    headerHtml += '<strong class="small"><i class="bi bi-check2-square me-1"></i>Poin Checklist</strong>';
-    headerHtml += '<button type="button" class="btn-close btn-close-sm" id="poinPopupClose" aria-label="Close"></button>';
-    headerHtml += '</div>';
-    headerHtml += '<div class="px-3 pt-2 pb-1" style="background:#fff;">';
-    headerHtml += '<div class="d-flex align-items-center gap-2"><small class="text-muted">' + checkedCount + '/' + totalItems + '</small><div class="progress flex-grow-1" style="height:6px;"><div class="progress-bar" role="progressbar" style="width:' + pct + '%;" aria-valuenow="' + checkedCount + '" aria-valuemin="0" aria-valuemax="' + totalItems + '"></div></div></div>';
-    headerHtml += '</div>';
-
-    var bodyHtml = '<div class="poin-popup-body">' + $contentDiv.html() + '</div>';
-    var popup = $('<div id="poinPopup">').html(arrowHtml + headerHtml + bodyHtml).appendTo('body');
-    var pos = badge.offset();
-    var popupLeft = Math.max(4, pos.left + badge.outerWidth() - 420);
-    var badgeCenter = pos.left + badge.outerWidth() / 2;
-    var arrowLeft = badgeCenter - popupLeft - 6;
-    popup.css({
-        position: 'absolute',
-        top: pos.top + badge.outerHeight() + 4,
-        left: popupLeft,
-        zIndex: 1060,
-        background: '#fff',
-        border: '1px solid #dee2e6',
-        borderRadius: '6px',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-        width: '420px'
-    });
-    popup.find('.poin-popup-arrow').css('left', Math.max(10, Math.min(arrowLeft, 408)));
-});
-
-$(document).on('click', '#poinPopupClose', function() {
-    $('#poinPopup').remove();
-});
-
-$(document).on('click', '#poinPopup label', function(e) {
-    e.preventDefault();
-    var cb = $(this).find('.poin-check');
-    if (cb.length) {
-        cb.prop('checked', !cb.prop('checked')).trigger('change');
-    }
-});
-
-$(document).on('change', '.poin-check', function() {
-    var cb = $(this);
-    var uploadId = cb.data('upload-id');
-    var poin = cb.data('poin');
-    var row = $('.poin-check[data-upload-id="' + uploadId + '"]').first().closest('tr');
-
-    $.ajax({
-        url: '{{ route("admin.toggle-poin") }}',
-        method: 'POST',
-        data: {
-            _token: '{{ csrf_token() }}',
-            upload_id: uploadId,
-            poin: poin
-        },
-        success: function(res) {
-            // Update popup in-place — jangan remove
-            var $popup = $('#poinPopup');
-            $popup.find('.poin-check[data-poin="' + poin + '"]').prop('checked', res.value);
-
-            var checkedCount = $popup.find('.poin-check:checked').length;
-            var totalItems = poinKeys.length;
-            var pct = Math.round(checkedCount / totalItems * 100);
-            $popup.find('.text-muted').first().text(checkedCount + '/' + totalItems);
-            $popup.find('.progress-bar').css('width', pct + '%').attr('aria-valuenow', checkedCount);
-
-            row.find('.poin-check[data-poin="' + poin + '"]').prop('checked', res.value);
-
-            var file = { database_id: uploadId };
-            poinKeys.forEach(function(k) { file[k] = row.find('.poin-check[data-poin="' + k + '"]').is(':checked'); });
-            row.find('.poin-cell').replaceWith(buildPoinCell(file));
-            initPoinTooltips();
-
-            var poinCounts = {}, totalFiles = 0;
-            $('#uploadsBody tr').each(function() {
-                totalFiles++;
-                var $tr = $(this);
-                poinKeys.forEach(function(k) {
-                    var cb = $tr.find('.poin-check[data-poin="' + k + '"]');
-                    if (cb.length && cb.is(':checked')) poinCounts[k] = (poinCounts[k] || 0) + 1;
-                });
-            });
-            $('#poinFilterBar [data-filter]').each(function() {
-                var btn = $(this);
-                var filter = btn.data('filter');
-                var label = btn.text().replace(/\s*\(\d+\)$/, '');
-                btn.text(label + ' (' + (filter === 'all' ? totalFiles : (poinCounts[filter] || 0)) + ')');
-            });
-
-            var activeFilter = $('#poinFilterBar .active').data('filter');
-            if (activeFilter && activeFilter !== 'all') {
-                var fc = row.find('.poin-check[data-poin="' + activeFilter + '"]');
-                if (!fc.length || !fc.is(':checked')) row.hide();
-            }
-        },
-        error: function() {
-            cb.prop('checked', !cb.prop('checked'));
-            row.find('.poin-check[data-poin="' + poin + '"]').prop('checked', cb.prop('checked'));
-        }
-    });
-});
-
-$(document).on('click', '#poinFilterBar [data-filter]', function() {
-    var btn = $(this);
-    var filter = btn.data('filter');
-    btn.addClass('active').siblings().removeClass('active');
-
-    if (filter === 'all') {
-        $('#uploadsBody tr').show();
-    } else {
-        $('#uploadsBody tr').each(function() {
-            var row = $(this);
-            var cb = row.find('.poin-check[data-poin="' + filter + '"]');
-            if (cb.length && cb.is(':checked')) {
-                row.show();
-            } else {
-                row.hide();
-            }
-        });
-    }
-});
-
-$(document).on('click', '.btn-scan-folder', function() {
-    scanFolder($(this).data('folder-id'), $(this).data('folder-name'), false);
-});
-
-$(document).on('click', '.btn-breadcrumb-folder', function() {
-    scanFolder($(this).data('folder-id'), $(this).data('folder-name'), false);
-});
 
 function updateProgress() {
     var rows = $('#uploadsBody tr').has('.poin-check');

@@ -10,6 +10,7 @@ use App\Models\DriveIgnored;
 use App\Services\GoogleDriveService;
 use App\Services\DocumentService;
 use Google\Client;
+use GuzzleHttp\Client as HttpClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -272,10 +273,25 @@ class AdminController extends Controller
             ]);
         }
 
+        if ($request->wantsJson()) {
+            $upload->load('revisionHistories', 'user', 'assignedUser');
+            $row = $upload->toArray();
+            $row['database_id'] = $upload->id;
+            $row['subfolder'] = $upload->subfolder;
+            $row['uploader_name'] = $upload->user?->nama ?? $upload->user?->username ?? '(tanpa nama)';
+            $row['revision_histories'] = $upload->revisionHistories->map(function ($r) {
+                return [
+                    'tanggal' => ($r->tanggal ?? $r->created_at?->format('d/m/Y H:i')),
+                    'catatan_admin' => $r->catatan_admin,
+                ];
+            });
+            return response()->json(['success' => true, 'file' => $row]);
+        }
+
         return back()->with('success', 'Status berkas diubah menjadi "Butuh Revisi".');
     }
 
-    public function deleteUpload($id)
+    public function deleteUpload(Request $request, $id)
     {
         $upload = Upload::findOrFail($id);
 
@@ -285,6 +301,10 @@ class AdminController extends Controller
 
         $upload->revisionHistories()->delete();
         $upload->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return back()->with('success', 'Berkas dihapus dari riwayat sistem.');
     }
@@ -298,6 +318,9 @@ class AdminController extends Controller
         if ($driveToken && $driveToken->refresh_token && $clientExists) {
             try {
                 $googleClient = new Client();
+                $googleClient->setHttpClient(new HttpClient([
+                    'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4],
+                ]));
                 $googleClient->setAuthConfig(storage_path('app/oauth_client_secret.json'));
                 $googleClient->setAccessToken([
                     'access_token'  => $driveToken->access_token,
@@ -308,7 +331,26 @@ class AdminController extends Controller
                 ]);
 
                 if ($googleClient->isAccessTokenExpired()) {
-                    $newToken = $googleClient->fetchAccessTokenWithRefreshToken($driveToken->refresh_token);
+                    $maxAttempts = 2;
+                    $attempt = 0;
+                    $newToken = null;
+
+                    while ($attempt < $maxAttempts) {
+                        $attempt++;
+                        try {
+                            $newToken = $googleClient->fetchAccessTokenWithRefreshToken($driveToken->refresh_token);
+                            break;
+                        } catch (\Exception $e) {
+                            if ($attempt >= $maxAttempts) {
+                                throw $e;
+                            }
+                            Log::warning('Refresh token gagal (percobaan ' . $attempt . '), mencoba ulang...', [
+                                'error' => $e->getMessage(),
+                            ]);
+                            usleep(2000000);
+                        }
+                    }
+
                     $driveToken->update([
                         'access_token' => $newToken['access_token'],
                         'expires_in'   => $newToken['expires_in'] ?? null,

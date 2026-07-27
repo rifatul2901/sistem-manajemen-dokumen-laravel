@@ -82,9 +82,7 @@
                 </div>
 
                 @php
-                    $relatedUpload = $uploads->first(function($u) use ($doc) {
-                        return $u->filename === $doc['induk'] || (isset($u->revisionHistories[0]) && $u->revisionHistories[0]->nama_file_sebelumnya === $doc['induk']);
-                    });
+                    $relatedUpload = $uploads->firstWhere('id', $doc['uploadId']);
                 @endphp
 
                 {{-- Catatan Admin & Upload Revisi (hanya untuk status 'revision') --}}

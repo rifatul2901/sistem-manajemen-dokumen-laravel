@@ -32,3 +32,16 @@
 - [ ] [[LOW]] `upload_time` & `tanggal_kirim_awal` cast `datetime` — Upload.php
 - [ ] [[LOW]] `initPoinTooltips()` ganti `setTimeout(50)` pakai requestAnimationFrame
 - [ ] [[LOW]] `uploadRevisi()`: bungkus updateFile() + DB ops dalam DB::transaction() untuk cegah desinkron Drive-DB jika ada exception di tengah — DashboardController.php:71-93
+
+## Catatan — Cloudflare
+
+Cloudflare dipasang **saat deployment / production**, bukan sekarang.
+
+| Langkah | Detail |
+|---------|--------|
+| 1 | Daftar Cloudflare (gratis) |
+| 2 | Masukkan domain |
+| 3 | Ganti nameserver di registrar domain |
+| 4 | Selesai — SSL, CDN, caching otomatis aktif |
+
+Tidak perlu mengubah kode. CDN library (jsdelivr) juga tidak wajib dipindah — bisa tetap dipakai.

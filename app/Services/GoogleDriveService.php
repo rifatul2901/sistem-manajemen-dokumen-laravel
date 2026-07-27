@@ -6,7 +6,9 @@ use App\Models\DriveToken;
 use Google\Client;
 use Google\Service\Drive;
 use Google\Service\Drive\DriveFile;
+use GuzzleHttp\Client as HttpClient;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class GoogleDriveService
 {
@@ -23,6 +25,9 @@ class GoogleDriveService
         }
 
         $client = new Client();
+        $client->setHttpClient(new HttpClient([
+            'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4],
+        ]));
         $client->setApplicationName('Sistem Manajemen Dokumen');
         $client->setScopes([Drive::DRIVE]);
         $client->setAuthConfig($clientSecretPath);
@@ -49,7 +54,25 @@ class GoogleDriveService
 
         if ($client->isAccessTokenExpired()) {
             if ($client->getRefreshToken()) {
-                $newToken = $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+                $maxAttempts = 2;
+                $attempt = 0;
+                $newToken = null;
+
+                while ($attempt < $maxAttempts) {
+                    $attempt++;
+                    try {
+                        $newToken = $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+                        break;
+                    } catch (\Exception $e) {
+                        if ($attempt >= $maxAttempts) {
+                            throw $e;
+                        }
+                        Log::warning('Refresh token gagal (percobaan ' . $attempt . '), mencoba ulang...', [
+                            'error' => $e->getMessage(),
+                        ]);
+                        usleep(2000000);
+                    }
+                }
 
                 if ($this->driveToken) {
                     $this->driveToken->update([

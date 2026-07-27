@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo_no_text.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -52,7 +53,7 @@
             display: flex; flex-direction: column;
             transition: transform .3s cubic-bezier(.4,0,.2,1);
         }
-        .sidebar-brand { padding: .1rem 0 .1rem .1rem; display: flex; align-items: center; }
+        .sidebar-brand { padding: .1rem 0 .1rem .1rem; display: flex; align-items: center;justify-content: center; }
         .sidebar-divider { height: 1px; background: rgba(255,255,255,.08); margin: .5rem 1rem; }
         .sidebar-user { padding: .5rem 1.25rem; display: flex; align-items: center; gap: .75rem; }
         .sidebar-user .avatar {
@@ -235,7 +236,7 @@
     @auth
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <img src="{{ asset('images/logo.png') }}" alt="Sistem Manajemen Dokumen" style="height:140px;width:auto;">
+            <img src="{{ asset('images/logo.png') }}" alt="Sistem Manajemen Dokumen" style="height:100px;width:auto;">
         </div>
         <div class="sidebar-divider"></div>
         <div class="sidebar-user">
@@ -331,6 +332,7 @@
     @endauth
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js"></script>
     @stack('scripts')
 </body>
 </html>
