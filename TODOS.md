@@ -21,3 +21,13 @@
 
 ## Mungkin
 - [ ] Cache hasil scan terakhir di session (agar tidak hilang saat pindah menu lalu balik)
+
+### Technical Debt (Perbaikan Kode)
+- [ ] [[HIGH]] Ganti `url("admin/approve")` dkk dengan named route (`route('admin.approve')`) — dashboard.blade.js
+- [ ] [[HIGH]] `notifikasi_pdf` path traversal: validasi path di `unlink()` — AdminController:202,267
+- [ ] [[HIGH]] Sanitasi nama file sebelum dipakai di path PDF — AdminController:235
+- [ ] [[HIGH]] DB transaction untuk cascade delete upload — AdminController:267-272
+- [ ] [[MEDIUM]] Error feedback toast saat AJAX poin gagal — dashboard.blade.js:607
+- [ ] [[MEDIUM]] `approved_at` & `revision_requested_at` di `$fillable` — Upload.php
+- [ ] [[LOW]] `upload_time` & `tanggal_kirim_awal` cast `datetime` — Upload.php
+- [ ] [[LOW]] `initPoinTooltips()` ganti `setTimeout(50)` pakai requestAnimationFrame

@@ -339,7 +339,7 @@ function doScan(folderId, folderName, scanAll) {
             if (res.subfolders && res.subfolders.length > 0) {
                 var h = '';
                 res.subfolders.forEach(function(sf) {
-                    h += '<button class="btn btn-sm btn-outline-secondary" onclick="scanFolder(\'' + esc(sf.id) + '\', \'' + esc(sf.name) + '\', false)"><i class="bi bi-folder me-1"></i> ' + esc(sf.name) + '</button>';
+                    h += '<button class="btn btn-sm btn-outline-secondary btn-scan-folder" data-folder-id="' + esc(sf.id) + '" data-folder-name="' + esc(sf.name) + '"><i class="bi bi-folder me-1"></i> ' + esc(sf.name) + '</button>';
                 });
                 $('#subfolderButtons').html(h);
             } else {
@@ -372,10 +372,10 @@ function updateBreadcrumb(folderId, folderName) {
         navStack = navStack.slice(0, idx + 1);
     }
 
-    var h = '<span class="badge bg-primary px-3 py-2" style="cursor:pointer;" onclick="scanFolder(\'\', \'(folder utama)\', false)"><i class="bi bi-house-door me-1"></i> Root</span>';
+    var h = '<span class="badge bg-primary px-3 py-2 btn-breadcrumb-folder" style="cursor:pointer;" data-folder-id="" data-folder-name="(folder utama)"><i class="bi bi-house-door me-1"></i> Root</span>';
     navStack.forEach(function(n) {
         h += ' <i class="bi bi-chevron-right text-muted small"></i> ';
-        h += '<span class="badge bg-secondary px-3 py-2" style="cursor:pointer;" onclick="scanFolder(\'' + esc(n.id) + '\', \'' + esc(n.name) + '\', false)">' + esc(n.name) + '</span>';
+        h += '<span class="badge bg-secondary px-3 py-2 btn-breadcrumb-folder" style="cursor:pointer;" data-folder-id="' + esc(n.id) + '" data-folder-name="' + esc(n.name) + '">' + esc(n.name) + '</span>';
     });
     $('#breadcrumbNav').html(h);
 }
@@ -452,7 +452,8 @@ function firstCheckedPoin(f) {
 function buildPoinCell(f) {
     var count = poinCount(f);
     var dbId = f.database_id;
-    var popId = 'poin-pop-' + esc(String(dbId || ''));
+    var uid = dbId ? esc(String(dbId)) : 'fallback-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+    var popId = 'poin-pop-' + uid;
     var badgeHtml = '';
 
     if (count === 0) {
@@ -489,7 +490,9 @@ function buildPoinCell(f) {
 
 function initPoinTooltips() {
     $('.poin-cell .poin-badge[data-bs-toggle="tooltip"]').tooltip('dispose');
-    $('.poin-cell .poin-badge[data-bs-toggle="tooltip"]').tooltip({ html: true, sanitize: false });
+    setTimeout(function() {
+        $('.poin-cell .poin-badge[data-bs-toggle="tooltip"]').tooltip({ html: true, sanitize: false });
+    }, 50);
 }
 
 $(document).on('click', '.poin-badge', function(e) {
@@ -562,17 +565,29 @@ $(document).on('change', '.poin-check', function() {
             poin: poin
         },
         success: function(res) {
-            $('#poinPopup').remove();
+            // Update popup in-place — jangan remove
+            var $popup = $('#poinPopup');
+            $popup.find('.poin-check[data-poin="' + poin + '"]').prop('checked', res.value);
+
+            var checkedCount = $popup.find('.poin-check:checked').length;
+            var totalItems = poinKeys.length;
+            var pct = Math.round(checkedCount / totalItems * 100);
+            $popup.find('.text-muted').first().text(checkedCount + '/' + totalItems);
+            $popup.find('.progress-bar').css('width', pct + '%').attr('aria-valuenow', checkedCount);
+
+            row.find('.poin-check[data-poin="' + poin + '"]').prop('checked', res.value);
+
             var file = { database_id: uploadId };
             poinKeys.forEach(function(k) { file[k] = row.find('.poin-check[data-poin="' + k + '"]').is(':checked'); });
-            file[poin] = res.value;
             row.find('.poin-cell').replaceWith(buildPoinCell(file));
             initPoinTooltips();
+
             var poinCounts = {}, totalFiles = 0;
             $('#uploadsBody tr').each(function() {
                 totalFiles++;
+                var $tr = $(this);
                 poinKeys.forEach(function(k) {
-                    var cb = $(this).find('.poin-check[data-poin="' + k + '"]');
+                    var cb = $tr.find('.poin-check[data-poin="' + k + '"]');
                     if (cb.length && cb.is(':checked')) poinCounts[k] = (poinCounts[k] || 0) + 1;
                 });
             });
@@ -582,6 +597,7 @@ $(document).on('change', '.poin-check', function() {
                 var label = btn.text().replace(/\s*\(\d+\)$/, '');
                 btn.text(label + ' (' + (filter === 'all' ? totalFiles : (poinCounts[filter] || 0)) + ')');
             });
+
             var activeFilter = $('#poinFilterBar .active').data('filter');
             if (activeFilter && activeFilter !== 'all') {
                 var fc = row.find('.poin-check[data-poin="' + activeFilter + '"]');
@@ -590,6 +606,7 @@ $(document).on('change', '.poin-check', function() {
         },
         error: function() {
             cb.prop('checked', !cb.prop('checked'));
+            row.find('.poin-check[data-poin="' + poin + '"]').prop('checked', cb.prop('checked'));
         }
     });
 });
@@ -612,6 +629,14 @@ $(document).on('click', '#poinFilterBar [data-filter]', function() {
             }
         });
     }
+});
+
+$(document).on('click', '.btn-scan-folder', function() {
+    scanFolder($(this).data('folder-id'), $(this).data('folder-name'), false);
+});
+
+$(document).on('click', '.btn-breadcrumb-folder', function() {
+    scanFolder($(this).data('folder-id'), $(this).data('folder-name'), false);
 });
 
 function buildTableRows(files) {
