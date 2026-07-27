@@ -111,15 +111,29 @@
                 <div class="card-header d-flex align-items-center gap-2">
                     <i class="bi bi-google text-muted"></i> Konfigurasi Folder Google Drive
                 </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ route('admin.save-drive-config') }}">
-                        @csrf
-                        <div class="mb-3">
-                            <label class="form-label">Link Folder Google Drive</label>
-                            <input type="url" name="folder_link" class="form-control" value="{{ $driveConfig->folder_link ?? '' }}" placeholder="https://drive.google.com/drive/folders/...">
+                <div class="card-body d-flex flex-column">
+                    @if ($driveConfig && $driveConfig->folder_link)
+                        <div class="mb-1">
+                            <span class="text-muted small">Folder aktif:</span>
                         </div>
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-floppy me-1"></i> Simpan</button>
-                    </form>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="bi bi-folder2 text-primary"></i>
+                            <span class="fw-medium text-truncate">{{ $driveConfig->folder_link }}</span>
+                        </div>
+                        <div class="text-muted small mb-3">
+                            <i class="bi bi-hdd me-1"></i> Ukuran: {{ $config['folder_size'] ?? '0 B' }}
+                        </div>
+                    @else
+                        <div class="flex-grow-1 d-flex align-items-center justify-content-center mb-3">
+                            <div class="text-center">
+                                <i class="bi bi-folder2-open text-muted" style="font-size:1.5rem;"></i>
+                                <p class="text-muted small mb-0 mt-1">Belum ada folder dikonfigurasi.</p>
+                            </div>
+                        </div>
+                    @endif
+                    <a href="{{ route('admin.drive-config') }}" class="btn btn-outline-primary btn-sm mt-auto">
+                        <i class="bi bi-gear me-1"></i> Atur di Drive Config
+                    </a>
                 </div>
             </div>
         </div>

@@ -31,3 +31,4 @@
 - [ ] [[MEDIUM]] `approved_at` & `revision_requested_at` di `$fillable` — Upload.php
 - [ ] [[LOW]] `upload_time` & `tanggal_kirim_awal` cast `datetime` — Upload.php
 - [ ] [[LOW]] `initPoinTooltips()` ganti `setTimeout(50)` pakai requestAnimationFrame
+- [ ] [[LOW]] `uploadRevisi()`: bungkus updateFile() + DB ops dalam DB::transaction() untuk cegah desinkron Drive-DB jika ada exception di tengah — DashboardController.php:71-93

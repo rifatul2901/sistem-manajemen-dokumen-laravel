@@ -52,15 +52,7 @@
             display: flex; flex-direction: column;
             transition: transform .3s cubic-bezier(.4,0,.2,1);
         }
-        .sidebar-brand { padding: 1.25rem 1.25rem .75rem; display: flex; align-items: center; gap: .75rem; }
-        .sidebar-brand .brand-icon {
-            width: 36px; height: 36px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: .85rem; color: #fff; flex-shrink: 0;
-        }
-        .sidebar-brand span { font-weight: 700; font-size: 1rem; color: #f1f5f9; letter-spacing: -.02em; }
+        .sidebar-brand { padding: .1rem 0 .1rem .1rem; display: flex; align-items: center; }
         .sidebar-divider { height: 1px; background: rgba(255,255,255,.08); margin: .5rem 1rem; }
         .sidebar-user { padding: .5rem 1.25rem; display: flex; align-items: center; gap: .75rem; }
         .sidebar-user .avatar {
@@ -92,6 +84,27 @@
             transition: all .15s ease; cursor: pointer;
         }
         .sidebar-footer .btn-logout:hover { background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.25); color: #fca5a5; }
+
+        .sidebar-quote {
+            padding: .6rem .75rem;
+            margin: .25rem .75rem .5rem;
+            border-left: 2px solid #f59e0b;
+            background: rgba(245,158,11,.06);
+            border-radius: 6px;
+        }
+        .sidebar-quote i {
+            color: #f59e0b;
+            font-size: .6rem;
+            display: block;
+            margin-bottom: .15rem;
+        }
+        .sidebar-quote span {
+            font-size: .725rem;
+            line-height: 1.45;
+            color: #94a3b8;
+            font-style: italic;
+            display: block;
+        }
 
         .main-content {
             margin-left: var(--sidebar-width);
@@ -222,8 +235,7 @@
     @auth
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <div class="brand-icon">SD</div>
-            <span>Sistem Dokumen</span>
+            <img src="{{ asset('images/logo.png') }}" alt="Sistem Manajemen Dokumen" style="height:140px;width:auto;">
         </div>
         <div class="sidebar-divider"></div>
         <div class="sidebar-user">
@@ -278,6 +290,10 @@
                 </a>
             </div>
             @endif
+        </div>
+        <div class="sidebar-quote">
+            <i class="bi bi-quote"></i>
+            <span>Lengkap bukan berarti selesai,<br>tapi selesai haruslah lengkap</span>
         </div>
         <div class="sidebar-footer">
             <form method="POST" action="{{ route('logout') }}">
