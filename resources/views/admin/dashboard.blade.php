@@ -86,6 +86,78 @@
     font-family: "bootstrap-icons";
     margin-right: 4px;
 }
+
+.card-compact .card-body {
+    padding: .75rem 1rem .5rem;
+}
+.card-compact .card-body .form-label {
+    font-size: .75rem;
+    margin-bottom: .2rem;
+}
+.card-compact .btn-sm {
+    font-size: .75rem;
+    padding: .3rem .6rem;
+}
+.card-compact .badge {
+    font-size: .7rem;
+    padding: .25rem .5rem;
+}
+.card-compact .text-muted.small {
+    font-size: .7rem;
+}
+.card-compact .fw-medium.text-truncate {
+    font-size: .75rem;
+}
+
+#completenessProgress {
+    border-radius: 7px;
+    transition: width .5s ease;
+}
+#completenessProgress.bg-danger { background: #ef4444; }
+#completenessProgress.bg-warning { background: #f59e0b; }
+#completenessProgress.bg-success { background: #62B846; }
+#completenessProgress.bg-gold {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.stat-card .card-body {
+    padding: .45rem .70rem;
+}
+.stat-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .95rem;
+    flex-shrink: 0;
+}
+.stat-icon-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+.stat-icon-approved {
+    background: #d4edda;
+    color: #155724;
+}
+.stat-icon-revision {
+    background: #f8d7da;
+    color: #721c24;
+}
+.stat-number {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #0f172a;
+}
+.stat-label {
+    font-size: .60rem;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
 </style>
 @endpush
 
@@ -107,58 +179,109 @@
 
     <div class="row g-4 mb-4">
         <div class="col-md-6">
-            <div class="card h-100">
-                <div class="card-header d-flex align-items-center gap-2">
+            <div class="card h-100 card-compact">
+                <div class="card-header d-flex align-items-center gap-2 py-2">
                     <i class="bi bi-google text-muted"></i> Konfigurasi Folder Google Drive
                 </div>
                 <div class="card-body d-flex flex-column">
                     @if ($driveConfig && $driveConfig->folder_link)
-                        <div class="mb-1">
-                            <span class="text-muted small">Folder aktif:</span>
-                        </div>
+                        <div class="text-muted small mb-1">Folder aktif:</div>
                         <div class="d-flex align-items-center gap-2 mb-1">
-                            <i class="bi bi-folder2 text-primary"></i>
+                            <i class="bi bi-folder2 text-primary" style="font-size:.8rem;"></i>
                             <span class="fw-medium text-truncate">{{ $driveConfig->folder_link }}</span>
                         </div>
-                        <div class="text-muted small mb-3">
-                            <i class="bi bi-hdd me-1"></i> Ukuran: {{ $config['folder_size'] ?? '0 B' }}
+                        <div class="text-muted small mb-2">
+                            <i class="bi bi-hdd me-1"></i> {{ $config['folder_size'] ?? '0 B' }}
                         </div>
                     @else
-                        <div class="flex-grow-1 d-flex align-items-center justify-content-center mb-3">
+                        <div class="d-flex align-items-center justify-content-center mb-2" style="min-height:2rem;">
                             <div class="text-center">
-                                <i class="bi bi-folder2-open text-muted" style="font-size:1.5rem;"></i>
-                                <p class="text-muted small mb-0 mt-1">Belum ada folder dikonfigurasi.</p>
+                                <p class="text-muted small mb-0">Belum ada folder dikonfigurasi.</p>
                             </div>
                         </div>
                     @endif
                     <a href="{{ route('admin.drive-config') }}" class="btn btn-outline-primary btn-sm mt-auto">
-                        <i class="bi bi-gear me-1"></i> Atur di Drive Config
+                        <i class="bi bi-gear me-1"></i> Atur
                     </a>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6">
-            <div class="card h-100">
-                <div class="card-header d-flex align-items-center gap-2">
+            <div class="card h-100 card-compact">
+                <div class="card-header d-flex align-items-center gap-2 py-2">
                     <i class="bi bi-folder2-open text-muted"></i> Pindai Folder
                 </div>
                 <div class="card-body">
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label class="form-label">Navigasi Folder</label>
-                        <div id="breadcrumbNav" class="d-flex flex-wrap align-items-center gap-1 mb-2">
-                            <span class="badge bg-primary px-3 py-2" style="cursor:pointer;" onclick="scanFolder('', '(folder utama)', false)">
-                                <i class="bi bi-house-door me-1"></i> Root
-                            </span>
-                        </div>
+                        <div id="breadcrumbNav" class="d-flex flex-wrap align-items-center gap-1 mb-1"></div>
                         <div id="subfolderButtons" class="d-flex flex-wrap gap-1"></div>
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-primary" onclick="scanCurrent(false)"><i class="bi bi-search me-1"></i> Pindai Folder Ini</button>
-                        <button class="btn btn-outline-primary" onclick="scanCurrent(true)"><i class="bi bi-files me-1"></i> Scan All (Recursive)</button>
+                        <button class="btn btn-sm btn-primary py-1" onclick="scanCurrent(false)"><i class="bi bi-search me-1"></i> Pindai</button>
+                        <button class="btn btn-sm btn-outline-primary py-1" onclick="scanCurrent(true)"><i class="bi bi-files me-1"></i> Scan All</button>
                     </div>
                     <input type="hidden" id="currentFolderId" value="">
                     <input type="hidden" id="currentFolderName" value="(folder utama)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-compact mb-4" id="progressCard">
+        <div class="card-header d-flex align-items-center gap-2 py-2">
+            <i class="bi bi-bar-chart-line text-muted"></i> Progress Kelengkapan
+        </div>
+        <div class="card-body">
+            <div id="progressEmpty">
+                <div class="text-center py-1">
+                    <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Lakukan scan folder untuk melihat progress kelengkapan.</small>
+                </div>
+            </div>
+            <div id="progressMain" style="display:none;">
+                <div class="progress" style="height:14px;border-radius:7px;">
+                    <div class="progress-bar" id="completenessProgress" style="width:0%;"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-1">
+                    <small class="text-muted" id="progressText">0 dari 0 file disetujui</small>
+                    <small class="fw-bold" id="progressPercent">0%</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4" id="statCards" style="display:none;">
+        <div class="col-md-4">
+            <div class="card card-compact h-100 stat-card">
+                <div class="card-body d-flex align-items-center gap-3 py-3">
+                    <div class="stat-icon stat-icon-pending"><i class="bi bi-clock"></i></div>
+                    <div>
+                        <div class="stat-number" id="statPending">0</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-compact h-100 stat-card">
+                <div class="card-body d-flex align-items-center gap-3 py-3">
+                    <div class="stat-icon stat-icon-approved"><i class="bi bi-check-circle"></i></div>
+                    <div>
+                        <div class="stat-number" id="statApproved">0</div>
+                        <div class="stat-label">Disetujui</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-compact h-100 stat-card">
+                <div class="card-body d-flex align-items-center gap-3 py-3">
+                    <div class="stat-icon stat-icon-revision"><i class="bi bi-pencil"></i></div>
+                    <div>
+                        <div class="stat-number" id="statRevision">0</div>
+                        <div class="stat-label">Butuh Revisi</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -279,9 +402,42 @@ $(document).on('click', '.removeCatatan', function() {
 });
 
 window.approve = function(id) {
-    if (confirm('Setujui berkas ini?')) {
-        $('#approveForm').attr('action', '{{ url("admin/approve") }}/' + id).submit();
-    }
+    if (!confirm('Setujui berkas ini?')) return;
+    $.ajax({
+        url: '{{ url("admin/approve") }}/' + id,
+        method: 'POST',
+        data: { _token: '{{ csrf_token() }}' },
+        success: function(res) {
+            if (!res.success) return;
+            var f = res.file;
+            var $row = $('tr[data-db-id="' + id + '"]');
+            $row.attr('data-status', 'approved');
+            $row.find('td').eq(3).html(badgeHtml('approved'));
+            var actions = '<div class="action-group">';
+            if (f.database_id) {
+                actions += '<a href="{{ url("admin/download") }}/' + f.database_id + '" class="btn btn-sm btn-outline-primary btn-icon" title="Download"><i class="bi bi-download"></i></a>';
+                actions += '<a href="{{ url("admin/preview") }}/' + f.database_id + '" class="btn btn-sm btn-outline-info btn-icon" title="Preview" target="_blank"><i class="bi bi-eye"></i></a>';
+                actions += '<button type="button" class="btn btn-sm btn-outline-danger btn-icon" title="Hapus" onclick="deleteUpload(\'' + f.database_id + '\')"><i class="bi bi-trash"></i></button>';
+            }
+            if (f.revision_histories && f.revision_histories.length > 0) {
+                var revId = 'rev-' + f.database_id;
+                actions += '<div class="mt-2"><button class="btn btn-sm btn-link text-muted p-0 text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#' + revId + '" aria-expanded="false">';
+                actions += '<i class="bi bi-arrow-clockwise me-1"></i> Riwayat Revisi (' + f.revision_histories.length + ')</button>';
+                actions += '<div class="collapse mt-1" id="' + revId + '"><div class="bg-light rounded-2 p-2 small">';
+                f.revision_histories.forEach(function(r) {
+                    var notes = Array.isArray(r.catatan_admin) ? r.catatan_admin.join('; ') : (r.catatan_admin || '-');
+                    actions += '<div class="d-flex align-items-start gap-2 mb-1 pb-1 border-bottom border-light"><span class="text-nowrap text-muted" style="font-size:.7rem;">' + esc(r.tanggal || '-') + '</span><span>' + esc(notes) + '</span></div>';
+                });
+                actions += '</div></div></div>';
+            }
+            if (f.catatan_user) {
+                actions += '<div class="mt-1 small text-muted"><i class="bi bi-chat-dots me-1"></i> <strong>Catatan:</strong> ' + esc(f.catatan_user) + '</div>';
+            }
+            $row.find('td').eq(7).html(actions);
+            updateProgress();
+            updateStatCards();
+        }
+    });
 };
 
 window.showRevision = function(id) {
@@ -341,6 +497,8 @@ function doScan(folderId, folderName, scanAll) {
             var label = btn.text().replace(/\s*\(\d+\)$/, '');
             btn.text(label + ' (' + (filter === 'all' ? totalFiles : (poinCounts[filter] || 0)) + ')');
         });
+        updateProgress();
+        updateStatCards();
             } else {
                 $('#scanTime').hide();
                 $('#fileCount').hide();
@@ -653,13 +811,48 @@ $(document).on('click', '.btn-breadcrumb-folder', function() {
     scanFolder($(this).data('folder-id'), $(this).data('folder-name'), false);
 });
 
+function updateProgress() {
+    var rows = $('#uploadsBody tr').has('.poin-check');
+    var total = rows.length;
+    if (total === 0) {
+        $('#completenessProgress').css('width', '0%');
+        $('#progressEmpty').show();
+        $('#progressMain').hide();
+        return;
+    }
+    $('#progressEmpty').hide();
+    $('#progressMain').show();
+    var approved = rows.filter('[data-status="approved"]').length;
+    var pct = total ? Math.round(approved / total * 100) : 0;
+    var $bar = $('#completenessProgress');
+    $bar.css('width', pct + '%').removeClass('bg-danger bg-warning bg-success bg-gold');
+    if (pct === 100) $bar.addClass('bg-gold');
+    else if (pct >= 80) $bar.addClass('bg-success');
+    else if (pct >= 50) $bar.addClass('bg-warning');
+    else $bar.addClass('bg-danger');
+    $('#progressText').text(approved + ' dari ' + total + ' file disetujui');
+    $('#progressPercent').text(pct + '%');
+}
+
+function updateStatCards() {
+    var rows = $('#uploadsBody tr').has('.poin-check');
+    $('#statPending').text(rows.filter('[data-status="pending"]').length);
+    $('#statApproved').text(rows.filter('[data-status="approved"]').length);
+    $('#statRevision').text(rows.filter('[data-status="revision"]').length);
+    if (rows.length > 0) {
+        $('#statCards').show();
+    } else {
+        $('#statCards').hide();
+    }
+}
+
 function buildTableRows(files) {
     if (!files || files.length === 0) {
         return '<tr><td colspan="8"><div class="empty-state"><i class="bi bi-inbox"></i><p class="mb-0">Tidak ada berkas ditemukan.</p></div></td></tr>';
     }
     let h = '';
     files.forEach(function(f, i) {
-        h += '<tr>';
+        h += '<tr data-status="' + esc(f.status) + '" data-db-id="' + esc(String(f.database_id || '')) + '">';
         h += '<td>' + (i + 1) + '</td>';
         h += '<td class="fw-medium">' + esc(f.filename || '-') + '</td>';
         h += '<td><span class="chip chip-subfolder"><i class="bi bi-folder"></i> ' + esc(f.subfolder || '(folder utama)') + '</span></td>';

@@ -194,7 +194,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function approve($id)
+    public function approve(Request $request, $id)
     {
         $upload = Upload::findOrFail($id);
 
@@ -207,6 +207,21 @@ class AdminController extends Controller
         $upload->notifikasi_pdf = null;
         $upload->approved_at = now();
         $upload->save();
+
+        if ($request->wantsJson()) {
+            $upload->load('revisionHistories', 'user', 'assignedUser');
+            $row = $upload->toArray();
+            $row['database_id'] = $upload->id;
+            $row['subfolder'] = $upload->subfolder;
+            $row['uploader_name'] = $upload->user?->nama ?? $upload->user?->username ?? '(tanpa nama)';
+            $row['revision_histories'] = $upload->revisionHistories->map(function ($r) {
+                return [
+                    'tanggal' => ($r->tanggal ?? $r->created_at?->format('d/m/Y H:i')),
+                    'catatan_admin' => $r->catatan_admin,
+                ];
+            });
+            return response()->json(['success' => true, 'file' => $row]);
+        }
 
         return back()->with('success', 'Berkas berhasil disetujui.');
     }
