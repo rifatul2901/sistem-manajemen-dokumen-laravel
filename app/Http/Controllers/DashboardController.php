@@ -12,13 +12,6 @@ use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
-    public function index()
-    {
-        return Auth::user()->isAdmin()
-            ? redirect()->route('admin.dashboard')
-            : redirect()->route('status.index');
-    }
-
     public function uploadRevisi(Request $request)
     {
         $request->validate([
@@ -81,6 +74,7 @@ class DashboardController extends Controller
             $upload->revisionHistories()->create([
                 'catatan_admin'       => $upload->catatan_admin,
                 'nama_file_sebelumnya' => $upload->filename,
+                'submitted_by'        => $user->nama,
                 'tanggal'             => now()->format('d-m-Y H:i'),
             ]);
 
@@ -96,31 +90,6 @@ class DashboardController extends Controller
         } catch (\Exception $e) {
             Log::error('Upload revisi failed', ['user' => $user->id, 'error' => $e->getMessage()]);
             return back()->with('error', 'Gagal upload revisi. Silakan coba lagi.');
-        }
-    }
-
-    public function getSubfolders()
-    {
-        $driveConfig = DriveConfig::first();
-        if (!$driveConfig || !$driveConfig->folder_id) {
-            return response()->json([]);
-        }
-
-        $adminToken = DriveToken::first();
-        if (!$adminToken) {
-            return response()->json([]);
-        }
-
-        try {
-            $driveService = new GoogleDriveService($adminToken);
-            $subfolders = $driveService->listSubfolders($driveConfig->folder_id);
-            $result = [['id' => '(folder utama)', 'name' => '(folder utama)']];
-            foreach ($subfolders as $sf) {
-                $result[] = ['id' => $sf->getName(), 'name' => $sf->getName()];
-            }
-            return response()->json($result);
-        } catch (\Exception $e) {
-            return response()->json([]);
         }
     }
 

@@ -2,6 +2,41 @@
 
 @section('page-title', 'Status Berkas')
 
+@push('styles')
+<style>
+    .card-status .card-header {
+        padding: .5rem .75rem;
+        font-size: .8rem;
+    }
+    .card-status .card-body {
+        padding: .75rem;
+    }
+    .card-status .small,
+    .card-status .text-muted {
+        font-size: .75rem;
+    }
+    .card-status .chip {
+        font-size: .7rem;
+        padding: .15rem .5rem;
+    }
+    .card-status .btn-sm {
+        font-size: .72rem;
+        padding: .25rem .55rem;
+    }
+    .card-status .alert-danger {
+        font-size: .78rem;
+        padding: .5rem .65rem;
+    }
+    .card-status .form-label {
+        font-size: .72rem;
+    }
+    .card-status .form-control {
+        font-size: .78rem;
+        padding: .3rem .5rem;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid px-0">
     <div class="d-flex align-items-center justify-content-between mb-4">
@@ -48,11 +83,11 @@
             </div>
         @endif
 
-        <div class="card mb-3">
+        <div class="card card-status mb-2">
             <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <div>
                     <i class="bi bi-file-earmark me-1"></i> {{ $doc['induk'] ?? 'Dokumen' }}
-                    <span class="chip chip-subfolder ms-2"><i class="bi bi-folder"></i> {{ $doc['subfolder'] ?? '(folder utama)' }}</span>
+                    <span class="chip chip-subfolder small ms-2"><i class="bi bi-folder"></i> {{ $doc['subfolder'] ?? '(folder utama)' }}</span>
                 </div>
                 @php
                     $badgeClass = $doc['statusLabel'] == 'Menunggu' ? 'badge-pending' : ($doc['statusLabel'] == 'Disetujui' ? 'badge-approved' : 'badge-revision');
@@ -143,5 +178,11 @@
             </div>
         </div>
     @endforelse
+
+    @if ($uploads->hasPages())
+        <div class="mt-4">
+            {{ $uploads->links() }}
+        </div>
+    @endif
 </div>
 @endsection

@@ -331,6 +331,7 @@
                         </tr>
                     </tbody>
                 </table>
+                <div id="paginationControls"></div>
             </div>
         </div>
     </div>
@@ -395,10 +396,36 @@
 @push('scripts')
 <script>
 var navStack = [];
+var _allFiles = [];
+var _currentPage = 1;
+var _perPage = 20;
+var _activeFilter = 'all';
+
+function getFilteredFiles() {
+    if (_activeFilter === 'all') return _allFiles;
+    return (_allFiles || []).filter(function(f) { return f[_activeFilter]; });
+}
 
 function pageInit() {
     navStack = [];
     updateBreadcrumb('', '(folder utama)');
+    _allFiles = [];
+    _currentPage = 1;
+    _activeFilter = 'all';
+    $('#uploadsBody').html(
+        '<tr id="scanPromptRow"><td colspan="8">' +
+        '<div class="empty-state"><i class="bi bi-search"></i>' +
+        '<p class="mb-0">Pilih folder dan klik <strong>Pindai</strong> untuk melihat daftar berkas.</p>' +
+        '</div></td></tr>'
+    );
+    $('#paginationControls').empty();
+    $('#progressEmpty').show();
+    $('#progressMain').hide();
+    $('#statCards').hide();
+    $('#scanTime').hide();
+    $('#fileCount').hide();
+    $('#poinFilterBar').hide();
+    $('[data-filter="all"]').addClass('active').siblings().removeClass('active');
 }
 
 $(document).off('turbo:load.dashboard').on('turbo:load.dashboard', pageInit);
@@ -439,9 +466,8 @@ if (!window._dashboardEvents) {
     $(document).on('click', '.poin-badge', function(e) {
         e.stopPropagation();
         e.preventDefault();
-        if ($(this).data('bs.tooltip')) {
-            $(this).tooltip('hide');
-        }
+        var tip = bootstrap.Tooltip.getInstance(this);
+        if (tip) tip.hide();
         $('#poinPopup').remove();
         var badge = $(this);
         var contentId = badge.data('popin-id');
@@ -509,26 +535,15 @@ if (!window._dashboardEvents) {
 
                 row.find('.poin-check[data-poin="' + poin + '"]').prop('checked', res.value);
 
+                var matched = (_allFiles || []).find(function(f) { return String(f.database_id) === String(uploadId); });
+                if (matched) matched[poin] = res.value;
+
                 var file = { database_id: uploadId };
                 poinKeys.forEach(function(k) { file[k] = row.find('.poin-check[data-poin="' + k + '"]').is(':checked'); });
                 row.find('.poin-cell').replaceWith(buildPoinCell(file));
                 initPoinTooltips();
 
-                var poinCounts = {}, totalFiles = 0;
-                $('#uploadsBody tr').each(function() {
-                    totalFiles++;
-                    var $tr = $(this);
-                    poinKeys.forEach(function(k) {
-                        var cb = $tr.find('.poin-check[data-poin="' + k + '"]');
-                        if (cb.length && cb.is(':checked')) poinCounts[k] = (poinCounts[k] || 0) + 1;
-                    });
-                });
-                $('#poinFilterBar [data-filter]').each(function() {
-                    var btn = $(this);
-                    var filter = btn.data('filter');
-                    var label = btn.text().replace(/\s*\(\d+\)$/, '');
-                    btn.text(label + ' (' + (filter === 'all' ? totalFiles : (poinCounts[filter] || 0)) + ')');
-                });
+                updatePoinCounts();
 
                 var activeFilter = $('#poinFilterBar .active').data('filter');
                 if (activeFilter && activeFilter !== 'all') {
@@ -544,23 +559,10 @@ if (!window._dashboardEvents) {
     });
 
     $(document).on('click', '#poinFilterBar [data-filter]', function() {
-        var btn = $(this);
-        var filter = btn.data('filter');
-        btn.addClass('active').siblings().removeClass('active');
-
-        if (filter === 'all') {
-            $('#uploadsBody tr').show();
-        } else {
-            $('#uploadsBody tr').each(function() {
-                var row = $(this);
-                var cb = row.find('.poin-check[data-poin="' + filter + '"]');
-                if (cb.length && cb.is(':checked')) {
-                    row.show();
-                } else {
-                    row.hide();
-                }
-            });
-        }
+        _activeFilter = $(this).data('filter');
+        $(this).addClass('active').siblings().removeClass('active');
+        _currentPage = 1;
+        renderPage();
     });
 
     $(document).on('submit', '#revisionForm', function(e) {
@@ -580,7 +582,9 @@ if (!window._dashboardEvents) {
                 $row.attr('data-status', 'revision');
                 $row.find('td').eq(3).html(badgeHtml('revision'));
                 $row.find('td').eq(7).html(buildActions(f));
-                $('#revisionModal').modal('hide');
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('revisionModal')).hide();
+                var matched = _allFiles.find(function(x) { return String(x.database_id) === String(f.database_id); });
+                if (matched) matched.status = 'revision';
                 updateProgress();
                 updateStatCards();
             },
@@ -600,13 +604,13 @@ window.approve = function(id) {
     approveTargetId = id;
     var fileName = $('tr[data-db-id="' + id + '"] td').eq(1).text();
     $('#approveModalFileName').text(fileName || 'Berkas ini');
-    $('#approveModal').modal('show');
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('approveModal')).show();
 };
 
 function doApprove() {
     var id = approveTargetId;
     if (!id) return;
-    $('#approveModal').modal('hide');
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('approveModal')).hide();
     $.ajax({
         url: '{{ url("admin/approve") }}/' + id,
         method: 'POST',
@@ -619,6 +623,8 @@ function doApprove() {
             $row.attr('data-status', 'approved');
             $row.find('td').eq(3).html(badgeHtml('approved'));
             $row.find('td').eq(7).html(buildActions(f));
+            var matched = _allFiles.find(function(f) { return String(f.database_id) === String(id); });
+            if (matched) matched.status = 'approved';
             updateProgress();
             updateStatCards();
         },
@@ -630,7 +636,7 @@ function doApprove() {
 
 window.showRevision = function(id) {
     $('#revisionForm').attr('action', '{{ url("admin/revision") }}/' + id);
-    $('#revisionModal').modal('show');
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('revisionModal')).show();
 };
 
 window.deleteUpload = function(id) {
@@ -642,10 +648,9 @@ window.deleteUpload = function(id) {
         data: { _token: '{{ csrf_token() }}' },
         success: function(res) {
             if (!res.success) return;
-            var $row = $('tr[data-db-id="' + id + '"]');
-            $row.remove();
-            updateProgress();
-            updateStatCards();
+            var idx = _allFiles.findIndex(function(f) { return String(f.database_id) === String(id); });
+            if (idx !== -1) _allFiles.splice(idx, 1);
+            renderPage();
         },
         error: function() {
             alert('Gagal menghapus berkas. Silakan coba lagi.');
@@ -666,7 +671,8 @@ window.scanCurrent = function(scanAll) {
 };
 
 function doScan(folderId, folderName, scanAll) {
-    $.ajax({
+    if (window._scanXhr) window._scanXhr.abort();
+    window._scanXhr = $.ajax({
         url: '{{ route("admin.scan-folder") }}',
         method: 'POST',
         data: {
@@ -679,28 +685,17 @@ function doScan(folderId, folderName, scanAll) {
             $('#uploadsBody').html('<tr><td colspan="8"><div class="empty-state"><div class="spinner-border text-primary mb-2" role="status"></div><p class="mb-0">Memindai folder...</p></div></td></tr>');
         },
         success: function(res) {
-            $('#uploadsBody').html(buildTableRows(res.files));
+            window._allFiles = res.files || [];
+            window._currentPage = 1;
+            window._perPage = 20;
+            _activeFilter = 'all';
+            renderPage();
             if (res.files && res.files.length > 0) {
                 $('#scanTime').show().find('span').text(res.waktu || '-');
                 $('#fileCount').show().find('span').text(res.files.length + ' berkas');
         $('#poinFilterBar').show();
         $('[data-filter="all"]').addClass('active').siblings().removeClass('active');
-        initPoinTooltips();
-        var poinCounts = {};
-        var totalFiles = res.files.length;
-        res.files.forEach(function(f) {
-            poinKeys.forEach(function(k) {
-                if (f[k]) poinCounts[k] = (poinCounts[k] || 0) + 1;
-            });
-        });
-        $('#poinFilterBar [data-filter]').each(function() {
-            var btn = $(this);
-            var filter = btn.data('filter');
-            var label = btn.text().replace(/\s*\(\d+\)$/, '');
-            btn.text(label + ' (' + (filter === 'all' ? totalFiles : (poinCounts[filter] || 0)) + ')');
-        });
-        updateProgress();
-        updateStatCards();
+        updatePoinCounts();
             } else {
                 $('#scanTime').hide();
                 $('#fileCount').hide();
@@ -793,7 +788,7 @@ function buildActions(f) {
         h += '<div class="collapse mt-1" id="' + revId + '"><div class="bg-light rounded-2 p-2 small">';
         f.revision_histories.forEach(function(r) {
             const notes = Array.isArray(r.catatan_admin) ? r.catatan_admin.join('; ') : (r.catatan_admin || '-');
-            h += '<div class="d-flex align-items-start gap-2 mb-1 pb-1 border-bottom border-light"><span class="text-nowrap text-muted" style="font-size:.7rem;">' + esc(r.tanggal || '-') + '</span><span>' + esc(notes) + '</span></div>';
+            h += '<div class="d-flex align-items-start gap-2 mb-1 pb-1 border-bottom border-light"><span class="text-nowrap text-muted" style="font-size:.7rem;">' + esc(r.tanggal || '-') + '</span><span class="fw-semibold">' + esc(r.submitted_by || '') + '</span><span>' + esc(notes) + '</span></div>';
         });
         h += '</div></div></div>';
     }
@@ -864,15 +859,22 @@ function buildPoinCell(f) {
 }
 
 function initPoinTooltips() {
-    $('.poin-cell .poin-badge[data-bs-toggle="tooltip"]').tooltip('dispose');
-    setTimeout(function() {
-        $('.poin-cell .poin-badge[data-bs-toggle="tooltip"]').tooltip({ html: true, sanitize: false });
-    }, 50);
+    try {
+        document.querySelectorAll('.poin-cell .poin-badge[data-bs-toggle="tooltip"]').forEach(function(el) {
+            var tip = bootstrap.Tooltip.getInstance(el);
+            if (tip) tip.dispose();
+        });
+        setTimeout(function() {
+            document.querySelectorAll('.poin-cell .poin-badge[data-bs-toggle="tooltip"]').forEach(function(el) {
+                new bootstrap.Tooltip(el, { html: true, sanitize: false });
+            });
+        }, 50);
+    } catch(e) {}
 }
 
 function updateProgress() {
-    var rows = $('#uploadsBody tr').has('.poin-check');
-    var total = rows.length;
+    var files = getFilteredFiles();
+    var total = files.length;
     if (total === 0) {
         $('#completenessProgress').css('width', '0%');
         $('#progressEmpty').show();
@@ -881,7 +883,7 @@ function updateProgress() {
     }
     $('#progressEmpty').hide();
     $('#progressMain').show();
-    var approved = rows.filter('[data-status="approved"]').length;
+    var approved = files.filter(function(f) { return f.status === 'approved'; }).length;
     var pct = total ? Math.round(approved / total * 100) : 0;
     var $bar = $('#completenessProgress');
     $bar.css('width', pct + '%').removeClass('bg-danger bg-warning bg-success bg-gold');
@@ -894,30 +896,87 @@ function updateProgress() {
 }
 
 function updateStatCards() {
-    var rows = $('#uploadsBody tr').has('.poin-check');
-    $('#statPending').text(rows.filter('[data-status="pending"]').length);
-    $('#statApproved').text(rows.filter('[data-status="approved"]').length);
-    $('#statRevision').text(rows.filter('[data-status="revision"]').length);
-    if (rows.length > 0) {
+    var files = getFilteredFiles();
+    $('#statPending').text(files.filter(function(f) { return f.status === 'pending'; }).length);
+    $('#statApproved').text(files.filter(function(f) { return f.status === 'approved'; }).length);
+    $('#statRevision').text(files.filter(function(f) { return f.status === 'revision'; }).length);
+    if (files.length > 0) {
         $('#statCards').show();
     } else {
         $('#statCards').hide();
     }
 }
 
-function buildTableRows(files) {
+function updatePoinCounts() {
+    var files = _allFiles || [];
+    var poinCounts = {}, totalFiles = files.length;
+    files.forEach(function(f) {
+        poinKeys.forEach(function(k) {
+            if (f[k]) poinCounts[k] = (poinCounts[k] || 0) + 1;
+        });
+    });
+    $('#poinFilterBar [data-filter]').each(function() {
+        var btn = $(this);
+        var filter = btn.data('filter');
+        var label = btn.text().replace(/\s*\(\d+\)$/, '');
+        btn.text(label + ' (' + (filter === 'all' ? totalFiles : (poinCounts[filter] || 0)) + ')');
+    });
+}
+
+function renderPage() {
+    var files = getFilteredFiles();
+    var page = _currentPage || 1;
+    var perPage = _perPage || 20;
+    var total = files.length;
+    var totalPages = Math.max(1, Math.ceil(total / perPage));
+    if (page > totalPages) page = totalPages;
+    if (page < 1) page = 1;
+    _currentPage = page;
+
+    var start = (page - 1) * perPage;
+    var end = Math.min(start + perPage, total);
+    var pageFiles = files.slice(start, end);
+
+    $('#uploadsBody').html(buildTableRows(pageFiles, page, perPage));
+    renderPagination(total, page, perPage);
+
+    initPoinTooltips();
+    updateProgress();
+    updateStatCards();
+}
+
+function renderPagination(total, page, perPage) {
+    var totalPages = Math.max(1, Math.ceil(total / perPage));
+    var h = '<div class="d-flex align-items-center justify-content-between px-3 py-2 border-top">';
+    h += '<span class="text-muted small">' + total + ' berkas</span>';
+    h += '<div class="d-flex align-items-center gap-1">';
+    h += '<button class="btn btn-sm btn-outline-secondary" onclick="goPage(' + (page - 1) + ')"' + (page <= 1 ? ' disabled' : '') + '><i class="bi bi-chevron-left"></i></button>';
+    h += '<span class="small text-muted px-2">' + page + ' / ' + totalPages + '</span>';
+    h += '<button class="btn btn-sm btn-outline-secondary" onclick="goPage(' + (page + 1) + ')"' + (page >= totalPages ? ' disabled' : '') + '><i class="bi bi-chevron-right"></i></button>';
+    h += '</div></div>';
+    $('#paginationControls').html(h);
+}
+
+function goPage(p) {
+    if (p < 1) p = 1;
+    _currentPage = p;
+    renderPage();
+}
+
+function buildTableRows(files, page, perPage) {
     if (!files || files.length === 0) {
         return '<tr><td colspan="8"><div class="empty-state"><i class="bi bi-inbox"></i><p class="mb-0">Tidak ada berkas ditemukan.</p></div></td></tr>';
     }
+    var startOffset = ((page || 1) - 1) * (perPage || 1);
     let h = '';
     files.forEach(function(f, i) {
         h += '<tr data-status="' + esc(f.status) + '" data-db-id="' + esc(String(f.database_id || '')) + '">';
-        h += '<td>' + (i + 1) + '</td>';
+        h += '<td>' + (startOffset + i + 1) + '</td>';
         h += '<td class="fw-medium">' + esc(f.filename || '-') + '</td>';
         h += '<td><span class="chip chip-subfolder"><i class="bi bi-folder"></i> ' + esc(f.subfolder || '(folder utama)') + '</span></td>';
         h += '<td>' + badgeHtml(f.status) + '</td>';
         h += buildPoinCell(f);
-        h += '<td class="text-muted small">' + esc(f.upload_time ? f.upload_time.replace('T', ' ').substring(0, 16) : '-') + '</td>';
+        h += '<td class="text-muted small">' + esc(f.upload_time ? f.upload_time : '-') + '</td>';
         h += '<td class="text-muted small">' + esc(f.uploader_name || '-') + '</td>';
         h += '<td>' + buildActions(f) + '</td>';
         h += '</tr>';

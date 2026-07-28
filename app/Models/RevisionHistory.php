@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class RevisionHistory extends Model
 {
     protected $fillable = [
-        'upload_id', 'catatan_admin', 'nama_file_sebelumnya', 'tanggal',
+        'upload_id', 'catatan_admin', 'nama_file_sebelumnya', 'submitted_by', 'tanggal',
     ];
 
     protected function casts(): array

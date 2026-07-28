@@ -58,26 +58,6 @@ class AdminController extends Controller
         return back()->with('success', 'Folder Drive tim berhasil disimpan.');
     }
 
-    public function getSubfolders()
-    {
-        $driveConfig = DriveConfig::first();
-        if (!$driveConfig || !$driveConfig->folder_id) {
-            return response()->json([]);
-        }
-
-        try {
-            $driveService = new GoogleDriveService();
-            $subfolders = $driveService->listSubfolders($driveConfig->folder_id);
-            $result = [['id' => '(folder utama)', 'name' => '(folder utama)']];
-            foreach ($subfolders as $sf) {
-                $result[] = ['id' => $sf->getName(), 'name' => $sf->getName()];
-            }
-            return response()->json($result);
-        } catch (\Exception $e) {
-            return response()->json([]);
-        }
-    }
-
     public function scanFolder(Request $request)
     {
         $request->validate([
@@ -123,11 +103,12 @@ class AdminController extends Controller
                     $row['database_id'] = $meta->id;
                     $row['assigned_user_id'] = $meta->assigned_user_id;
                     $row['subfolder'] = $f['subfolder'];
-                    $row['uploader_name'] = $meta->user?->nama ?? $meta->user?->username ?? '(tanpa nama)';
+                    $row['uploader_name'] = $meta->user?->nama ?? $meta->user?->username ?? $meta->uploader_name;
                     $row['revision_histories'] = $meta->revisionHistories->map(function ($r) {
                         return [
                             'tanggal' => ($r->tanggal ?? $r->created_at?->format('d/m/Y H:i')),
                             'catatan_admin' => $r->catatan_admin,
+                            'submitted_by' => $r->submitted_by,
                         ];
                     });
                     $gabungan[] = $row;
@@ -138,7 +119,7 @@ class AdminController extends Controller
                         'filename'       => $f['name'],
                         'subfolder'      => $f['subfolder'],
                         'uploader_name'  => 'Eksternal',
-                        'upload_time'    => isset($f['createdTime']) ? substr(str_replace('T', ' ', $f['createdTime']), 0, 16) : now()->format('Y-m-d H:i'),
+                        'upload_time'    => isset($f['createdTime']) ? \Carbon\Carbon::parse($f['createdTime'])->setTimezone(config('app.timezone'))->format('d-m-Y H:i') : now()->format('d-m-Y H:i'),
                         'status'         => 'pending',
                     ])->fresh();
                     $row = $upload->toArray();
@@ -207,6 +188,7 @@ class AdminController extends Controller
         $upload->catatan_admin = [];
         $upload->notifikasi_pdf = null;
         $upload->approved_at = now();
+        $upload->uploader_name = 'Admin';
         $upload->save();
 
         if ($request->wantsJson()) {
@@ -214,11 +196,12 @@ class AdminController extends Controller
             $row = $upload->toArray();
             $row['database_id'] = $upload->id;
             $row['subfolder'] = $upload->subfolder;
-            $row['uploader_name'] = $upload->user?->nama ?? $upload->user?->username ?? '(tanpa nama)';
+            $row['uploader_name'] = $upload->user?->nama ?? $upload->user?->username ?? $upload->uploader_name;
             $row['revision_histories'] = $upload->revisionHistories->map(function ($r) {
                 return [
                     'tanggal' => ($r->tanggal ?? $r->created_at?->format('d/m/Y H:i')),
                     'catatan_admin' => $r->catatan_admin,
+                    'submitted_by' => $r->submitted_by,
                 ];
             });
             return response()->json(['success' => true, 'file' => $row]);
@@ -278,11 +261,12 @@ class AdminController extends Controller
             $row = $upload->toArray();
             $row['database_id'] = $upload->id;
             $row['subfolder'] = $upload->subfolder;
-            $row['uploader_name'] = $upload->user?->nama ?? $upload->user?->username ?? '(tanpa nama)';
+            $row['uploader_name'] = $upload->user?->nama ?? $upload->user?->username ?? $upload->uploader_name;
             $row['revision_histories'] = $upload->revisionHistories->map(function ($r) {
                 return [
                     'tanggal' => ($r->tanggal ?? $r->created_at?->format('d/m/Y H:i')),
                     'catatan_admin' => $r->catatan_admin,
+                    'submitted_by' => $r->submitted_by,
                 ];
             });
             return response()->json(['success' => true, 'file' => $row]);

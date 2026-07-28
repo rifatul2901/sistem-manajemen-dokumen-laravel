@@ -19,8 +19,7 @@ class StatusController extends Controller
                   ->orWhere('assigned_user_id', $user->id);
             })
             ->orderBy('created_at', 'desc')
-            ->limit(100)
-            ->get();
+            ->paginate(15);
 
         $statusLabel = [
             'pending'  => 'Menunggu',

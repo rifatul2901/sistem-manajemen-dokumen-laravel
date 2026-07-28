@@ -4,7 +4,7 @@
 <div class="login-page">
     <div class="login-card">
         <div class="card">
-            <div class="login-logo"><i class="bi bi-file-earmark-lock2"></i></div>
+            <div class="login-logo"><img src="{{ asset('images/logo_no_text.png') }}" alt="Logo" style="height:80px;width:auto;"></div>
             <h1 class="login-title">Selamat Datang</h1>
             <p class="login-subtitle">Masuk ke Sistem Manajemen Dokumen</p>
 

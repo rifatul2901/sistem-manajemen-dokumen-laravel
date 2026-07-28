@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Upload;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -24,12 +22,6 @@ class RiwayatRevisiController extends Controller
             });
 
         $currentActivity = $request->activity;
-
-        if ($currentActivity === 'disetujui') {
-            $query->whereNotNull('approved_at');
-        } elseif ($currentActivity === 'minta_revisi') {
-            $query->whereNotNull('revision_requested_at');
-        }
 
         if ($request->filled('user_id')) {
             $query->where(function ($q) use ($request) {
@@ -52,7 +44,7 @@ class RiwayatRevisiController extends Controller
             });
         }
 
-        $uploads = $query->orderBy('created_at', 'desc')->get();
+        $uploads = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
         $activities = collect();
 
@@ -63,7 +55,8 @@ class RiwayatRevisiController extends Controller
                     'timestamp' => $u->revision_requested_at,
                     'filename'  => $u->filename,
                     'subfolder' => $u->subfolder ?? '(folder utama)',
-                    'user_nama' => $u->user?->nama ?? 'Eksternal',
+                    'pelaku'    => 'Admin',
+                    'assigned_nama' => $u->assignedUser?->nama,
                     'catatan'   => $u->catatan_admin,
                     'upload_id' => $u->id,
                 ]);
@@ -74,7 +67,8 @@ class RiwayatRevisiController extends Controller
                     'timestamp' => $u->approved_at,
                     'filename'  => $u->filename,
                     'subfolder' => $u->subfolder ?? '(folder utama)',
-                    'user_nama' => $u->user?->nama ?? 'Eksternal',
+                    'pelaku'    => 'Admin',
+                    'assigned_nama' => null,
                     'catatan'   => null,
                     'upload_id' => $u->id,
                 ]);
@@ -93,15 +87,11 @@ class RiwayatRevisiController extends Controller
 
         $activities = $activities->sortByDesc('timestamp')->values();
 
-        $total = $activities->count();
-        $perPage = 30;
-        $page = Paginator::resolveCurrentPage('page');
-        $slice = $activities->slice(($page - 1) * $perPage, $perPage)->values();
-
-        $activities = new LengthAwarePaginator($slice, $total, $perPage, $page, [
-            'path'  => Paginator::resolveCurrentPath(),
-            'query' => $request->query(),
-        ]);
+        if ($currentActivity === 'disetujui') {
+            $activities = $activities->filter(fn($a) => $a['type'] === 'disetujui');
+        } elseif ($currentActivity === 'minta_revisi') {
+            $activities = $activities->filter(fn($a) => $a['type'] === 'minta_revisi');
+        }
 
         $users = User::where('role', 'user')->orderBy('nama')->get();
 
@@ -118,12 +108,12 @@ class RiwayatRevisiController extends Controller
 
         $folders = collect(['(folder utama)'])->merge($folders);
 
-        return view('admin.riwayat-revisi.index', compact('activities', 'users', 'folders', 'total'));
+        return view('admin.riwayat-revisi.index', compact('activities', 'users', 'folders', 'uploads'));
     }
 
     public function rekapIndex()
     {
-        $users = User::where('role', 'user')->orderBy('nama')->get();
+        $users = User::where('role', 'user')->orderBy('nama')->paginate(20)->withQueryString();
 
         $docCounts = Upload::selectRaw('user_id, assigned_user_id, COUNT(*) as total')
             ->where(function ($q) {

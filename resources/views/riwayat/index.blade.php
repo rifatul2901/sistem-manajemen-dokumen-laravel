@@ -26,6 +26,32 @@
         padding: .5rem .75rem;
         margin-top: .25rem;
     }
+    .card-riwayat .card-header {
+        padding: .5rem .75rem;
+        font-size: .8rem;
+    }
+    .card-riwayat .card-body {
+        padding: .75rem;
+    }
+    .card-riwayat .chip {
+        font-size: .7rem;
+        padding: .15rem .5rem;
+    }
+    .card-riwayat .small,
+    .card-riwayat .text-muted {
+        font-size: .75rem;
+    }
+    .card-riwayat .fw-medium {
+        font-size: .78rem;
+    }
+    .card-riwayat .btn-sm {
+        font-size: .72rem;
+        padding: .25rem .55rem;
+    }
+    .card-riwayat .rev-note {
+        font-size: .72rem;
+        padding: .35rem .6rem;
+    }
 </style>
 @endpush
 
@@ -80,7 +106,7 @@
             $badgeClass = $upload->status == 'pending' ? 'badge-pending' : ($upload->status == 'approved' ? 'badge-approved' : 'badge-revision');
             $statusLabel = $statusLabelMap[$upload->status] ?? $upload->status;
         @endphp
-        <div class="card mb-3">
+        <div class="card card-riwayat mb-2">
             <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <div>
                     <i class="bi bi-file-earmark me-1"></i> {{ $upload->filename }}
@@ -91,17 +117,17 @@
                 <span class="badge {{ $badgeClass }}">{{ $statusLabel }}</span>
             </div>
             <div class="card-body">
-                <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
-                    <span class="chip chip-subfolder"><i class="bi bi-folder"></i> {{ $upload->subfolder ?? '(folder utama)' }}</span>
+                <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                    <span class="chip chip-subfolder small"><i class="bi bi-folder"></i> {{ $upload->subfolder ?? '(folder utama)' }}</span>
                     <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i> Kirim: {{ $upload->created_at ? $upload->created_at->format('d/m/Y H:i') : '-' }}</span>
                 </div>
 
                 {{-- Timeline toggle --}}
-                <button class="btn btn-sm btn-outline-secondary mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#riwayatTimeline{{ $upload->id }}" aria-expanded="false">
+                <button class="btn btn-sm btn-outline-secondary mt-1" type="button" data-bs-toggle="collapse" data-bs-target="#riwayatTimeline{{ $upload->id }}" aria-expanded="false">
                     <i class="bi bi-chevron-down me-1"></i> Lihat Riwayat Revisi
                 </button>
 
-                <div class="collapse mt-3" id="riwayatTimeline{{ $upload->id }}">
+                <div class="collapse mt-2" id="riwayatTimeline{{ $upload->id }}">
                     <div class="rev-timeline">
                         {{-- Pengiriman Awal --}}
                         <div class="rev-item d-flex align-items-start gap-2">

@@ -213,7 +213,6 @@
         .login-card .card { background: rgba(255,255,255,.98); border-radius: 16px; padding: 2rem; }
         .login-logo {
             width: 56px; height: 56px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
             border-radius: 16px;
             display: flex; align-items: center; justify-content: center;
             margin: 0 auto 1rem;
@@ -231,6 +230,21 @@
         .chip { display: inline-flex; align-items: center; gap: .35rem; padding: .2rem .6rem; border-radius: 6px; font-size: .75rem; font-weight: 500; }
         .chip-subfolder { background: #e0f2fe; color: #0369a1; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    function cleanupCollapse() {
+        document.querySelectorAll('.collapse').forEach(function (el) {
+            var instance = bootstrap.Collapse.getInstance(el);
+            if (instance) instance.dispose();
+            el.classList.remove('show');
+            var btn = document.querySelector('[data-bs-target="#' + el.id + '"]');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        });
+    }
+    document.addEventListener('turbo:before-cache', cleanupCollapse);
+    document.addEventListener('turbo:load', cleanupCollapse);
+    </script>
 </head>
 <body>
     @auth
@@ -331,8 +345,6 @@
     </div>
     @endauth
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js"></script>
     @stack('scripts')
 </body>
 </html>

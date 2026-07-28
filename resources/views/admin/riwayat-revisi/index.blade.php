@@ -42,7 +42,7 @@
             <h4 class="page-title mb-0">Riwayat Revisi</h4>
             <p class="text-muted small mb-0 mt-1">Log aktivitas admin — approve dan permintaan revisi.</p>
         </div>
-        <span class="badge bg-light text-dark px-3 py-2">{{ $total }} aktivitas</span>
+        <span class="badge bg-light text-dark px-3 py-2">{{ $uploads->total() }} berkas</span>
     </div>
 
     @session('success')
@@ -137,7 +137,9 @@
                                 </span>
                             </div>
                             <div class="small text-muted">
-                                <i class="bi bi-person me-1"></i> {{ $activity['user_nama'] }}
+                                @if ($activity['type'] === 'minta_revisi' && $activity['assigned_nama'])
+                                    <i class="bi bi-person-check me-1"></i> Ditugaskan ke: {{ $activity['assigned_nama'] }}
+                                @endif
                             </div>
                             @if ($activity['type'] === 'minta_revisi' && !empty($activity['catatan']))
                                 <button class="btn btn-sm btn-link text-danger p-0 mt-1" type="button" data-bs-toggle="collapse" data-bs-target="#catatanAdm{{ $loop->parent->index }}_{{ $loop->index }}">
@@ -170,9 +172,9 @@
     @endforelse
 
     {{-- Pagination --}}
-    @if ($activities->hasPages())
+    @if ($uploads->hasPages())
         <div class="d-flex justify-content-center mt-3">
-            {{ $activities->links() }}
+            {{ $uploads->links() }}
         </div>
     @endif
 </div>

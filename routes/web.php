@@ -28,7 +28,7 @@ Route::middleware('auth')->group(function () {
 
     // Upload Revisi
     Route::post('/upload-revisi', [DashboardController::class, 'uploadRevisi'])->name('dashboard.upload-revisi');
-    Route::get('/subfolders', [DashboardController::class, 'getSubfolders'])->name('dashboard.subfolders');
+
 
     // Status Berkas
     Route::get('/status', [StatusController::class, 'index'])->name('status.index');
@@ -43,7 +43,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/drive-config', [AdminController::class, 'driveConfig'])->name('drive-config');
         Route::post('/upload-oauth-client', [AdminController::class, 'uploadOAuthClient'])->name('upload-oauth-client');
         Route::post('/save-drive-config', [AdminController::class, 'saveDriveConfig'])->name('save-drive-config');
-        Route::get('/subfolders', [AdminController::class, 'getSubfolders'])->name('subfolders');
+
         Route::post('/scan-folder', [AdminController::class, 'scanFolder'])->name('scan-folder');
         Route::post('/approve/{id}', [AdminController::class, 'approve'])->name('approve');
         Route::post('/revision/{id}', [AdminController::class, 'requestRevision'])->name('revision');
