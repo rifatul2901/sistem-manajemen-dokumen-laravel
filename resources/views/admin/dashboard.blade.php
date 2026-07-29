@@ -109,6 +109,38 @@
     font-size: .75rem;
 }
 
+#berkasCard .table {
+    font-size: .75rem;
+}
+#berkasCard .table th {
+    font-weight: 600;
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: #64748b;
+    border-bottom-width: 1px;
+    padding: .4rem .5rem;
+}
+#berkasCard .table td {
+    padding: .3rem .5rem;
+    vertical-align: middle;
+}
+#berkasCard .table .badge {
+    font-size: .65rem;
+    padding: .2rem .4rem;
+}
+#berkasCard .table .chip-subfolder {
+    font-size: .65rem;
+}
+#berkasCard .table .action-group {
+    display: flex;
+    gap: .2rem;
+}
+#berkasCard .table .btn-icon {
+    font-size: .7rem;
+    padding: .15rem .35rem;
+}
+
 #completenessProgress {
     border-radius: 7px;
     transition: width .5s ease;

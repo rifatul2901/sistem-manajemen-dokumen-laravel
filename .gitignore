@@ -19,3 +19,4 @@ yarn-error.log
 /.vscode
 /storage/app/oauth_client_secret.json
 /storage/app/drive_token.json
+.opencode/
