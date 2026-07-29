@@ -14,6 +14,7 @@ use GuzzleHttp\Client as HttpClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
@@ -180,8 +181,9 @@ class AdminController extends Controller
     {
         $upload = Upload::findOrFail($id);
 
-        if ($upload->notifikasi_pdf && file_exists($upload->notifikasi_pdf)) {
-            unlink($upload->notifikasi_pdf);
+        $notifPath = $upload->notifikasi_pdf;
+        if ($notifPath && str_starts_with($notifPath, storage_path()) && file_exists($notifPath)) {
+            unlink($notifPath);
         }
 
         $upload->status = 'approved';
@@ -279,12 +281,15 @@ class AdminController extends Controller
     {
         $upload = Upload::findOrFail($id);
 
-        if ($upload->notifikasi_pdf && file_exists($upload->notifikasi_pdf)) {
-            unlink($upload->notifikasi_pdf);
+        $notifPath = $upload->notifikasi_pdf;
+        if ($notifPath && str_starts_with($notifPath, storage_path()) && file_exists($notifPath)) {
+            unlink($notifPath);
         }
 
-        $upload->revisionHistories()->delete();
-        $upload->delete();
+        DB::transaction(function () use ($upload) {
+            $upload->revisionHistories()->delete();
+            $upload->delete();
+        });
 
         if ($request->wantsJson()) {
             return response()->json(['success' => true]);

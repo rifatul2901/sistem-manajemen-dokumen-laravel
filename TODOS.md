@@ -14,7 +14,7 @@
 - [ ] Tambahkan cron job di panel hosting:
       `* * * * * cd /path/ke/project && php artisan schedule:run >> /dev/null 2>&1`
 
-## Selanjutnya (Fitur)
+## Selanjutnya mungkin di tambahkan (Fitur)
 - [ ] Button Download File Asli di Status Berkas
 - [ ] Dashboard landing page untuk user (opsional)
 - [x] Hapus command `cleanup:temp-files` dan `cleanup:orphan-notifications` — sudah dilakukan
@@ -23,13 +23,15 @@
 - [ ] Cache hasil scan terakhir di session (agar tidak hilang saat pindah menu lalu balik)
 
 ### Technical Debt (Perbaikan Kode)
-- [ ] [[HIGH]] Ganti `url("admin/approve")` dkk dengan named route (`route('admin.approve')`) — dashboard.blade.js
-- [ ] [[HIGH]] `notifikasi_pdf` path traversal: validasi path di `unlink()` — AdminController:202,267
-- [ ] [[HIGH]] Sanitasi nama file sebelum dipakai di path PDF — AdminController:235
-- [ ] [[HIGH]] DB transaction untuk cascade delete upload — AdminController:267-272
-- [ ] [[MEDIUM]] Error feedback toast saat AJAX poin gagal — dashboard.blade.js:607
-- [ ] [[MEDIUM]] `approved_at` & `revision_requested_at` di `$fillable` — Upload.php
+- [x] [[HIGH]] `notifikasi_pdf` path traversal: validasi path di `unlink()` — AdminController:202,267
+- [x] [[HIGH]] 419 CSRF di `doApprove()` — token static `{{ csrf_token() }}` diganti dengan `window.csrfToken` dari meta tag
+- [x] [[HIGH]] Sanitasi nama file sebelum dipakai di path PDF — AdminController:235
+- [x] [[HIGH]] DB transaction untuk cascade delete upload — AdminController:267-272
+- [x] [[MEDIUM]] Error feedback alert saat AJAX poin gagal — dashboard.blade.js:607
+- [x] [[MEDIUM]] `approved_at` & `revision_requested_at` di `$fillable` — Upload.php
 - [ ] [[LOW]] `upload_time` & `tanggal_kirim_awal` cast `datetime` — Upload.php
+- [x] [[LOW]] Modal `aria-hidden` focus — panggil `document.activeElement?.blur()` sebelum `.hide()` di `doApprove()`
+- [ ] [[LOW]] Tambah `'unsafe-eval'` ke CSP `script-src` atau cari sumber eval dari `content.js`
 - [ ] [[LOW]] `initPoinTooltips()` ganti `setTimeout(50)` pakai requestAnimationFrame
 - [ ] [[LOW]] `uploadRevisi()`: bungkus updateFile() + DB ops dalam DB::transaction() untuk cegah desinkron Drive-DB jika ada exception di tengah — DashboardController.php:71-93
 

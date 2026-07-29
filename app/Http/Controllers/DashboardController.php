@@ -81,7 +81,13 @@ class DashboardController extends Controller
             $upload->filename = $revisionFileName;
             $upload->status = 'pending';
             $upload->catatan_admin = [];
+
+            $oldNotif = $upload->notifikasi_pdf;
+            if ($oldNotif && file_exists($oldNotif)) {
+                unlink($oldNotif);
+            }
             $upload->notifikasi_pdf = '';
+
             $upload->upload_time = now()->format('d-m-Y H:i');
             $upload->catatan_user = strip_tags($request->catatan ?? '');
             $upload->save();

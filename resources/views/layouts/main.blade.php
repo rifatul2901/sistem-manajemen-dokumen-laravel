@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Manajemen Dokumen</title>
+    <title>@yield('page-title', 'Sistem Manajemen Dokumen')</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -93,6 +93,26 @@
         }
         .sidebar-footer .btn-logout:hover { background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.25); color: #fca5a5; }
 
+        .sidebar-watermark {
+            padding: .75rem;
+            margin: 0 .75rem .5rem;
+            border-top: 1px solid rgba(255,255,255,.06);
+            text-align: center;
+        }
+        .sidebar-watermark span {
+            display: block;
+            font-size: .6rem;
+            line-height: 1.4;
+            color: #475569;
+        }
+        .sidebar-watermark span:last-child {
+            font-size: .55rem;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+        .sidebar-watermark span:first-child {
+            color: #9ca3af;
+        }
         .sidebar-quote {
             padding: .6rem .75rem;
             margin: 0 .75rem .5rem;
@@ -101,7 +121,7 @@
             border-radius: 6px;
         }
         .sidebar-quote i { color: rgba(245,158,11,.6); font-size: .6rem; display: block; margin-bottom: .15rem; }
-        .sidebar-quote span { font-size: .7rem; line-height: 1.45; color: #64748b; font-style: italic; display: block; }
+        .sidebar-quote span { font-size: .8rem; line-height: 1.45; color: #afb6c1; font-style: italic; display: block; }
 
         .main-content {
             margin-left: var(--sidebar-width);
@@ -418,6 +438,10 @@
         <div class="sidebar-quote">
             <i class="bi bi-quote"></i>
             <span>Lengkap bukan berarti selesai,<br>tapi selesai haruslah lengkap</span>
+        </div>
+        <div class="sidebar-watermark">
+            <span>© 2026 {{ config('app.instansi', 'Badan Pusat Statistik Provinsi Sulawesi Utara 2026') }}. All rights reserved.</span>
+            <span>Developed by Rifatul Nabil</span>
         </div>
         <div class="sidebar-footer">
             <form method="POST" action="{{ route('logout') }}">

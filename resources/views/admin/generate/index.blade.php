@@ -260,7 +260,7 @@ $('#fetchSpreadsheetBtn').on('click', function() {
     $.ajax({
         url: '{{ route("admin.generate.fetch-spreadsheet") }}',
         method: 'POST',
-        data: { _token: '{{ csrf_token() }}', url: url },
+        data: { _token: $('meta[name="csrf-token"]').attr('content'), url: url },
         success: function(res) { renderDataTable(res); },
         error: function(xhr) { alert(xhr.responseJSON?.error || 'Gagal membaca spreadsheet.'); },
         complete: function() { btn.prop('disabled', false).html('<i class="bi bi-cloud-download me-1"></i> Ambil Data'); }
@@ -274,7 +274,7 @@ $('#fetchExcelBtn').on('click', function() {
     var btn = $(this);
     btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Loading...');
     var fd = new FormData();
-    fd.append('_token', '{{ csrf_token() }}');
+    fd.append('_token', $('meta[name="csrf-token"]').attr('content'));
     fd.append('file', file);
 
     $.ajax({

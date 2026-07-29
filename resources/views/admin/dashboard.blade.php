@@ -551,7 +551,7 @@ if (!window._dashboardEvents) {
             url: '{{ route("admin.toggle-poin") }}',
             method: 'POST',
             data: {
-                _token: '{{ csrf_token() }}',
+                _token: $('meta[name="csrf-token"]').attr('content'),
                 upload_id: uploadId,
                 poin: poin
             },
@@ -586,6 +586,7 @@ if (!window._dashboardEvents) {
             error: function() {
                 cb.prop('checked', !cb.prop('checked'));
                 row.find('.poin-check[data-poin="' + poin + '"]').prop('checked', cb.prop('checked'));
+                alert('Gagal menyimpan poin. Silakan coba lagi.');
             }
         });
     });
@@ -642,12 +643,13 @@ window.approve = function(id) {
 function doApprove() {
     var id = approveTargetId;
     if (!id) return;
+    document.activeElement?.blur();
     bootstrap.Modal.getOrCreateInstance(document.getElementById('approveModal')).hide();
     $.ajax({
         url: '{{ url("admin/approve") }}/' + id,
         method: 'POST',
         dataType: 'json',
-        data: { _token: '{{ csrf_token() }}' },
+        data: { _token: $('meta[name="csrf-token"]').attr('content') },
         success: function(res) {
             if (!res.success) return;
             var f = res.file;
@@ -677,7 +679,7 @@ window.deleteUpload = function(id) {
         url: '{{ url("admin/delete-upload") }}/' + id,
         method: 'POST',
         dataType: 'json',
-        data: { _token: '{{ csrf_token() }}' },
+        data: { _token: $('meta[name="csrf-token"]').attr('content') },
         success: function(res) {
             if (!res.success) return;
             var idx = _allFiles.findIndex(function(f) { return String(f.database_id) === String(id); });
@@ -708,7 +710,7 @@ function doScan(folderId, folderName, scanAll) {
         url: '{{ route("admin.scan-folder") }}',
         method: 'POST',
         data: {
-            _token: '{{ csrf_token() }}',
+            _token: $('meta[name="csrf-token"]').attr('content'),
             parent_id: folderId,
             parent_name: folderName,
             scan_all: scanAll ? 1 : 0
