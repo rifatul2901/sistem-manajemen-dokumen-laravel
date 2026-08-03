@@ -15,12 +15,8 @@
       `* * * * * cd /path/ke/project && php artisan schedule:run >> /dev/null 2>&1`
 
 ## Selanjutnya mungkin di tambahkan (Fitur)
-- [ ] Button Download File Asli di Status Berkas
 - [ ] Dashboard landing page untuk user (opsional)
 - [x] Hapus command `cleanup:temp-files` dan `cleanup:orphan-notifications` — sudah dilakukan
-
-## Mungkin
-- [ ] Cache hasil scan terakhir di session (agar tidak hilang saat pindah menu lalu balik)
 
 ### Technical Debt (Perbaikan Kode)
 - [x] [[HIGH]] `notifikasi_pdf` path traversal: validasi path di `unlink()` — AdminController:202,267
@@ -45,5 +41,3 @@ Cloudflare dipasang **saat deployment / production**, bukan sekarang.
 | 2 | Masukkan domain |
 | 3 | Ganti nameserver di registrar domain |
 | 4 | Selesai — SSL, CDN, caching otomatis aktif |
-
-Tidak perlu mengubah kode. CDN library (jsdelivr) juga tidak wajib dipindah — bisa tetap dipakai.

@@ -33,10 +33,13 @@ class CleanupOldFiles extends Command
 
         $now = now()->timestamp;
 
-        // 2. Hapus file template > 1 hari
-        $templateDir = storage_path('app/uploads/templates');
+        // 2. Hapus file template > 1 hari (kecuali template fallback default)
+        $templateDir = storage_path('app/templates');
         if (is_dir($templateDir)) {
             foreach (glob($templateDir . '/*') as $file) {
+                if (basename($file) === 'template_multinama.docx') {
+                    continue;
+                }
                 if (is_file($file) && filemtime($file) < $now - 86400) {
                     unlink($file);
                     $deleted++;

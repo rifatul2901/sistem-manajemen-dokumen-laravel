@@ -41,6 +41,8 @@
         <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2">{{ $value }}<button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button></div>
     @endsession
 
+    <div id="generateAlerts"></div>
+
     {{-- ROW 1: Sumber Data | Filter Kolom --}}
     <div class="row g-4 mb-4">
         <div class="col-lg-8">
@@ -167,21 +169,37 @@
     {{-- ROW 4: Riwayat Generate --}}
     <div>
         <div class="card">
-            <div class="card-header"><i class="bi bi-clock-history me-1"></i> Riwayat Generate</div>
+            <div class="card-header d-flex align-items-center gap-2">
+                <span><i class="bi bi-clock-history me-1"></i> Riwayat Generate</span>
+                <div class="dropdown ms-auto">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Opsi riwayat">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item text-danger" href="#" id="deleteSelectedBtn" role="button">
+                                <i class="bi bi-trash me-1"></i> Hapus Terpilih <span id="deleteSelectedCount" class="badge bg-danger ms-1 d-none">0</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
             <div class="card-body p-0">
                 <div class="history-table-wrap">
                     <table class="table table-hover history-table mb-0">
                         <thead class="table-light">
                             <tr>
+                                <th style="width:36px;"><input type="checkbox" id="historySelectAll" class="form-check-input mt-0" title="Pilih semua di halaman ini"></th>
                                 <th>#</th>
                                 <th>Nama File</th>
                                 <th>Waktu</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="historyBody">
                             @forelse($history as $h)
-                            <tr>
+                            <tr data-id="{{ $h->id }}">
+                                <td><input type="checkbox" class="history-check form-check-input mt-0" value="{{ $h->id }}"></td>
                                 <td>{{ $loop->iteration + ($history->currentPage() - 1) * $history->perPage() }}</td>
                                 <td>{{ $h->filename }}</td>
                                 <td>{{ \Carbon\Carbon::parse($h->waktu)->format('d M Y H:i') }}</td>
@@ -199,7 +217,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="text-muted text-center py-3">Belum ada riwayat generate.</td>
+                                <td colspan="5" class="text-muted text-center py-3">Belum ada riwayat generate.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -409,5 +427,137 @@ function updateSelectedPanel() {
     });
     panel.html(h);
 }
+
+// Generate via AJAX: auto-download + riwayat instan tanpa refresh
+$('#generateForm').on('submit', function(e) {
+    e.preventDefault();
+
+    var fd = new FormData(this);
+    var btn = $('#generateBtn');
+
+    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Membuat dokumen...');
+
+    $.ajax({
+        url: $(this).attr('action'),
+        method: 'POST',
+        data: fd,
+        processData: false,
+        contentType: false,
+        success: function(res) {
+            if (res && res.success) {
+                showGenerateAlert('success', 'Dokumen "' + res.filename + '" berhasil dibuat dan diunduh.');
+                prependHistoryRow(res);
+                window.location.href = '{{ route("admin.generate.download", ":id") }}'.replace(':id', res.history_id);
+            }
+        },
+        error: function(xhr) {
+            var msg = (xhr.responseJSON && (xhr.responseJSON.error || xhr.responseJSON.message)) || 'Gagal generate dokumen. Silakan coba lagi.';
+            showGenerateAlert('danger', msg);
+        },
+        complete: function() {
+            btn.html('<i class="bi bi-file-earmark-check me-1"></i> Generate');
+            updateSelectedPanel();
+        }
+    });
+});
+
+function showGenerateAlert(type, msg) {
+    var box = $('#generateAlerts');
+    if (!box.length) return;
+    box.html('<div class="alert alert-' + type + ' alert-dismissible fade show d-flex align-items-center gap-2">' + esc(msg) + '<button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button></div>');
+    clearTimeout(showGenerateAlert._t);
+    showGenerateAlert._t = setTimeout(function() { box.empty(); }, 6000);
+}
+
+function prependHistoryRow(res) {
+    var downloadUrl = '{{ route("admin.generate.download", ":id") }}'.replace(':id', res.history_id);
+    var rows = $('#historyBody tr');
+    var offset = 0;
+    if (rows.length) {
+        var firstNum = parseInt(rows.first().find('td:nth-child(2)').text(), 10);
+        if (!isNaN(firstNum)) offset = firstNum - 1;
+    }
+    rows.each(function(i) {
+        $(this).find('td:nth-child(2)').text(offset + i + 2);
+    });
+    var row = '<tr data-id="' + res.history_id + '">' +
+        '<td><input type="checkbox" class="history-check form-check-input mt-0" value="' + res.history_id + '"></td>' +
+        '<td>' + (offset + 1) + '</td>' +
+        '<td>' + esc(res.filename) + '</td>' +
+        '<td>' + esc(res.waktu) + '</td>' +
+        '<td><a href="' + downloadUrl + '" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i></a></td>' +
+        '</tr>';
+    $('#historyBody').prepend(row);
+    updateHistorySelectionUI();
+}
+
+// === Hapus Riwayat Generate (checkbox + dropdown) ===
+function updateHistorySelectionUI() {
+    var checks = $('#historyBody .history-check');
+    var checked = checks.filter(':checked');
+    var n = checked.length;
+    var total = checks.length;
+
+    $('#deleteSelectedCount').text(n).toggleClass('d-none', n === 0);
+    $('#deleteSelectedBtn').toggleClass('disabled', n === 0);
+
+    var selAll = $('#historySelectAll');
+    selAll.prop('checked', total > 0 && n === total);
+    selAll.prop('indeterminate', n > 0 && n < total);
+}
+
+$('#historyBody').on('change', '.history-check', function() {
+    updateHistorySelectionUI();
+});
+
+$('#historySelectAll').on('change', function() {
+    var checked = $(this).is(':checked');
+    $('#historyBody .history-check').prop('checked', checked);
+    updateHistorySelectionUI();
+});
+
+$('#deleteSelectedBtn').on('click', function(e) {
+    e.preventDefault();
+    var ids = [];
+    $('#historyBody .history-check:checked').each(function() {
+        ids.push($(this).val());
+    });
+    if (!ids.length) return;
+
+    if (!confirm('Hapus ' + ids.length + ' riwayat terpilih? File dokumen juga akan dihapus dan tidak dapat dikembalikan.')) {
+        return;
+    }
+
+    $.ajax({
+        url: '{{ route("admin.generate.delete") }}',
+        method: 'POST',
+        data: { _token: $('meta[name="csrf-token"]').attr('content'), ids: ids },
+        success: function(res) {
+            if (res && res.success) {
+                $('#historyBody .history-check:checked').closest('tr').remove();
+                showGenerateAlert('success', res.deleted + ' riwayat berhasil dihapus.');
+
+                var remaining = $('#historyBody .history-check').length;
+                if (remaining === 0) {
+                    location.reload();
+                    return;
+                }
+
+                var rows = $('#historyBody tr');
+                var offset = 0;
+                var firstNum = parseInt(rows.first().find('td:nth-child(2)').text(), 10);
+                if (!isNaN(firstNum)) offset = firstNum - 1;
+                rows.each(function(i) {
+                    $(this).find('td:nth-child(2)').text(offset + i + 1);
+                });
+                updateHistorySelectionUI();
+            }
+        },
+        error: function(xhr) {
+            var msg = (xhr.responseJSON && (xhr.responseJSON.error || xhr.responseJSON.message)) || 'Gagal menghapus riwayat. Silakan coba lagi.';
+            showGenerateAlert('danger', msg);
+        }
+    });
+});
 </script>
 @endpush

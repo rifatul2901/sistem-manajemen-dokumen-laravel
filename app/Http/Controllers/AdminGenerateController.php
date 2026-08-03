@@ -6,6 +6,7 @@ use App\Models\GenerateHistory;
 use App\Services\DocumentService;
 use App\Services\GoogleSheetsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -254,7 +255,9 @@ class AdminGenerateController extends Controller
         try {
             $selectedData = json_decode($request->selected_data, true);
             if (!is_array($selectedData) || empty($selectedData)) {
-                return back()->with('error', 'Pilih minimal 1 data terlebih dahulu.');
+                return $request->expectsJson()
+                    ? response()->json(['error' => 'Pilih minimal 1 data terlebih dahulu.'], 400)
+                    : back()->with('error', 'Pilih minimal 1 data terlebih dahulu.');
             }
 
             $templatePath = $request->file('template')->store('templates', 'local');
@@ -290,26 +293,31 @@ class AdminGenerateController extends Controller
                 $this->docService->convertDocxToPdf($outputPath, $pdfPath);
                 unlink($outputPath);
 
-                GenerateHistory::create([
-                    'user_id'  => auth()->id(),
-                    'filename' => $baseName . '.pdf',
-                    'filepath' => $pdfPath,
-                    'waktu'    => now(),
-                ]);
-
-                return response()->download($pdfPath, $baseName . '.pdf');
+                $finalPath = $pdfPath;
+                $finalName = $baseName . '.pdf';
+            } else {
+                $finalPath = $outputPath;
+                $finalName = $baseName . '.docx';
             }
 
-            GenerateHistory::create([
+            $history = GenerateHistory::create([
                 'user_id'  => auth()->id(),
-                'filename' => $baseName . '.docx',
-                'filepath' => $outputPath,
+                'filename' => $finalName,
+                'filepath' => $finalPath,
                 'waktu'    => now(),
             ]);
 
-            return response()->download($outputPath, $baseName . '.docx');
+            return response()->json([
+                'success'    => true,
+                'history_id' => $history->id,
+                'filename'   => $finalName,
+                'waktu'      => \Carbon\Carbon::parse($history->waktu)->format('d M Y H:i'),
+            ]);
         } catch (\Exception $e) {
             Log::error('Admin generate failed', ['error' => $e->getMessage()]);
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Gagal generate dokumen: ' . $e->getMessage()], 500);
+            }
             return back()->with('error', 'Gagal generate dokumen: ' . $e->getMessage());
         }
     }
@@ -327,5 +335,30 @@ class AdminGenerateController extends Controller
         }
 
         return response()->download($history->filepath, $history->filename);
+    }
+
+    public function deleteSelected(Request $request)
+    {
+        $request->validate([
+            'ids'     => 'required|array|min:1',
+            'ids.*'   => 'integer',
+        ]);
+
+        $histories = GenerateHistory::where('user_id', auth()->id())
+            ->whereIn('id', $request->ids)
+            ->get();
+
+        $deleted = 0;
+        DB::transaction(function () use ($histories, &$deleted) {
+            foreach ($histories as $h) {
+                if ($h->filepath && str_starts_with($h->filepath, storage_path()) && file_exists($h->filepath)) {
+                    unlink($h->filepath);
+                }
+                $h->delete();
+                $deleted++;
+            }
+        });
+
+        return response()->json(['success' => true, 'deleted' => $deleted]);
     }
 }
