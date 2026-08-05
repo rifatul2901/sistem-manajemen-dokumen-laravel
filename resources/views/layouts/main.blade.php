@@ -122,6 +122,13 @@
         }
         .sidebar-quote i { color: rgba(245,158,11,.6); font-size: .6rem; display: block; margin-bottom: .15rem; }
         .sidebar-quote span { font-size: .8rem; line-height: 1.45; color: #afb6c1; font-style: italic; display: block; }
+        .sidebar-quote .quote-source {
+            font-size: .65rem;
+            color: rgba(245,158,11,.55);
+            font-style: normal;
+            text-align: right;
+            margin-top: .3rem;
+        }
 
         .main-content {
             margin-left: var(--sidebar-width);
@@ -437,7 +444,8 @@
         </div>
         <div class="sidebar-quote">
             <i class="bi bi-quote"></i>
-            <span>Lengkap bukan berarti selesai,<br>tapi selesai haruslah lengkap</span>
+            <span>Jadilah tolok ukur kualitas. Sebagian orang belum terbiasa berada di lingkungan yang menuntut keunggulan.</span>
+            <span class="quote-source">— Steve Jobs</span>
         </div>
         <div class="sidebar-watermark">
             <span>© 2026 {{ config('app.instansi', 'Badan Pusat Statistik Provinsi Sulawesi Utara 2026') }}. All rights reserved.</span>
