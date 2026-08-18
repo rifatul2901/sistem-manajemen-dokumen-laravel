@@ -55,24 +55,24 @@
         }
         .sidebar-brand { padding: .75rem 1rem; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,.06); }
         .sidebar-brand img { height: 90px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,.2)); }
-        .sidebar-user { padding: .75rem 1.25rem; display: flex; align-items: center; gap: .75rem; }
+        .sidebar-user { padding: .6rem 1.1rem; display: flex; align-items: center; gap: .6rem; }
         .sidebar-user .avatar {
-            width: 36px; height: 36px; border-radius: 10px;
+            width: 32px; height: 32px; border-radius: 8px;
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             display: flex; align-items: center; justify-content: center;
-            color: #fff; font-weight: 600; font-size: .8rem; flex-shrink: 0;
+            color: #fff; font-weight: 600; font-size: .72rem; flex-shrink: 0;
             box-shadow: 0 2px 8px rgba(0,146,223,.3);
         }
         .sidebar-user .user-info { min-width: 0; }
-        .sidebar-user .user-name { font-size: .875rem; font-weight: 500; color: #e2e8f0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .sidebar-user .user-role { font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #64748b; }
-        .sidebar-nav { flex: 1; overflow-y: auto; padding: .5rem .75rem; }
-        .sidebar-nav .nav-section { font-size: .6rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #475569; padding: .75rem .75rem .35rem; display: block; }
-        .sidebar-nav .nav-item { margin-bottom: 2px; }
+        .sidebar-user .user-name { font-size: .8rem; font-weight: 500; color: #e2e8f0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sidebar-user .user-role { font-size: .6rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #64748b; }
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: .4rem .7rem; }
+        .sidebar-nav .nav-section { font-size: .58rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #475569; padding: .6rem .7rem .3rem; display: block; }
+        .sidebar-nav .nav-item { margin-bottom: 1px; }
         .sidebar-nav .nav-link {
-            display: flex; align-items: center; gap: .75rem;
-            padding: .6rem .75rem; border-radius: var(--radius-sm);
-            color: #94a3b8; font-size: .875rem; font-weight: 500;
+            display: flex; align-items: center; gap: .6rem;
+            padding: .48rem .65rem; border-radius: var(--radius-sm);
+            color: #94a3b8; font-size: .8rem; font-weight: 500;
             text-decoration: none; transition: all .15s ease;
             position: relative;
         }
@@ -81,7 +81,7 @@
             color: #fff; background: rgba(0,146,223,.2);
             box-shadow: inset 3px 0 0 var(--primary);
         }
-        .sidebar-nav .nav-link i { font-size: 1.1rem; width: 20px; text-align: center; flex-shrink: 0; }
+        .sidebar-nav .nav-link i { font-size: 1rem; width: 18px; text-align: center; flex-shrink: 0; }
         .sidebar-nav .nav-link .nav-badge { margin-left: auto; font-size: .65rem; padding: .15rem .5rem; border-radius: 20px; background: rgba(255,255,255,.1); color: #94a3b8; }
         .sidebar-footer { padding: .75rem; border-top: 1px solid rgba(255,255,255,.06); }
         .sidebar-footer .btn-logout {
@@ -95,7 +95,7 @@
 
         .sidebar-watermark {
             padding: .75rem;
-            margin: 0 .75rem .5rem;
+            margin: 0 .75rem .1rem;
             border-top: 1px solid rgba(255,255,255,.06);
             text-align: center;
         }
@@ -114,20 +114,20 @@
             color: #9ca3af;
         }
         .sidebar-quote {
-            padding: .6rem .75rem;
-            margin: 0 .75rem .5rem;
+            padding: .3rem .5rem;
+            margin: .1rem .75rem .35rem;
             border-left: 2px solid rgba(245,158,11,.5);
             background: rgba(245,158,11,.04);
             border-radius: 6px;
         }
-        .sidebar-quote i { color: rgba(245,158,11,.6); font-size: .6rem; display: block; margin-bottom: .15rem; }
-        .sidebar-quote span { font-size: .8rem; line-height: 1.45; color: #afb6c1; font-style: italic; display: block; }
+        .sidebar-quote i { color: rgba(245,158,11,.6); font-size: .55rem; display: block; margin-bottom: .1rem; }
+        .sidebar-quote span { font-size: .68rem; line-height: 1.4; color: #afb6c1; font-style: italic; display: block; }
         .sidebar-quote .quote-source {
-            font-size: .65rem;
-            color: rgba(245,158,11,.55);
+            font-size: .56rem;
+            color: rgba(245,158,11,.5);
             font-style: normal;
             text-align: right;
-            margin-top: .3rem;
+            margin-top: .2rem;
         }
 
         .main-content {
