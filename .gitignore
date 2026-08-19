@@ -20,3 +20,5 @@ yarn-error.log
 /storage/app/oauth_client_secret.json
 /storage/app/drive_token.json
 .opencode/
+graphify-out/
+TODOS.md

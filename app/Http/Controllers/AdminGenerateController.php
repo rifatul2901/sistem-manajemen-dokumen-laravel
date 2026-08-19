@@ -314,6 +314,14 @@ class AdminGenerateController extends Controller
                 'waktu'      => \Carbon\Carbon::parse($history->waktu)->format('d M Y H:i'),
             ]);
         } catch (\Exception $e) {
+            foreach ([$outputPath ?? null, $pdfPath ?? null] as $path) {
+                if ($path && file_exists($path)) {
+                    unlink($path);
+                }
+            }
+            if (isset($templatePath)) {
+                Storage::disk('local')->delete($templatePath);
+            }
             Log::error('Admin generate failed', ['error' => $e->getMessage()]);
             if ($request->expectsJson()) {
                 return response()->json(['error' => 'Gagal generate dokumen: ' . $e->getMessage()], 500);

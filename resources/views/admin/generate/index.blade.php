@@ -242,6 +242,19 @@ var dataCounter = 1;
 var selectionIdCounter = 0;
 
 $(document).ready(function() {
+    var saved = sessionStorage.getItem('generateSuccess');
+    if (saved) {
+        sessionStorage.removeItem('generateSuccess');
+        var dl = sessionStorage.getItem('generateDownloadId');
+        if (dl) {
+            sessionStorage.removeItem('generateDownloadId');
+            setTimeout(function() {
+                window.location.href = '{{ route("admin.generate.download", ":id") }}'.replace(':id', dl);
+            }, 300);
+        }
+        showGenerateAlert('success', saved);
+    }
+
     $('input[name="sourceType"]').on('change', function() {
         if ($(this).val() === 'spreadsheet') {
             $('#spreadsheetSection').show();
@@ -445,7 +458,15 @@ $('#generateForm').on('submit', function(e) {
         contentType: false,
         success: function(res) {
             if (res && res.success) {
-                showGenerateAlert('success', 'Dokumen "' + res.filename + '" berhasil dibuat dan diunduh.');
+                var msg = 'Dokumen "' + res.filename + '" berhasil dibuat dan diunduh.';
+                var page = parseInt(new URLSearchParams(window.location.search).get('page') || '1', 10);
+                if (page > 1) {
+                    sessionStorage.setItem('generateSuccess', msg);
+                    sessionStorage.setItem('generateDownloadId', String(res.history_id));
+                    window.location.href = '{{ route("admin.generate") }}';
+                    return;
+                }
+                showGenerateAlert('success', msg);
                 prependHistoryRow(res);
                 window.location.href = '{{ route("admin.generate.download", ":id") }}'.replace(':id', res.history_id);
             }
@@ -470,6 +491,7 @@ function showGenerateAlert(type, msg) {
 }
 
 function prependHistoryRow(res) {
+    $('#historyBody tr:has(td[colspan])').remove();
     var downloadUrl = '{{ route("admin.generate.download", ":id") }}'.replace(':id', res.history_id);
     var rows = $('#historyBody tr');
     var offset = 0;
