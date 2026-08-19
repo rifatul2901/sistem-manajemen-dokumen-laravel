@@ -338,6 +338,70 @@
         .login-alert-error ul li { margin-bottom: .15rem; }
         .login-alert-error ul li:last-child { margin-bottom: 0; }
 
+        .login-split {
+            width: 100%;
+            max-width: 940px;
+            display: grid;
+            grid-template-columns: 45fr 55fr;
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255,255,255,.12);
+            box-shadow: 0 25px 80px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.06);
+            animation: loginFade .5s ease-out;
+        }
+        .login-panel-form { max-width: none; display: flex; align-items: stretch; }
+        .login-panel-form > .card {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            animation: none;
+            padding: 2.75rem 2.25rem 2.25rem;
+        }
+        .login-panel-promo {
+            background: linear-gradient(160deg, rgba(11,53,79,.95) 0%, rgba(8,34,53,.98) 55%, rgba(6,26,40,1) 100%);
+            border-left: 1px solid rgba(255,255,255,.08);
+            padding: 2rem 2.5rem 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .login-panel-promo::before {
+            content: '';
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse at 30% 20%, rgba(28,141,203,.18) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(28,141,203,.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        .promo-head { display: flex; align-items: center; gap: 1.1rem; margin-bottom: 1.75rem; position: relative; }
+        .promo-logo { position: relative; margin-bottom: 0; }
+        .promo-logo img { height: 72px; width: auto; filter: drop-shadow(0 0 24px rgba(79,195,247,.35)); }
+        .promo-title { font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: .06em; margin: 0 0 .1rem; text-align: left; position: relative; }
+        .promo-subtitle { font-family: 'Open Sans', sans-serif; font-size: .8rem; color: rgba(255,255,255,.65); margin: 0; text-align: left; position: relative; }
+        .promo-desc { font-family: 'Open Sans', sans-serif; font-size: .85rem; color: rgba(255,255,255,.7); line-height: 1.7; max-width: 300px; margin: auto 0; position: relative; align-self: center; text-align: center; }
+        .promo-quote { position: relative; max-width: 280px; align-self: center; text-align: center; margin-top: auto; }
+        .promo-quote i { display: block; font-size: 1.15rem; color: rgba(79,195,247,.5); margin-bottom: .35rem; }
+        .promo-quote span { font-family: 'Open Sans', sans-serif; font-size: .68rem; font-style: italic; color: rgba(255,255,255,.82); line-height: 1.6; display: block; }
+        .promo-quote .quote-source { margin-top: .5rem; font-style: normal; font-size: .62rem; color: rgba(255,255,255,.55); letter-spacing: .04em; }
+        .login-copyright { margin-top: 1.5rem; text-align: center; font-family: 'Open Sans', sans-serif; font-size: .68rem; line-height: 1.6; color: rgba(255,255,255,.5); }
+        .login-copyright span { display: block; }
+        @media (max-width: 767.98px) {
+            .login-split { grid-template-columns: 1fr; max-width: 420px; }
+            .login-panel-promo { display: none; }
+            .login-panel-form > .card { padding: 2.5rem 1.5rem 2rem; }
+        }
+
         .empty-state { padding: 3rem 1rem; text-align: center; }
         .empty-state i { font-size: 2.5rem; color: #cbd5e1; margin-bottom: .5rem; display: block; }
         .empty-state p { color: #94a3b8; font-size: .9rem; }
