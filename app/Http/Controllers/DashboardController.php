@@ -8,6 +8,7 @@ use App\Models\Upload;
 use App\Services\GoogleDriveService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
@@ -61,36 +62,38 @@ class DashboardController extends Controller
                 }
             }
 
-            $driveService->updateFile(
-                $upload->drive_file_id,
-                file_get_contents($revisionFile->getPathname()),
-                $revisionFileName
-            );
+            DB::transaction(function () use ($driveService, $upload, $revisionFile, $revisionFileName, $request, $user) {
+                if (!$upload->tanggal_kirim_awal) {
+                    $upload->tanggal_kirim_awal = $upload->upload_time;
+                }
 
-            if (!$upload->tanggal_kirim_awal) {
-                $upload->tanggal_kirim_awal = $upload->upload_time;
-            }
+                $upload->revisionHistories()->create([
+                    'catatan_admin'       => $upload->catatan_admin,
+                    'nama_file_sebelumnya' => $upload->filename,
+                    'submitted_by'        => $user->nama,
+                    'tanggal'             => now()->format('d-m-Y H:i'),
+                ]);
 
-            $upload->revisionHistories()->create([
-                'catatan_admin'       => $upload->catatan_admin,
-                'nama_file_sebelumnya' => $upload->filename,
-                'submitted_by'        => $user->nama,
-                'tanggal'             => now()->format('d-m-Y H:i'),
-            ]);
+                $upload->filename = $revisionFileName;
+                $upload->status = 'pending';
+                $upload->catatan_admin = [];
 
-            $upload->filename = $revisionFileName;
-            $upload->status = 'pending';
-            $upload->catatan_admin = [];
+                $oldNotif = $upload->notifikasi_pdf;
+                if ($oldNotif && file_exists($oldNotif)) {
+                    unlink($oldNotif);
+                }
+                $upload->notifikasi_pdf = '';
 
-            $oldNotif = $upload->notifikasi_pdf;
-            if ($oldNotif && file_exists($oldNotif)) {
-                unlink($oldNotif);
-            }
-            $upload->notifikasi_pdf = '';
+                $upload->upload_time = now()->format('d-m-Y H:i');
+                $upload->catatan_user = strip_tags($request->catatan ?? '');
+                $upload->save();
 
-            $upload->upload_time = now()->format('d-m-Y H:i');
-            $upload->catatan_user = strip_tags($request->catatan ?? '');
-            $upload->save();
+                $driveService->updateFile(
+                    $upload->drive_file_id,
+                    file_get_contents($revisionFile->getPathname()),
+                    $revisionFileName
+                );
+            });
 
             return back()->with('success', 'Berkas revisi berhasil diupload dan menunggu review Admin.');
         } catch (\Exception $e) {

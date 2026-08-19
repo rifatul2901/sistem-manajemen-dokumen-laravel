@@ -898,11 +898,11 @@ function initPoinTooltips() {
             var tip = bootstrap.Tooltip.getInstance(el);
             if (tip) tip.dispose();
         });
-        setTimeout(function() {
+        requestAnimationFrame(function() {
             document.querySelectorAll('.poin-cell .poin-badge[data-bs-toggle="tooltip"]').forEach(function(el) {
                 new bootstrap.Tooltip(el, { html: true, sanitize: false });
             });
-        }, 50);
+        });
     } catch(e) {}
 }
 

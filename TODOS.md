@@ -24,12 +24,12 @@
 - [x] [[HIGH]] Sanitasi nama file sebelum dipakai di path PDF — AdminController:235
 - [x] [[HIGH]] DB transaction untuk cascade delete upload — AdminController:267-272
 - [x] [[MEDIUM]] Error feedback alert saat AJAX poin gagal — dashboard.blade.js:607
-- [x] [[MEDIUM]] `approved_at` & `revision_requested_at` di `$fillable` — Upload.php
-- [ ] [[LOW]] `upload_time` & `tanggal_kirim_awal` cast `datetime` — Upload.php
+- [x] [[MEDIUM]] `approved_at` & `revision_requested_at` di `casts()` — Upload.php (di-assign langsung via properti, bukan mass assignment, jadi `$fillable` tidak dibutuhkan)
+- [ ] [[LOW]] `upload_time` & `tanggal_kirim_awal` cast `datetime` — Upload.php (keputusan: DILEWATI, format 'd-m-Y H:i' konsisten di seluruh aplikasi; mengubahnya berisiko regresi tampilan tanpa manfaat)
 - [x] [[LOW]] Modal `aria-hidden` focus — panggil `document.activeElement?.blur()` sebelum `.hide()` di `doApprove()`
-- [ ] [[LOW]] Tambah `'unsafe-eval'` ke CSP `script-src` atau cari sumber eval dari `content.js`
-- [ ] [[LOW]] `initPoinTooltips()` ganti `setTimeout(50)` pakai requestAnimationFrame
-- [ ] [[LOW]] `uploadRevisi()`: bungkus updateFile() + DB ops dalam DB::transaction() untuk cegah desinkron Drive-DB jika ada exception di tengah — DashboardController.php:71-93
+- [x] [[LOW]] CSP `unsafe-eval` — tidak ada `eval()` ditemukan di seluruh kode, jadi `unsafe-eval` TIDAK ditambahkan (lebih aman)
+- [x] [[LOW]] `initPoinTooltips()` ganti `setTimeout(50)` pakai requestAnimationFrame — dashboard.blade.php
+- [x] [[LOW]] `uploadRevisi()`: bungkus operasi DB + `updateFile()` dalam `DB::transaction()` (DB dulu, Drive di paling akhir agar rollback konsisten) — DashboardController.php
 
 ## Catatan — Cloudflare
 
