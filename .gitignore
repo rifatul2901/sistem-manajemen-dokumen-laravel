@@ -22,3 +22,5 @@ yarn-error.log
 .opencode/
 graphify-out/
 TODOS.md
+public/images/*.bak
+optimize_logos.php

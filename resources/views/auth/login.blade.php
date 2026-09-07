@@ -32,14 +32,14 @@
                         <label for="username" class="form-label">Username</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-person"></i></span>
-                            <input type="text" name="username" id="username" class="form-control @error('username') is-invalid @enderror" value="{{ old('username') }}" required autofocus placeholder="Masukkan username">
+                            <input type="text" name="username" id="username" class="form-control @error('username') is-invalid @enderror" value="{{ old('username') }}" required autofocus autocomplete="username" placeholder="Masukkan username">
                         </div>
                     </div>
                     <div class="login-field">
                         <label for="password" class="form-label">Password</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" required placeholder="Masukkan password">
+                            <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" required autocomplete="current-password" placeholder="Masukkan password">
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Masuk</button>
@@ -53,7 +53,12 @@
         </div>
         <div class="login-panel-promo">
             <div class="promo-head">
-                <div class="promo-logo"><img src="{{ asset('images/logo_no_text.png') }}" alt="Logo"></div>
+                <div class="promo-logo">
+                    <picture>
+                        <source srcset="{{ asset('images/logo_no_text.webp') }}" type="image/webp">
+                        <img src="{{ asset('images/logo_no_text.png') }}" alt="Logo" width="512" height="456" loading="eager" fetchpriority="high" decoding="async">
+                    </picture>
+                </div>
                 <div class="promo-head-text">
                     <h2 class="promo-title">SIMADO</h2>
                     <p class="promo-subtitle">Sistem Manajemen Dokumen</p>

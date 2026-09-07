@@ -52,7 +52,7 @@
 </head>
 <body>
     <div class="error-card">
-        <img src="{{ asset('images/logo_no_text.png') }}" alt="Logo" class="logo">
+        <picture><source srcset="{{ asset('images/logo_no_text.webp') }}" type="image/webp"><img src="{{ asset('images/logo_no_text.png') }}" alt="Logo" class="logo" width="512" height="456" loading="eager" decoding="async"></picture>
         <div class="error-code">500</div>
         <div class="error-title">Terjadi Kesalahan</div>
         <div class="error-message">

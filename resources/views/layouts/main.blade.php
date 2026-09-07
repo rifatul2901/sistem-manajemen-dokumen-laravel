@@ -4,16 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('page-title', 'Sistem Manajemen Dokumen')</title>
+    <meta name="description" content="SIMADO - Sistem kontrol kualitas dokumen digital untuk mendukung kelengkapan dan transparansi kerja tim.">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/fonts/bootstrap-icons.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="icon" type="image/png" href="{{ asset('images/logo_no_text.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     @stack('styles')
     <style>
+        /* P2: ensure bootstrap-icons uses swap */
+        @font-face { font-family: "bootstrap-icons"; font-display: swap; src: url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/fonts/bootstrap-icons.woff2") format("woff2"); }
         :root {
             --sidebar-bg: #0f172a;
             --sidebar-width: 260px;
@@ -450,7 +454,10 @@
     @auth
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <img src="{{ asset('images/logo.png') }}" alt="Sistem Manajemen Dokumen" style="height:100px;width:auto;">
+            <picture>
+                <source srcset="{{ asset('images/logo.webp') }}" type="image/webp">
+                <img src="{{ asset('images/logo.png') }}" alt="Sistem Manajemen Dokumen" width="512" height="279" style="height:100px;width:auto;" loading="eager" fetchpriority="high" decoding="async">
+            </picture>
         </div>
         <div class="sidebar-divider"></div>
         <div class="sidebar-user">
@@ -526,12 +533,12 @@
 
     <div class="main-content">
         <header class="main-header">
-            <button class="toggle-sidebar" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+            <button class="toggle-sidebar" onclick="toggleSidebar()" aria-label="Toggle sidebar"><i class="bi bi-list" aria-hidden="true"></i></button>
             <span class="page-title">@yield('page-title', 'Sistem Manajemen Dokumen')</span>
         </header>
-        <div class="main-body">
+        <main class="main-body" id="main-content">
             @yield('content')
-        </div>
+        </main>
     </div>
 
     <script>
@@ -545,9 +552,9 @@
     });
     </script>
     @else
-    <div class="container-fluid p-0">
+    <main class="container-fluid p-0" id="main-content">
         @yield('content')
-    </div>
+    </main>
     @endauth
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     @stack('scripts')
