@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/save-drive-config', [AdminController::class, 'saveDriveConfig'])->name('save-drive-config');
 
         Route::post('/scan-folder', [AdminController::class, 'scanFolder'])->name('scan-folder');
+        Route::post('/list-subfolders', [AdminController::class, 'listSubfolders'])->name('list-subfolders');
         Route::post('/approve/{id}', [AdminController::class, 'approve'])->name('approve');
         Route::post('/revision/{id}', [AdminController::class, 'requestRevision'])->name('revision');
         Route::post('/delete-upload/{id}', [AdminController::class, 'deleteUpload'])->name('delete-upload');

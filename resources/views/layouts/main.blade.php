@@ -433,6 +433,36 @@
 
         .log-card { transition: transform .15s ease, box-shadow .15s ease; }
         .log-card:hover { transform: translateX(3px); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+
+        /* === Navigasi Folder — global (moved from dashboard for Turbo cache reliability) === */
+        .breadcrumb-nav { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem; padding: .25rem .4rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; }
+        .breadcrumb-nav .crumb { display: inline-flex; align-items: center; gap: .2rem; min-height: 22px; padding: .15rem .45rem; border-radius: 6px; font-size: .65rem; font-weight: 500; border: 1px solid transparent; cursor: pointer; transition: all .15s ease; user-select: none; }
+        .breadcrumb-nav .crumb-root { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 1px 4px rgba(0,146,223,.25); }
+        .breadcrumb-nav .crumb-root:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .breadcrumb-nav .crumb-sub { background: #fff; color: #334155; border-color: #e2e8f0; }
+        .breadcrumb-nav .crumb-sub:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-1px); }
+        .breadcrumb-nav .crumb-sep { color: #94a3b8; font-size: .65rem; }
+        .breadcrumb-nav .crumb:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+        .subfolder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: .3rem; }
+        @media (max-width: 576px) { .subfolder-grid { grid-template-columns: repeat(2, 1fr); } }
+        .subfolder-area { min-height: 52px; max-height: 92px; overflow-y: auto; align-content: start; padding-right: 2px; }
+        .subfolder-area::-webkit-scrollbar { width: 4px; }
+        .subfolder-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+        .folder-card { display: flex; align-items: center; gap: .35rem; min-height: 32px; padding: .35rem .5rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all .15s ease; text-align: left; width: 100%; }
+        .folder-card:hover { background: #f8fafc; border-color: #0092DF; box-shadow: 0 2px 10px rgba(0,146,223,.12); transform: translateY(-1px); }
+        .folder-card:active { transform: scale(.98); }
+        .folder-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+        .folder-card .folder-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #e0f2fe, #bae6fd); color: #0284c7; border-radius: 5px; font-size: .8rem; flex-shrink: 0; }
+        .folder-card .folder-name { font-size: .68rem; font-weight: 600; color: #0f172a; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .folder-card .folder-chevron { color: #94a3b8; font-size: .55rem; margin-left: auto; }
+        .subfolder-empty { display: flex; align-items: center; gap: .4rem; padding: .45rem .6rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; color: #64748b; font-size: .65rem; }
+        .subfolder-skeleton .skel { height: 32px; background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; border-radius: 6px; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .subfolder-toolbar { display: flex; align-items: center; gap: .5rem; margin-bottom: .6rem; }
+        .subfolder-toolbar input { flex: 1; max-width: 240px; font-size: .7rem; padding: .25rem .5rem; border: 1px solid #e2e8f0; border-radius: 6px; }
+        .subfolder-toolbar input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,146,223,.12); outline: none; }
+        .subfolder-count { font-size: .7rem; color: #64748b; }
+        @media (prefers-reduced-motion: reduce) { .folder-card, .breadcrumb-nav .crumb { transition: none; } .subfolder-skeleton .skel { animation: none; } }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

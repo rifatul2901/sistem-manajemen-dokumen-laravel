@@ -111,7 +111,18 @@
 
 #berkasCard .table {
     font-size: .75rem;
+    table-layout: fixed;
+    width: 100%;
 }
+#berkasCard .table th:nth-child(2) { width: 22%; }
+#berkasCard .table th:nth-child(3) { width: 14%; }
+#berkasCard .table th:nth-child(4) { width: 110px; }
+#berkasCard .table th:nth-child(5) { width: 130px; }
+#berkasCard .table th:nth-child(6) { width: 110px; }
+#berkasCard .table th:nth-child(7) { width: 100px; }
+#berkasCard .poin-cell { width: 130px; }
+#berkasCard .table td { overflow: hidden; }
+#berkasCard .table .text-truncate { max-width: 100%; }
 #berkasCard .table th {
     font-weight: 600;
     font-size: .7rem;
@@ -209,54 +220,45 @@
         <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2">{{ $value }}<button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button></div>
     @endsession
 
-    <div class="row g-4 mb-4">
-        <div class="col-md-6">
-            <div class="card h-100 card-compact">
-                <div class="card-header d-flex align-items-center gap-2 py-2">
-                    <i class="bi bi-google text-muted"></i> Konfigurasi Folder Google Drive
-                </div>
-                <div class="card-body d-flex flex-column">
+    <div class="card card-compact mb-4">
+        <div class="card-header d-flex align-items-center gap-2 py-2">
+            <i class="bi bi-hdd-stack text-muted"></i> Workspace Drive
+            <span class="badge bg-light text-dark border ms-auto d-none d-sm-inline-flex align-items-center gap-1"><i class="bi bi-hdd"></i> {{ $config['folder_size'] ?? '0 B' }}</span>
+        </div>
+        <div class="card-body">
+            <!-- Konfigurasi -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div class="flex-grow-1 min-w-0">
+                    <div class="text-muted small mb-1 d-flex align-items-center gap-1" style="font-size:.68rem;"><i class="bi bi-folder2 text-primary"></i> Folder aktif</div>
                     @if ($driveConfig && $driveConfig->folder_link)
-                        <div class="text-muted small mb-1">Folder aktif:</div>
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <i class="bi bi-folder2 text-primary" style="font-size:.8rem;"></i>
-                            <span class="fw-medium text-truncate">{{ $driveConfig->folder_link }}</span>
-                        </div>
-                        <div class="text-muted small mb-2">
-                            <i class="bi bi-hdd me-1"></i> {{ $config['folder_size'] ?? '0 B' }}
+                        <div class="d-flex align-items-center gap-2 px-2 py-1 rounded" style="background:#f8fafc;border:1px solid #e2e8f0;">
+                            <span class="fw-medium text-truncate small" style="font-size:.75rem;">{{ $driveConfig->folder_link }}</span>
+                            <span class="text-muted small d-sm-none ms-auto"><i class="bi bi-hdd me-1"></i>{{ $config['folder_size'] ?? '0 B' }}</span>
                         </div>
                     @else
-                        <div class="d-flex align-items-center justify-content-center mb-2" style="min-height:2rem;">
-                            <div class="text-center">
-                                <p class="text-muted small mb-0">Belum ada folder dikonfigurasi.</p>
-                            </div>
+                        <div class="px-2 py-2 rounded text-center" style="background:#f8fafc;border:1px dashed #cbd5e1;">
+                            <span class="text-muted small">Belum ada folder dikonfigurasi.</span>
                         </div>
                     @endif
-                    <a href="{{ route('admin.drive-config') }}" class="btn btn-outline-primary btn-sm mt-auto">
-                        <i class="bi bi-gear me-1"></i> Atur
-                    </a>
                 </div>
+                <a href="{{ route('admin.drive-config') }}" class="btn btn-outline-primary btn-sm flex-shrink-0"><i class="bi bi-gear me-1"></i> Atur</a>
             </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card h-100 card-compact">
-                <div class="card-header d-flex align-items-center gap-2 py-2">
-                    <i class="bi bi-folder2-open text-muted"></i> Pindai Folder
+            <hr class="my-3" style="border-color:#e2e8f0;opacity:1;">
+            <!-- Navigasi -->
+            <div>
+                <label class="form-label d-flex align-items-center gap-1 mb-1" style="font-size:.7rem;"><i class="bi bi-signpost-split text-muted"></i> Navigasi Folder</label>
+                <nav id="breadcrumbNav" class="breadcrumb-nav mb-2" aria-label="Navigasi folder"></nav>
+                <div class="subfolder-toolbar" id="subfolderToolbar" style="display:none;">
+                    <input type="search" id="subfolderSearch" placeholder="Cari subfolder..." aria-label="Cari subfolder">
+                    <span class="subfolder-count" id="subfolderCount"></span>
                 </div>
-                <div class="card-body">
-                    <div class="mb-2">
-                        <label class="form-label">Navigasi Folder</label>
-                        <div id="breadcrumbNav" class="d-flex flex-wrap align-items-center gap-1 mb-1"></div>
-                        <div id="subfolderButtons" class="d-flex flex-wrap gap-1"></div>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-primary py-1" onclick="scanCurrent(false)"><i class="bi bi-search me-1"></i> Pindai</button>
-                        <button class="btn btn-sm btn-outline-primary py-1" onclick="scanCurrent(true)"><i class="bi bi-files me-1"></i> Scan All</button>
-                    </div>
-                    <input type="hidden" id="currentFolderId" value="">
-                    <input type="hidden" id="currentFolderName" value="(folder utama)">
+                <div id="subfolderButtons" class="subfolder-grid subfolder-area"></div>
+                <div class="d-flex gap-2 mt-2">
+                    <button class="btn btn-sm btn-primary py-1" onclick="scanCurrent(false)"><i class="bi bi-search me-1"></i> Pindai</button>
+                    <button class="btn btn-sm btn-outline-primary py-1" onclick="scanCurrent(true)"><i class="bi bi-files me-1"></i> Scan All</button>
                 </div>
+                <input type="hidden" id="currentFolderId" value="">
+                <input type="hidden" id="currentFolderName" value="(folder utama)">
             </div>
         </div>
     </div>
@@ -458,6 +460,8 @@ function pageInit() {
     $('#fileCount').hide();
     $('#poinFilterBar').hide();
     $('[data-filter="all"]').addClass('active').siblings().removeClass('active');
+    // auto-load anak Folder Utama tanpa scan file
+    fetchSubfolders('', '(folder utama)');
 }
 
 $(document).off('turbo:load.dashboard').on('turbo:load.dashboard', pageInit);
@@ -488,11 +492,11 @@ if (!window._dashboardEvents) {
     $(document).on('click', '#approveModalConfirm', doApprove);
 
     $(document).on('click', '.btn-scan-folder', function() {
-        scanFolder($(this).data('folder-id'), $(this).data('folder-name'), false);
+        navigateToFolder($(this).data('folder-id'), $(this).data('folder-name'));
     });
 
     $(document).on('click', '.btn-breadcrumb-folder', function() {
-        scanFolder($(this).data('folder-id'), $(this).data('folder-name'), false);
+        navigateToFolder($(this).data('folder-id'), $(this).data('folder-name'));
     });
 
     $(document).on('click', '.poin-badge', function(e) {
@@ -692,11 +696,65 @@ window.deleteUpload = function(id) {
     });
 };
 
-window.scanFolder = function(folderId, folderName, scanAll) {
+window.navigateToFolder = function(folderId, folderName) {
     $('#currentFolderId').val(folderId);
     $('#currentFolderName').val(folderName);
-    doScan(folderId, folderName, scanAll);
+    updateBreadcrumb(folderId, folderName);
+    // reset tabel ke prompt sampai Pindai ditekan
+    $('#uploadsBody').html(
+        '<tr id="scanPromptRow"><td colspan="8">' +
+        '<div class="empty-state"><i class="bi bi-search"></i>' +
+        '<p class="mb-0">Pilih folder dan klik <strong>Pindai</strong> untuk melihat daftar berkas.</p>' +
+        '</div></td></tr>'
+    );
+    $('#paginationControls').empty();
+    fetchSubfolders(folderId, folderName);
 };
+window.scanFolder = window.navigateToFolder; // backward compat
+
+let _allSubfolders = [];
+function renderSubfolders(filter) {
+    const q = (filter || '').toLowerCase();
+    const list = q ? _allSubfolders.filter(function(s){ return s.name.toLowerCase().includes(q); }) : _allSubfolders;
+    $('#subfolderCount').text(list.length ? list.length + ' folder' : '');
+    if (!list.length) {
+        $('#subfolderButtons').html(q ? '<div class="subfolder-empty"><i class="bi bi-search"></i> Tidak ada hasil untuk "'+esc(filter)+'"</div>' : '<div class="subfolder-empty"><i class="bi bi-folder-x"></i> Tidak ada subfolder di folder ini</div>');
+        return;
+    }
+    var h = '';
+    list.forEach(function(sf) {
+        h += '<button class="folder-card btn-scan-folder" data-folder-id="' + esc(sf.id) + '" data-folder-name="' + esc(sf.name) + '" aria-label="Buka folder '+esc(sf.name)+'">'
+           + '<span class="folder-icon"><i class="bi bi-folder-fill"></i></span>'
+           + '<span class="folder-name">' + esc(sf.name) + '</span>'
+           + '<i class="bi bi-chevron-right folder-chevron"></i>'
+           + '</button>';
+    });
+    $('#subfolderButtons').html(h);
+}
+function fetchSubfolders(folderId, folderName) {
+    $('#subfolderButtons').addClass('subfolder-skeleton').html('<div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div>');
+    $('#subfolderToolbar').hide();
+    $.ajax({
+        url: '{{ route("admin.list-subfolders") }}',
+        method: 'POST',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'),
+            parent_id: folderId,
+            parent_name: folderName
+        },
+        success: function(res) {
+            _allSubfolders = res.subfolders || [];
+            $('#subfolderButtons').removeClass('subfolder-skeleton');
+            $('#subfolderToolbar').toggle(_allSubfolders.length > 4);
+            $('#subfolderSearch').val('');
+            renderSubfolders('');
+        },
+        error: function() {
+            $('#subfolderButtons').removeClass('subfolder-skeleton').html('<div class="subfolder-empty"><i class="bi bi-exclamation-triangle"></i> Gagal memuat subfolder</div>');
+        }
+    });
+}
+$(document).on('input', '#subfolderSearch', function(){ renderSubfolders($(this).val()); });
 
 window.scanCurrent = function(scanAll) {
     var id = $('#currentFolderId').val();
@@ -739,15 +797,11 @@ function doScan(folderId, folderName, scanAll) {
             $('#currentFolderId').val(res.folder_id || '');
             $('#currentFolderName').val(res.folder_name || '(folder utama)');
 
-            if (res.subfolders && res.subfolders.length > 0) {
-                var h = '';
-                res.subfolders.forEach(function(sf) {
-                    h += '<button class="btn btn-sm btn-outline-secondary btn-scan-folder" data-folder-id="' + esc(sf.id) + '" data-folder-name="' + esc(sf.name) + '"><i class="bi bi-folder me-1"></i> ' + esc(sf.name) + '</button>';
-                });
-                $('#subfolderButtons').html(h);
-            } else {
-                $('#subfolderButtons').html('<span class="text-muted small">Tidak ada subfolder</span>');
-            }
+            _allSubfolders = res.subfolders || [];
+            $('#subfolderToolbar').toggle(_allSubfolders.length > 4);
+            $('#subfolderSearch').val('');
+            renderSubfolders('');
+            $('#subfolderButtons').removeClass('subfolder-skeleton');
 
             updateBreadcrumb(res.folder_id || '', res.folder_name || '(folder utama)');
         },
@@ -759,26 +813,28 @@ function doScan(folderId, folderName, scanAll) {
 }
 
 function updateBreadcrumb(folderId, folderName) {
-    var idx = -1;
-    for (var i = 0; i < navStack.length; i++) {
-        if (navStack[i].id === folderId) {
-            idx = i;
-            break;
-        }
-    }
-
-    if (idx === -1) {
-        if (folderId) {
-            navStack.push({ id: folderId, name: folderName });
-        }
+    if (!folderId) {
+        navStack = [];
     } else {
-        navStack = navStack.slice(0, idx + 1);
+        var idx = -1;
+        for (var i = 0; i < navStack.length; i++) {
+            if (navStack[i].id === folderId) {
+                idx = i;
+                break;
+            }
+        }
+
+        if (idx === -1) {
+            navStack.push({ id: folderId, name: folderName });
+        } else {
+            navStack = navStack.slice(0, idx + 1);
+        }
     }
 
-    var h = '<span class="badge bg-primary px-3 py-2 btn-breadcrumb-folder" style="cursor:pointer;" data-folder-id="" data-folder-name="(folder utama)"><i class="bi bi-house-door me-1"></i> Root</span>';
+    var h = '<button class="crumb crumb-root btn-breadcrumb-folder" data-folder-id="" data-folder-name="(folder utama)" aria-label="Kembali ke Folder Utama"><i class="bi bi-house-door"></i> Folder Utama</button>';
     navStack.forEach(function(n) {
-        h += ' <i class="bi bi-chevron-right text-muted small"></i> ';
-        h += '<span class="badge bg-secondary px-3 py-2 btn-breadcrumb-folder" style="cursor:pointer;" data-folder-id="' + esc(n.id) + '" data-folder-name="' + esc(n.name) + '">' + esc(n.name) + '</span>';
+        h += '<i class="bi bi-chevron-right crumb-sep"></i>';
+        h += '<button class="crumb crumb-sub btn-breadcrumb-folder" data-folder-id="' + esc(n.id) + '" data-folder-name="' + esc(n.name) + '" aria-label="Buka ' + esc(n.name) + '">' + esc(n.name) + '</button>';
     });
     $('#breadcrumbNav').html(h);
 }

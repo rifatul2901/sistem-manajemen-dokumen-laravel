@@ -154,6 +154,40 @@ class AdminController extends Controller
         }
     }
 
+    public function listSubfolders(Request $request)
+    {
+        $request->validate([
+            'parent_id'   => 'nullable|string',
+            'parent_name' => 'nullable|string',
+        ]);
+
+        $driveConfig = DriveConfig::first();
+        if (!$driveConfig || !$driveConfig->folder_id) {
+            return response()->json(['error' => 'Folder Drive belum dikonfigurasi'], 400);
+        }
+
+        try {
+            $driveService = new GoogleDriveService();
+            $folderId = $request->parent_id ?: $driveConfig->folder_id;
+            $folderName = $request->parent_name ?: '(folder utama)';
+
+            $subfolders = $driveService->listSubfolders($folderId);
+            $data = [];
+            foreach ($subfolders as $sf) {
+                $data[] = ['id' => $sf->getId(), 'name' => $sf->getName()];
+            }
+
+            return response()->json([
+                'subfolders'  => $data,
+                'folder_id'   => $folderId,
+                'folder_name' => $folderName,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('List subfolders failed', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Gagal memuat subfolder.'], 500);
+        }
+    }
+
     public function togglePoin(Request $request)
     {
         $validPoin = array_keys(Upload::poinLabels());
