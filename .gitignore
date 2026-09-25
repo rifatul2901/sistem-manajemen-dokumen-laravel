@@ -24,3 +24,8 @@ graphify-out/
 TODOS.md
 public/images/*.bak
 optimize_logos.php
+
+# Obsidian docs-vault — track markdown, ignore cache/workspace saja
+docs-vault/.obsidian/workspace*
+docs-vault/.obsidian/cache/
+docs-vault/.trash/
