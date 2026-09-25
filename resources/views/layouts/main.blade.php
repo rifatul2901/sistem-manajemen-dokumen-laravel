@@ -544,9 +544,10 @@
             @endif
         </div>
         <div class="sidebar-quote">
+            @php($quote = collect(config('quotes'))->random())
             <i class="bi bi-quote"></i>
-            <span>Jadilah tolok ukur kualitas. Sebagian orang belum terbiasa berada di lingkungan yang menuntut keunggulan.</span>
-            <span class="quote-source">— Steve Jobs</span>
+            <span>{{ $quote['text'] }}</span>
+            <span class="quote-source">— {{ $quote['source'] }}</span>
         </div>
         <div class="sidebar-watermark">
             <span>© 2026 {{ config('app.instansi', 'Badan Pusat Statistik Provinsi Sulawesi Utara 2026') }}. All rights reserved.</span>

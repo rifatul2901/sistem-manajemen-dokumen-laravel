@@ -66,9 +66,10 @@
             </div>
             <p class="promo-desc">Sistem kontrol kualitas dokumen digital untuk mendukung kelengkapan dan transparansi kerja tim.</p>
             <div class="promo-quote">
+                @php($quote = collect(config('quotes'))->random())
                 <i class="bi bi-quote"></i>
-                <span>Jadilah tolok ukur kualitas. Sebagian orang belum terbiasa berada di lingkungan yang menuntut keunggulan.</span>
-                <span class="quote-source">— Steve Jobs</span>
+                <span>{{ $quote['text'] }}</span>
+                <span class="quote-source">— {{ $quote['source'] }}</span>
             </div>
         </div>
     </div>
