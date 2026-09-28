@@ -105,12 +105,27 @@
                             </div>
                         </div>
                     </div>
-                    <form method="POST" action="{{ route('admin.google.disconnect') }}">
+                    <form method="POST" action="{{ route('admin.google.disconnect') }}" id="disconnectForm">
                         @csrf
-                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Putuskan koneksi Google Drive?')">
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#disconnectModal">
                             <i class="bi bi-box-arrow-left me-1"></i> Putuskan
                         </button>
                     </form>
+                    <div class="modal fade" id="disconnectModal" tabindex="-1">
+                        <div class="modal-dialog modal-sm modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-body text-center py-4">
+                                    <i class="bi bi-box-arrow-left text-danger" style="font-size:3rem;"></i>
+                                    <h5 class="mt-3">Putuskan Koneksi</h5>
+                                    <p class="text-muted mb-0 small">Koneksi Google Drive akan diputus. Scan dan upload tidak bisa jalan sampai dihubungkan lagi.</p>
+                                </div>
+                                <div class="modal-footer border-0 justify-content-center pt-0 pb-4">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <button type="button" class="btn btn-danger px-4" onclick="document.getElementById('disconnectForm').submit();"><i class="bi bi-box-arrow-left me-1"></i>Ya, Putuskan</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             @else
                 <div class="text-center py-4">

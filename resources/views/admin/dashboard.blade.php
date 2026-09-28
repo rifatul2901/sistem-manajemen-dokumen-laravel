@@ -390,6 +390,23 @@
     </div>
 </div>
 
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-trash text-danger" style="font-size:3rem;"></i>
+                <h5 class="mt-3">Hapus Berkas</h5>
+                <p class="text-muted mb-0 small" id="deleteModalFileName"></p>
+                <p class="text-muted mb-0 small">File di Drive tidak akan terhapus dan tidak dapat dikembalikan.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pt-0 pb-4">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-danger px-4" id="deleteModalConfirm"><i class="bi bi-trash me-1"></i>Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="revisionModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -490,6 +507,7 @@ if (!window._dashboardEvents) {
     });
 
     $(document).on('click', '#approveModalConfirm', doApprove);
+    $(document).on('click', '#deleteModalConfirm', doDeleteUpload);
 
     $(document).on('click', '.btn-scan-folder', function() {
         navigateToFolder($(this).data('folder-id'), $(this).data('folder-name'));
@@ -590,7 +608,7 @@ if (!window._dashboardEvents) {
             error: function() {
                 cb.prop('checked', !cb.prop('checked'));
                 row.find('.poin-check[data-poin="' + poin + '"]').prop('checked', cb.prop('checked'));
-                alert('Gagal menyimpan poin. Silakan coba lagi.');
+                showAppToast('danger', 'Gagal menyimpan poin. Silakan coba lagi.');
             }
         });
     });
@@ -626,7 +644,7 @@ if (!window._dashboardEvents) {
                 updateStatCards();
             },
             error: function() {
-                alert('Gagal mengirim revisi.');
+                showAppToast('danger', 'Gagal mengirim revisi.');
             },
             complete: function() {
                 $btn.prop('disabled', false).html('<i class="bi bi-send me-1"></i> Kirim Revisi');
@@ -667,7 +685,7 @@ function doApprove() {
             updateStatCards();
         },
         error: function() {
-            alert('Gagal menyetujui berkas. Silakan coba lagi.');
+            showAppToast('danger', 'Gagal menyetujui berkas. Silakan coba lagi.');
         }
     });
 };
@@ -677,8 +695,20 @@ window.showRevision = function(id) {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('revisionModal')).show();
 };
 
+var deleteTargetId = null;
+
 window.deleteUpload = function(id) {
-    if (!confirm('Hapus berkas ini dari sistem? (File di Drive tidak akan terhapus)')) return;
+    deleteTargetId = id;
+    var fileName = $('tr[data-db-id="' + id + '"] td').eq(1).text();
+    $('#deleteModalFileName').text(fileName || 'Berkas ini');
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal')).show();
+};
+
+function doDeleteUpload() {
+    var id = deleteTargetId;
+    if (!id) return;
+    document.activeElement?.blur();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal')).hide();
     $.ajax({
         url: '{{ url("admin/delete-upload") }}/' + id,
         method: 'POST',
@@ -691,7 +721,7 @@ window.deleteUpload = function(id) {
             renderPage();
         },
         error: function() {
-            alert('Gagal menghapus berkas. Silakan coba lagi.');
+            showAppToast('danger', 'Gagal menghapus berkas. Silakan coba lagi.');
         }
     });
 };

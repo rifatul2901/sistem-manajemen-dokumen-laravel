@@ -78,12 +78,12 @@
                                 </td>
                                 <td class="text-muted small">{{ $user->created_at ? $user->created_at->format('d/m/Y H:i') : '-' }}</td>
                                 <td>
-                                    <form method="POST" action="{{ route('admin.users.toggle-active', $user) }}" style="display:inline;">
+                                    <form method="POST" action="{{ route('admin.users.toggle-active', $user) }}" style="display:inline;" id="toggleForm-{{ $user->id }}">
                                         @csrf
                                         @if ($user->is_active)
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Nonaktifkan user {{ $user->username }}?')"><i class="bi bi-pause-circle me-1"></i> Nonaktifkan</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger toggle-user-btn" data-form="toggleForm-{{ $user->id }}" data-username="{{ $user->username }}" data-action="Nonaktifkan"><i class="bi bi-pause-circle me-1"></i> Nonaktifkan</button>
                                         @else
-                                            <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Aktifkan kembali user {{ $user->username }}?')"><i class="bi bi-play-circle me-1"></i> Aktifkan</button>
+                                            <button type="button" class="btn btn-sm btn-outline-success toggle-user-btn" data-form="toggleForm-{{ $user->id }}" data-username="{{ $user->username }}" data-action="Aktifkan"><i class="bi bi-play-circle me-1"></i> Aktifkan</button>
                                         @endif
                                     </form>
                                 </td>
@@ -172,5 +172,42 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="toggleUserModal" tabindex="-1">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <i class="bi bi-person-gear text-warning" style="font-size:3rem;"></i>
+                    <h5 class="mt-3" id="toggleUserTitle">Ubah Status User</h5>
+                    <p class="text-muted mb-0 small" id="toggleUserName"></p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pt-0 pb-4">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary px-4" id="toggleUserConfirm"><i class="bi bi-check-lg me-1"></i>Ya, Lanjutkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(function() {
+    var targetForm = null;
+    document.querySelectorAll('.toggle-user-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            targetForm = document.getElementById(btn.getAttribute('data-form'));
+            document.getElementById('toggleUserTitle').textContent = btn.getAttribute('data-action') + ' User';
+            document.getElementById('toggleUserName').textContent = '@' + btn.getAttribute('data-username');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('toggleUserModal')).show();
+        });
+    });
+    document.getElementById('toggleUserConfirm').addEventListener('click', function() {
+        document.activeElement?.blur();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('toggleUserModal')).hide();
+        if (targetForm) targetForm.submit();
+    });
+})();
+</script>
+@endpush

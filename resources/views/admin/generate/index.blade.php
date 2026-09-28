@@ -7,14 +7,19 @@
     .cell-checkbox:checked + .cell-content { background: #d4edda; border-radius: 4px; padding: 0 4px; }
     .cell-content { cursor: pointer; }
     .cell-content:hover { background: #e8f4fd; border-radius: 4px; }
-    .selected-item { padding: 4px 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid var(--primary); margin-bottom: 4px; font-size: .75rem; }
+    .selected-item { padding: 4px 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid var(--primary); margin-bottom: 4px; font-size: .75rem; cursor: pointer; }
+    .selected-item:hover { background: #e8f4fd; }
     .selected-item .num { font-weight: 600; color: var(--primary); margin-right: 6px; }
+    .cell-flash { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: 4px; }
     #selectedPanel { flex: 1 1 0; min-height: 0; overflow: auto; }
     #colFilterPanel { flex: 1 1 0; min-height: 0; overflow: auto; }
     #dataCard { display: block; }
     .data-table-wrap { max-height: 320px; overflow: auto; }
     .data-table-wrap table { font-size: .75rem; }
     .data-table-wrap td, .data-table-wrap th { padding: .35rem .5rem !important; vertical-align: top; white-space: nowrap; }
+    .data-table-wrap thead th { position: sticky; top: 0; background: var(--bs-body-bg, #fff); z-index: 2; box-shadow: 0 1px 0 #dee2e6; }
+    .data-table-wrap td.row-num, .data-table-wrap th.row-num { position: sticky; left: 0; background: var(--bs-body-bg, #fff); z-index: 1; }
+    .data-table-wrap thead th.row-num { z-index: 3; }
     .col-header-check { cursor: pointer; }
     .col-filter-badge { display: inline-block; padding: 3px 10px; margin: 2px; font-size: .75rem; border-radius: 12px; cursor: pointer; border: 1px solid #dee2e6; user-select: none; white-space: nowrap; }
     .col-filter-badge.active { background: #0d6efd; color: #fff; border-color: #0d6efd; }
@@ -91,9 +96,12 @@
     {{-- ROW 2: Data Tersedia --}}
     <div class="mb-4">
         <div class="card" id="dataCard" style="display:none;">
-            <div class="card-header d-flex align-items-center justify-content-between">
+            <div class="card-header d-flex align-items-center justify-content-between gap-2">
                 <span><i class="bi bi-table me-1"></i> Data Tersedia</span>
-                <span class="badge bg-light text-dark" id="totalCells">0 sel</span>
+                <div class="d-flex align-items-center gap-2">
+                    <input type="search" id="dataSearch" class="form-control form-control-sm" placeholder="Cari di tabel..." style="max-width:200px;">
+                    <span class="badge bg-light text-dark" id="totalCells">0 sel</span>
+                </div>
             </div>
             <div class="card-body p-0">
                 <div class="data-table-wrap">
@@ -112,7 +120,10 @@
             <div class="card h-100 w-100 d-flex flex-column">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <span><i class="bi bi-check2-square me-1"></i> Data Terpilih</span>
-                    <span class="badge bg-primary" id="selectedCount">0</span>
+                    <div class="d-flex align-items-center gap-1">
+                        <button class="btn btn-sm btn-link text-danger text-decoration-none p-0" id="clearSelectedBtn" title="Bersihkan semua pilihan">Bersihkan</button>
+                        <span class="badge bg-primary" id="selectedCount">0</span>
+                    </div>
                 </div>
                 <div class="card-body" id="selectedPanel">
                     <p class="text-muted small mb-0 fst-italic">Centang sel pada tabel data untuk memilih.</p>
@@ -240,6 +251,7 @@ var selectedData = [];
 var currentRows = [];
 var dataCounter = 1;
 var selectionIdCounter = 0;
+var currentSource = 'spreadsheet';
 
 $(document).ready(function() {
     var saved = sessionStorage.getItem('generateSuccess');
@@ -256,7 +268,13 @@ $(document).ready(function() {
     }
 
     $('input[name="sourceType"]').on('change', function() {
-        if ($(this).val() === 'spreadsheet') {
+        var next = $(this).val();
+        if ((selectedData.length || currentRows.length) && !confirm('Ganti sumber akan menghapus data dan pilihan saat ini. Lanjutkan?')) {
+            $('input[name="sourceType"][value="' + currentSource + '"]').prop('checked', true);
+            return;
+        }
+        currentSource = next;
+        if (next === 'spreadsheet') {
             $('#spreadsheetSection').show();
             $('#excelSection').hide();
         } else {
@@ -272,6 +290,44 @@ $(document).ready(function() {
         $('#colFilterPanel').html('<p class="text-muted small mb-0 fst-italic">Muat data terlebih dahulu.</p>');
         updateSelectedPanel();
     });
+
+    $('#clearSelectedBtn').on('click', function() {
+        $('.cell-checkbox:checked').prop('checked', false);
+        $('.row-check').prop('checked', false);
+        selectedData = [];
+        dataCounter = 1;
+        updateSelectedPanel();
+    });
+
+    $('#selectedPanel').on('click', '.selected-remove', function(e) {
+        e.stopPropagation();
+        var selId = $(this).data('selid');
+        $('.cell-checkbox').filter(function() {
+            return $(this).data('selid') === selId;
+        }).prop('checked', false).trigger('change');
+    });
+
+    $('#selectedPanel').on('click', '.selected-item', function() {
+        var selId = $(this).data('selid');
+        var cb = $('.cell-checkbox').filter(function() {
+            return $(this).data('selid') === selId;
+        }).first();
+        if (!cb.length) return;
+        var td = cb.closest('td');
+        var wrap = $('.data-table-wrap');
+        wrap.scrollTop(td.position().top + wrap.scrollTop() - wrap.height() / 2);
+        wrap.scrollLeft(td.position().left + wrap.scrollLeft() - 80);
+        td.addClass('cell-flash');
+        setTimeout(function() { td.removeClass('cell-flash'); }, 1200);
+    });
+
+    $('#dataSearch').on('input', function() {
+        var q = $(this).val().toLowerCase();
+        $('#dataTableBody tr.data-row').each(function() {
+            var txt = $(this).text().toLowerCase();
+            $(this).toggle(!q || txt.indexOf(q) !== -1);
+        });
+    });
 });
 
 function esc(str) {
@@ -283,27 +339,30 @@ function esc(str) {
 
 $('#fetchSpreadsheetBtn').on('click', function() {
     var url = $('#spreadsheetUrl').val().trim();
-    if (!url) { alert('Masukkan link Google Spreadsheet.'); return; }
+    if (!url) { showGenerateAlert('danger', 'Masukkan link Google Spreadsheet.'); return; }
+    if (!/docs\.google\.com\/spreadsheets/i.test(url)) { showGenerateAlert('danger', 'Link harus berupa URL Google Spreadsheet (docs.google.com/spreadsheets).'); return; }
 
     var btn = $(this);
     btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Loading...');
+    showDataSkeleton();
 
     $.ajax({
         url: '{{ route("admin.generate.fetch-spreadsheet") }}',
         method: 'POST',
         data: { _token: $('meta[name="csrf-token"]').attr('content'), url: url },
         success: function(res) { renderDataTable(res); },
-        error: function(xhr) { alert(xhr.responseJSON?.error || 'Gagal membaca spreadsheet.'); },
+        error: function(xhr) { $('#dataCard').hide(); showGenerateAlert('danger', xhr.responseJSON?.error || 'Gagal membaca spreadsheet.'); },
         complete: function() { btn.prop('disabled', false).html('<i class="bi bi-cloud-download me-1"></i> Ambil Data'); }
     });
 });
 
 $('#fetchExcelBtn').on('click', function() {
     var file = $('#excelFile')[0].files[0];
-    if (!file) { alert('Pilih file Excel terlebih dahulu.'); return; }
+    if (!file) { showGenerateAlert('danger', 'Pilih file Excel terlebih dahulu.'); return; }
 
     var btn = $(this);
     btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Loading...');
+    showDataSkeleton();
     var fd = new FormData();
     fd.append('_token', $('meta[name="csrf-token"]').attr('content'));
     fd.append('file', file);
@@ -315,22 +374,37 @@ $('#fetchExcelBtn').on('click', function() {
         processData: false,
         contentType: false,
         success: function(res) { renderDataTable(res); },
-        error: function(xhr) { alert(xhr.responseJSON?.error || 'Gagal membaca Excel.'); },
+        error: function(xhr) { $('#dataCard').hide(); showGenerateAlert('danger', xhr.responseJSON?.error || 'Gagal membaca Excel.'); },
         complete: function() { btn.prop('disabled', false).html('<i class="bi bi-upload me-1"></i> Ambil Data'); }
     });
 });
+
+function showDataSkeleton() {
+    var h = '';
+    for (var i = 0; i < 5; i++) {
+        h += '<tr><td class="text-muted text-center">...</td>';
+        for (var j = 0; j < 4; j++) {
+            h += '<td><div class="placeholder-glow"><span class="placeholder col-12"></span></div></td>';
+        }
+        h += '</tr>';
+    }
+    $('#dataTableHead').html('');
+    $('#dataTableBody').html(h);
+    $('#dataCard').show();
+}
 
 function renderDataTable(res) {
     selectedData = [];
     dataCounter = 1;
     currentRows = res.rows || [];
     updateSelectedPanel();
+    $('#dataSearch').val('');
 
     var cols = res.columns || [];
     var rows = res.rows || [];
 
     if (rows.length === 0) {
-        alert('Tidak ada data ditemukan.');
+        showGenerateAlert('danger', 'Tidak ada data ditemukan di sumber ini.');
         return;
     }
 
@@ -342,7 +416,7 @@ function renderDataTable(res) {
     $('#colFilterPanel').html(filterHtml);
 
     // Build table header with "select all" checkbox per column
-    var thead = '<tr><th style="width:40px;">No</th>';
+    var thead = '<tr><th style="width:40px;" class="row-num">No</th>';
     cols.forEach(function(c) {
         var safeCol = esc(c).replace(/\s+/g, '-');
         thead += '<th data-colkey="' + esc(c) + '">';
@@ -358,7 +432,7 @@ function renderDataTable(res) {
     var tbody = '';
     rows.forEach(function(row, ri) {
         tbody += '<tr class="data-row" data-row="' + ri + '">';
-        tbody += '<td class="text-muted text-center">' + (ri + 1) + '</td>';
+        tbody += '<td class="text-muted text-center row-num"><input type="checkbox" class="row-check me-1" data-row="' + ri + '" title="Centang semua sel baris ini">' + (ri + 1) + '</td>';
         cols.forEach(function(col) {
             var val = row[col] || '';
             var cellId = 'cell-' + ri + '-' + esc(col).replace(/\s+/g, '-');
@@ -374,20 +448,33 @@ function renderDataTable(res) {
     $('#dataTableBody').html(tbody);
 
     var cellCount = rows.length * cols.length;
-    $('#totalCells').text(cellCount + ' sel');
+    $('#totalCells').text(rows.length + ' baris × ' + cols.length + ' kolom (' + cellCount + ' sel)');
 
     // Individual cell checkbox
     $('.cell-checkbox').on('change', function() {
         if ($(this).is(':checked')) {
             selectionIdCounter++;
             $(this).data('selid', selectionIdCounter);
-            selectedData.push({ id: selectionIdCounter, val: $(this).data('val'), col: $(this).data('col') });
+            selectedData.push({ id: selectionIdCounter, val: $(this).data('val'), col: $(this).data('col'), row: $(this).data('row') });
         } else {
             var selId = $(this).data('selid');
             selectedData = selectedData.filter(function(item) { return item.id !== selId; });
         }
         dataCounter = 1;
         updateSelectedPanel();
+    });
+
+    // "Select all in row" checkbox
+    $('.row-check').on('change', function() {
+        var ri = $(this).data('row');
+        var checked = $(this).is(':checked');
+        $('.cell-checkbox').filter(function() {
+            return $(this).data('row') === ri;
+        }).each(function() {
+            if ($(this).is(':checked') !== checked) {
+                $(this).prop('checked', checked).trigger('change');
+            }
+        });
     });
 
     // "Select all in column" header checkbox
@@ -432,10 +519,11 @@ function updateSelectedPanel() {
 
     var h = '';
     selectedData.forEach(function(item, i) {
-        h += '<div class="selected-item">';
+        h += '<div class="selected-item" data-selid="' + item.id + '" title="Klik untuk melihat sel asal">';
         h += '<span class="num">Data ' + (i + 1) + ':</span> ';
         h += esc(item.val || '(kosong)');
-        h += ' <span class="text-muted fw-light" style="font-size:.7rem;">(' + esc(item.col) + ')</span>';
+        h += ' <span class="text-muted fw-light" style="font-size:.7rem;">(Baris ' + (parseInt(item.row, 10) + 1) + ' &middot; ' + esc(item.col) + ')</span>';
+        h += ' <button class="btn btn-sm btn-link text-danger text-decoration-none p-0 ms-1 selected-remove" data-selid="' + item.id + '" title="Hapus pilihan ini"><i class="bi bi-x-lg"></i></button>';
         h += '</div>';
     });
     panel.html(h);

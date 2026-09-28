@@ -587,6 +587,24 @@
         @yield('content')
     </main>
     @endauth
+    <div id="appToastWrap" class="position-fixed top-0 end-0 p-3" style="z-index:1080;"></div>
+    <script>
+    function showAppToast(type, msg) {
+        var wrap = document.getElementById('appToastWrap');
+        if (!wrap) return;
+        var el = document.createElement('div');
+        el.className = 'toast align-items-center text-bg-' + (type === 'success' ? 'success' : 'danger') + ' border-0';
+        el.setAttribute('role', 'alert');
+        el.innerHTML = '<div class="d-flex"><div class="toast-body"></div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Tutup"></button></div>';
+        el.querySelector('.toast-body').textContent = msg;
+        wrap.appendChild(el);
+        try {
+            var t = bootstrap.Toast.getOrCreateInstance(el, { delay: 5000 });
+            t.show();
+            el.addEventListener('hidden.bs.toast', function() { el.remove(); });
+        } catch (e) { setTimeout(function() { el.remove(); }, 5000); }
+    }
+    </script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     @stack('scripts')
 </body>
