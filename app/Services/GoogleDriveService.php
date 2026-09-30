@@ -91,11 +91,6 @@ class GoogleDriveService
         $this->service = new Drive($client);
     }
 
-    public function getService(): Drive
-    {
-        return $this->service;
-    }
-
     public function uploadFile($fileContent, string $filename, string $folderId, ?string $mimeType = null): string
     {
         $mimeType = $mimeType ?: $this->detectMimeType($filename);

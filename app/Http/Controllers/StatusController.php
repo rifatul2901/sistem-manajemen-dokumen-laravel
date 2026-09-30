@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Upload;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class StatusController extends Controller
 {

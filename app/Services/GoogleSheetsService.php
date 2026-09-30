@@ -110,12 +110,6 @@ class GoogleSheetsService
         return $names;
     }
 
-    public function readSheet(string $spreadsheetId, string $range = 'A:ZZ'): array
-    {
-        $response = $this->service->spreadsheets_values->get($spreadsheetId, $range);
-        return $response->getValues() ?? [];
-    }
-
     public function readRange(string $spreadsheetId, string $sheetName, string $range = 'A:ZZ'): array
     {
         $response = $this->service->spreadsheets_values->get($spreadsheetId, $sheetName . '!' . $range);

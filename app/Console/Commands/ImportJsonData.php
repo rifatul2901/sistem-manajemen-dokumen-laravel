@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\Upload;
 use App\Models\User;
-use App\Models\RevisionHistory;
 use Illuminate\Console\Command;
 
 class ImportJsonData extends Command

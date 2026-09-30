@@ -151,9 +151,6 @@
         .main-header .toggle-sidebar:hover { background: #f1f5f9; }
         .main-header .page-title { font-size: 1rem; font-weight: 600; color: #1e293b; }
         .main-body { padding: 1.5rem; }
-        .main-body > .page-heading { margin-bottom: 1.5rem; }
-        .main-body > .page-heading h4 { font-size: 1.35rem; font-weight: 700; color: #0f172a; letter-spacing: -.02em; margin: 0; }
-        .main-body > .page-heading p { font-size: .8rem; color: #64748b; margin: .15rem 0 0; }
         .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1039; display: none; }
 
         @media (max-width: 767.98px) {
@@ -409,16 +406,9 @@
         .empty-state { padding: 3rem 1rem; text-align: center; }
         .empty-state i { font-size: 2.5rem; color: #cbd5e1; margin-bottom: .5rem; display: block; }
         .empty-state p { color: #94a3b8; font-size: .9rem; }
-        .empty-state .empty-action { margin-top: 1rem; }
-
-        .section-card { border-left: 3px solid var(--primary); }
 
         .chip { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .6rem; border-radius: 6px; font-size: .75rem; font-weight: 500; }
         .chip-subfolder { background: #e0f2fe; color: #0369a1; }
-
-        .page-heading { margin-bottom: 1.5rem; }
-        .page-heading h4 { font-size: 1.35rem; font-weight: 700; color: #0f172a; letter-spacing: -.02em; margin: 0; }
-        .page-heading p { font-size: .8rem; color: #64748b; margin: .15rem 0 0; }
 
         .stat-card { transition: transform .2s ease, box-shadow .2s ease; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }

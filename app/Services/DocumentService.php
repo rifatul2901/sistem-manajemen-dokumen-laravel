@@ -182,18 +182,4 @@ class DocumentService
         }
         rmdir($dir);
     }
-
-    protected function resolveTemplatePath($templateSource): string
-    {
-        if (is_string($templateSource) && file_exists($templateSource)) {
-            return $templateSource;
-        }
-        return storage_path('app/templates/template_multinama.docx');
-    }
-
-    public static function bersihkanNamaFile(string $teks): string
-    {
-        $teks = trim(str_replace(' ', '_', $teks));
-        return preg_replace('/[\\\\\/:*?"<>|]/', '', $teks);
-    }
 }
