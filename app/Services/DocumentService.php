@@ -20,7 +20,7 @@ class DocumentService
         }
         $counts = [];
 
-        preg_match_all('/\{\{\s*(\w+(?:\s+\w+)*)\s*\}\}/', $content, $matches);
+        preg_match_all('/\{\{\s*([\w\/-]+(?:\s+[\w\/-]+)*)\s*\}\}/', $content, $matches);
         foreach ($matches[1] as $tag) {
             $tagLower = strtolower(trim(preg_replace('/\s+/', '', $tag)));
             if (isset($columnLookup[$tagLower])) {
@@ -43,7 +43,7 @@ class DocumentService
             }
         }
 
-        preg_match_all('/\{\{\s*(\w+(?:\s+\w+)*)\s*\}\}/', $content, $matches);
+        preg_match_all('/\{\{\s*([\w\/-]+(?:\s+[\w\/-]+)*)\s*\}\}/', $content, $matches);
         $seen = [];
         $out = [];
         foreach ($matches[1] as $tag) {
@@ -94,7 +94,7 @@ class DocumentService
                 return $selectedData[$idx] ?? $match[0];
             }, $fullText);
 
-            $fullText = preg_replace_callback('/\{\{\s*(\w+(?:\s+\w+)*)\s*\}\}/', function ($match) use ($extraContext) {
+            $fullText = preg_replace_callback('/\{\{\s*([\w\/-]+(?:\s+[\w\/-]+)*)\s*\}\}/', function ($match) use ($extraContext) {
                 $tag = trim($match[1]);
                 return $extraContext[$tag] ?? $match[0];
             }, $fullText);
@@ -163,7 +163,7 @@ class DocumentService
                 return $col !== null ? $str($rowMap[$col] ?? '') : $match[0];
             }, $fullText);
 
-            $fullText = preg_replace_callback('/\{\{\s*(\w+(?:\s+\w+)*)\s*\}\}/', function ($match) use ($lookup, $rowMap, $extraContext, $tagMapping, $str) {
+            $fullText = preg_replace_callback('/\{\{\s*([\w\/-]+(?:\s+[\w\/-]+)*)\s*\}\}/', function ($match) use ($lookup, $rowMap, $extraContext, $tagMapping, $str) {
                 $tag = trim($match[1]);
                 if (isset($extraContext[$tag])) {
                     return $str($extraContext[$tag]);

@@ -24,6 +24,8 @@
     .col-filter-badge { display: inline-block; padding: 3px 10px; margin: 2px; font-size: .75rem; border-radius: 12px; cursor: pointer; border: 1px solid #dee2e6; user-select: none; white-space: nowrap; }
     .col-filter-badge.active { background: #0d6efd; color: #fff; border-color: #0d6efd; }
     .col-filter-badge.inactive { background: #f8f9fa; color: #6c757d; }
+    .tag-map-row.tag-unmapped .tag-map-select { border-color: #ffc107; }
+    .tag-map-row .badge { flex-shrink: 0; max-width: 45%; overflow: hidden; text-overflow: ellipsis; }
     .history-table-wrap { max-height: 250px; overflow: auto; }
     .history-table { font-size: .75rem; }
     .history-table td, .history-table th { padding: .3rem .5rem !important; vertical-align: middle; white-space: nowrap; }
@@ -136,17 +138,13 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label">Mode Generate</label>
-                        <div class="d-flex gap-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="generateMode" value="satuan" id="modeSatuan" checked>
-                                <label class="form-check-label" for="modeSatuan">Satuan</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="generateMode" value="massal" id="modeMassal">
-                                <label class="form-check-label" for="modeMassal">Massal (per baris)</label>
-                            </div>
+                        <div class="btn-group w-100" role="group" aria-label="Mode Generate">
+                            <input type="radio" class="btn-check" name="generateMode" value="satuan" id="modeSatuan" checked autocomplete="off">
+                            <label class="btn btn-outline-primary btn-sm" for="modeSatuan"><i class="bi bi-file-earmark me-1"></i>Satuan</label>
+                            <input type="radio" class="btn-check" name="generateMode" value="massal" id="modeMassal" autocomplete="off">
+                            <label class="btn btn-outline-primary btn-sm" for="modeMassal"><i class="bi bi-files me-1"></i>Massal</label>
                         </div>
-                        <div class="form-text">Massal: 1 baris = 1 dokumen (ala Autocrat), hasil berupa 1 file ZIP.</div>
+                        <div class="form-text" id="modeHelpText">Satuan: 1 dokumen dari sel tercentang. Hasil 1 file.</div>
                     </div>
                     <form method="POST" action="{{ route('admin.generate.generate') }}" id="generateForm" enctype="multipart/form-data">
                         @csrf
@@ -197,6 +195,11 @@
                         </div>
                         <div class="mb-3">
                             <small class="text-muted" id="bulkRowInfo">Belum ada data. Ambil data terlebih dahulu (maks 50 baris).</small>
+                        </div>
+                        <div class="mb-3" id="tagMappingWrap" style="display:none;">
+                            <label class="form-label">Pemetaan Placeholder <span class="text-muted fw-light" style="font-size:.75rem;">(ala Autocrat)</span></label>
+                            <div class="form-text mb-2" id="tagMappingHint">Pilih template untuk membaca tag-nya.</div>
+                            <div id="tagMappingList" class="d-flex flex-column gap-1"></div>
                         </div>
                         <button type="button" class="btn btn-primary w-100" id="generateBulkBtn">
                             <i class="bi bi-files me-1"></i> Generate Massal
@@ -282,6 +285,8 @@ var currentRows = [];
 var dataCounter = 1;
 var selectionIdCounter = 0;
 var currentSource = 'spreadsheet';
+var bulkCols = [];
+var bulkTags = [];
 
 $(document).ready(function() {
     var saved = sessionStorage.getItem('generateSuccess');
@@ -320,6 +325,10 @@ $(document).ready(function() {
         $('#colFilterPanel').html('<p class="text-muted small mb-0 fst-italic">Muat data terlebih dahulu.</p>');
         $('#bulkFilenameCol').empty();
         $('#bulkRowInfo').text('Belum ada data. Ambil data terlebih dahulu (maks 50 baris).');
+        bulkCols = [];
+        bulkTags = [];
+        $('#tagMappingWrap').hide();
+        $('#tagMappingList').empty();
         updateSelectedPanel();
     });
 
@@ -330,6 +339,14 @@ $(document).ready(function() {
         $('#templateHelpSatuan').toggle(!massal);
         $('#templateHelpMassal').toggle(massal);
         $('#selectedCol').toggle(!massal);
+        $('#modeHelpText').text(massal
+            ? 'Massal: 1 baris = 1 dokumen (ala Autocrat). Hasil 1 file ZIP.'
+            : 'Satuan: 1 dokumen dari sel tercentang. Hasil 1 file.');
+        detectBulkTags();
+    });
+
+    $('#templateFile').on('change', function() {
+        detectBulkTags();
     });
 
     $('#clearSelectedBtn').on('click', function() {
@@ -440,6 +457,10 @@ function renderDataTable(res) {
     currentRows = res.rows || [];
     updateSelectedPanel();
     $('#dataSearch').val('');
+    bulkCols = [];
+    bulkTags = [];
+    $('#tagMappingWrap').hide();
+    $('#tagMappingList').empty();
 
     var cols = res.columns || [];
     var rows = res.rows || [];
@@ -466,6 +487,8 @@ function renderDataTable(res) {
     });
     bulkSel.prop('selectedIndex', defIdx);
     $('#bulkRowInfo').text(rows.length + ' baris siap diproses massal (maks 50).');
+    bulkCols = cols.slice();
+    detectBulkTags();
 
     // Build table header with "select all" checkbox per column
     var thead = '<tr><th style="width:40px;" class="row-num">No</th>';
@@ -581,6 +604,70 @@ function updateSelectedPanel() {
     panel.html(h);
 }
 
+function detectBulkTags() {
+    var wrap = $('#tagMappingWrap');
+    var isMassal = $('input[name="generateMode"]:checked').val() === 'massal';
+    if (!isMassal) { wrap.hide(); return; }
+    var fileInput = $('#templateFile')[0];
+    var tpl = fileInput && fileInput.files[0];
+    if (!currentRows.length || !tpl || !bulkCols.length) { wrap.hide(); return; }
+    $('#tagMappingHint').text('Membaca tag template...');
+    $('#tagMappingList').html('<div class="placeholder-glow"><span class="placeholder col-12"></span></div>');
+    wrap.show();
+    var fd = new FormData();
+    fd.append('_token', $('meta[name="csrf-token"]').attr('content'));
+    fd.append('template', tpl);
+    fd.append('columns', JSON.stringify(bulkCols));
+    $.ajax({
+        url: '{{ route("admin.generate.detect-tags") }}',
+        method: 'POST',
+        data: fd,
+        processData: false,
+        contentType: false,
+        success: function(res) { renderTagMapping(res.tags || []); },
+        error: function() {
+            $('#tagMappingHint').text('Gagal membaca tag template.');
+            $('#tagMappingList').empty();
+        }
+    });
+}
+
+function renderTagMapping(tags) {
+    bulkTags = tags;
+    var list = $('#tagMappingList');
+    if (!tags.length) {
+        $('#tagMappingHint').text('Tidak ada tag {..} di template selain tag sistem.');
+        list.empty();
+        return;
+    }
+    var need = tags.filter(function(t) { return !t.matched; }).length;
+    $('#tagMappingHint').html(need
+        ? '<span class="text-warning">' + need + ' dari ' + tags.length + ' tag perlu dihubungkan.</span> Tag sistem & {data N} otomatis.'
+        : 'Semua ' + tags.length + ' tag otomatis cocok. Tag sistem & {data N} otomatis.');
+    var sorted = tags.slice().sort(function(a, b) { return (a.matched ? 1 : 0) - (b.matched ? 1 : 0); });
+    function tagRowHtml(t) {
+        var opts = '<option value="">— Pilih —</option>';
+        bulkCols.forEach(function(c) {
+            opts += '<option value="' + esc(c) + '"' + (t.matched === c ? ' selected' : '') + '>' + esc(c) + '</option>';
+        });
+        opts += '<option value="__ignore__">Abaikan (biarkan apa adanya)</option>';
+        return '<div class="d-flex align-items-center gap-2 tag-map-row' + (t.matched ? '' : ' tag-unmapped') + '" data-key="' + esc(t.key) + '">'
+           + '<span class="badge ' + (t.matched ? 'bg-success' : 'bg-warning text-dark') + '">{' + '{' + esc(t.tag) + '}' + '}</span>'
+           + '<select class="form-select form-select-sm tag-map-select">' + opts + '</select>'
+           + '</div>';
+    }
+    var needRows = '', autoRows = '', autoCount = 0;
+    sorted.forEach(function(t) {
+        if (t.matched) { autoRows += tagRowHtml(t); autoCount++; }
+        else { needRows += tagRowHtml(t); }
+    });
+    var h = needRows;
+    if (autoCount) {
+        h += '<details class="mt-1"><summary class="text-muted small" style="cursor:pointer;">' + autoCount + ' tag otomatis cocok — klik untuk lihat</summary><div class="d-flex flex-column gap-1 mt-1">' + autoRows + '</div></details>';
+    }
+    list.html(h);
+}
+
 // Generate massal via AJAX: ZIP + riwayat instan tanpa refresh
 $('#generateBulkBtn').on('click', function() {
     if (!currentRows.length) { showGenerateAlert('danger', 'Ambil data terlebih dahulu.'); return; }
@@ -590,6 +677,21 @@ $('#generateBulkBtn').on('click', function() {
     var col = $('#bulkFilenameCol').val();
     if (!col) { showGenerateAlert('danger', 'Pilih kolom nama file terlebih dahulu.'); return; }
 
+    var mapping = {};
+    var incomplete = false;
+    if ($('#tagMappingWrap').is(':visible') && $('#tagMappingList .tag-map-row').length) {
+        $('#tagMappingList .tag-map-row').each(function() {
+            var v = $(this).find('.tag-map-select').val();
+            if (!v) { incomplete = true; return false; }
+            if (v !== '__ignore__') mapping[$(this).data('key')] = v;
+        });
+        if (incomplete) {
+            showGenerateAlert('danger', 'Masih ada placeholder yang belum dipetakan. Pilih kolom atau Abaikan.');
+            $('#tagMappingWrap')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+    }
+
     var btn = $(this);
     btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Membuat ' + currentRows.length + ' dokumen...');
 
@@ -597,6 +699,7 @@ $('#generateBulkBtn').on('click', function() {
     fd.append('_token', $('meta[name="csrf-token"]').attr('content'));
     fd.append('rows', JSON.stringify(currentRows));
     fd.append('filename_column', col);
+    fd.append('mapping', JSON.stringify(mapping));
     fd.append('template', tpl);
 
     $.ajax({
