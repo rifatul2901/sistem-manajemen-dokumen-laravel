@@ -330,6 +330,201 @@ class AdminGenerateController extends Controller
         }
     }
 
+    public function detectTags(Request $request)
+    {
+        $request->validate([
+            'template' => 'required|file|mimes:docx|max:10240',
+            'columns'  => 'nullable|json',
+        ]);
+
+        $columns = json_decode($request->input('columns', '[]'), true);
+        if (!is_array($columns)) {
+            $columns = [];
+        }
+        $columns = array_values(array_filter(array_map(
+            fn($c) => is_scalar($c) ? trim((string) $c) : '',
+            $columns
+        )));
+
+        $templatePath = $request->file('template')->store('templates', 'local');
+        try {
+            $tags = $this->docService->detectTags(storage_path('app/' . $templatePath), $columns);
+            $systemKeys = ['judul_project', 'tanggal_cetak'];
+            $tags = array_values(array_filter($tags, function ($t) use ($systemKeys) {
+                return !in_array($t['key'], $systemKeys, true);
+            }));
+            return response()->json(['success' => true, 'tags' => $tags]);
+        } finally {
+            Storage::disk('local')->delete($templatePath);
+        }
+    }
+
+    public function generateBulk(Request $request)
+    {
+        $request->validate([
+            'rows'            => 'required|json',
+            'template'        => 'required|file|mimes:docx|max:10240',
+            'filename_column' => 'required|string|max:200',
+            'mapping'         => 'nullable|json',
+        ]);
+
+        $templatePath = null;
+        $batchDir = null;
+        $zipPath = null;
+
+        try {
+            $rows = json_decode($request->input('rows'), true);
+            if (!is_array($rows) || empty($rows)) {
+                return response()->json(['error' => 'Tidak ada baris data untuk di-generate.'], 400);
+            }
+            if (count($rows) > 50) {
+                return response()->json(['error' => 'Maksimal 50 baris per sekali generate massal.'], 422);
+            }
+
+            $templatePath = $request->file('template')->store('templates', 'local');
+            $fullTemplatePath = storage_path('app/' . $templatePath);
+
+            $outputDir = storage_path('app/hasil_generate');
+            if (!is_dir($outputDir)) {
+                mkdir($outputDir, 0755, true);
+            }
+            $batchDir = $outputDir . '/bulk_' . now()->format('Ymd_His') . '_' . uniqid();
+            mkdir($batchDir, 0755, true);
+
+            $extraContext = [
+                'Judul_Project' => 'Dokumen Triwulanan',
+                'Tanggal_Cetak' => now()->format('d F Y'),
+            ];
+
+            $tagMapping = [];
+            $rawMapping = json_decode($request->input('mapping', '{}'), true);
+            if (is_array($rawMapping)) {
+                foreach ($rawMapping as $k => $v) {
+                    if (is_string($k) && is_string($v) && $v !== '' && strlen($v) <= 200) {
+                        $tagMapping[strtolower(preg_replace('/\s+/', '', trim($k)))] = $v;
+                    }
+                }
+            }
+
+            $filenameCol = $request->input('filename_column');
+            $usedNames = [];
+            $made = [];
+            $skipped = 0;
+
+            foreach ($rows as $i => $row) {
+                if (!is_array($row)) {
+                    $skipped++;
+                    continue;
+                }
+                $hasValue = false;
+                foreach ($row as $v) {
+                    if (is_scalar($v) && trim((string) $v) !== '') {
+                        $hasValue = true;
+                        break;
+                    }
+                }
+                if (!$hasValue) {
+                    $skipped++;
+                    continue;
+                }
+
+                $rawName = null;
+                if (array_key_exists($filenameCol, $row)) {
+                    $rawName = $row[$filenameCol];
+                } else {
+                    $normWanted = strtolower(preg_replace('/\s+/', '', trim($filenameCol)));
+                    foreach ($row as $col => $v) {
+                        if (strtolower(preg_replace('/\s+/', '', trim((string) $col))) === $normWanted) {
+                            $rawName = $v;
+                            break;
+                        }
+                    }
+                }
+                $safe = is_scalar($rawName) ? preg_replace('/[^a-zA-Z0-9\s\-_\.]/', '', (string) $rawName) : '';
+                $safe = trim(trim($safe), '.');
+                $safe = $safe !== '' ? $safe : 'Dokumen_' . ($i + 1);
+
+                $candidate = $safe;
+                $n = 2;
+                while (isset($usedNames[$candidate])) {
+                    $candidate = $safe . '-' . $n++;
+                }
+                $usedNames[$candidate] = true;
+
+                $outPath = $batchDir . '/' . $candidate . '.docx';
+                $this->docService->generateFromRow($fullTemplatePath, $row, $extraContext, $outPath, $tagMapping);
+                $made[] = $candidate . '.docx';
+            }
+
+            if (empty($made)) {
+                $this->rrmdirSafe($batchDir);
+                Storage::disk('local')->delete($templatePath);
+                return response()->json(['error' => 'Semua baris kosong, tidak ada dokumen dibuat.'], 400);
+            }
+
+            $zipName = 'Bulk_' . now()->format('Ymd_His') . '_' . uniqid() . '.zip';
+            $zipPath = $outputDir . '/' . $zipName;
+            $zip = new \ZipArchive();
+            if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+                throw new \RuntimeException('Gagal membuat file ZIP.');
+            }
+            foreach ($made as $f) {
+                $zip->addFile($batchDir . '/' . $f, $f);
+            }
+            $zip->close();
+
+            $this->rrmdirSafe($batchDir);
+            Storage::disk('local')->delete($templatePath);
+
+            $history = GenerateHistory::create([
+                'user_id'  => auth()->id(),
+                'filename' => $zipName,
+                'filepath' => $zipPath,
+                'waktu'    => now(),
+            ]);
+
+            return response()->json([
+                'success'    => true,
+                'history_id' => $history->id,
+                'filename'   => $zipName,
+                'waktu'      => \Carbon\Carbon::parse($history->waktu)->format('d M Y H:i'),
+                'count'      => count($made),
+                'skipped'    => $skipped,
+            ]);
+        } catch (\Exception $e) {
+            if ($zipPath && file_exists($zipPath)) {
+                unlink($zipPath);
+            }
+            if ($batchDir) {
+                $this->rrmdirSafe($batchDir);
+            }
+            if ($templatePath) {
+                Storage::disk('local')->delete($templatePath);
+            }
+            Log::error('Admin generate bulk failed', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Gagal generate massal: ' . $e->getMessage()], 500);
+        }
+    }
+
+    protected function rrmdirSafe(?string $dir): void
+    {
+        if (!$dir || !is_dir($dir)) {
+            return;
+        }
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($files as $file) {
+            if ($file->isDir()) {
+                rmdir($file->getPathname());
+            } else {
+                unlink($file->getPathname());
+            }
+        }
+        rmdir($dir);
+    }
+
     public function downloadHistory($id)
     {
         $history = GenerateHistory::findOrFail($id);

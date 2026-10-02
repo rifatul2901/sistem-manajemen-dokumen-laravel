@@ -116,7 +116,7 @@
 
     {{-- ROW 3: Data Terpilih | Generate Dokumen --}}
     <div class="row g-4 mb-4">
-        <div class="col-lg-8 d-flex">
+        <div class="col-lg-8 d-flex" id="selectedCol">
             <div class="card h-100 w-100 d-flex flex-column">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <span><i class="bi bi-check2-square me-1"></i> Data Terpilih</span>
@@ -134,44 +134,74 @@
             <div class="card h-100 w-100">
                 <div class="card-header"><i class="bi bi-file-earmark-arrow-up me-1"></i> Generate Dokumen</div>
                 <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Mode Generate</label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="generateMode" value="satuan" id="modeSatuan" checked>
+                                <label class="form-check-label" for="modeSatuan">Satuan</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="generateMode" value="massal" id="modeMassal">
+                                <label class="form-check-label" for="modeMassal">Massal (per baris)</label>
+                            </div>
+                        </div>
+                        <div class="form-text">Massal: 1 baris = 1 dokumen (ala Autocrat), hasil berupa 1 file ZIP.</div>
+                    </div>
                     <form method="POST" action="{{ route('admin.generate.generate') }}" id="generateForm" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="selected_data" id="selectedDataInput">
 
                         <div class="mb-3">
                             <label class="form-label">Upload Template (.docx)</label>
-                            <input type="file" name="template" class="form-control" accept=".docx" required>
-                            <div class="form-text">Gunakan placeholder @{{data 1}}, @{{data 2}} sesuai urutan centang.</div>
+                            <input type="file" name="template" id="templateFile" class="form-control" accept=".docx" required>
+                            <div class="form-text" id="templateHelpSatuan">Gunakan placeholder @{{data 1}}, @{{data 2}} sesuai urutan centang.</div>
+                            <div class="form-text" id="templateHelpMassal" style="display:none;">Gunakan placeholder nama kolom, mis. @{{Nama}}, @{{Nilai}}.</div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">
-                                Nama Dokumen
-                                <span class="text-muted fw-light" style="font-size:.75rem;">(opsional)</span>
-                            </label>
-                            <input type="text" name="document_name" class="form-control"
-                                   placeholder="Kosongkan untuk mengikuti nama template" maxlength="200">
-                            <div class="form-text">Jika dikosongkan, nama file akan mengikuti nama template yang diupload.</div>
-                        </div>
+                        <div id="satuanFields">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Nama Dokumen
+                                    <span class="text-muted fw-light" style="font-size:.75rem;">(opsional)</span>
+                                </label>
+                                <input type="text" name="document_name" class="form-control"
+                                       placeholder="Kosongkan untuk mengikuti nama template" maxlength="200">
+                                <div class="form-text">Jika dikosongkan, nama file akan mengikuti nama template yang diupload.</div>
+                            </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Format Output</label>
-                            <div class="d-flex gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="format" value="docx" id="formatDocx" checked>
-                                    <label class="form-check-label" for="formatDocx">DOCX</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="format" value="pdf" id="formatPdf">
-                                    <label class="form-check-label" for="formatPdf">PDF</label>
+                            <div class="mb-3">
+                                <label class="form-label">Format Output</label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="format" value="docx" id="formatDocx" checked>
+                                        <label class="form-check-label" for="formatDocx">DOCX</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="format" value="pdf" id="formatPdf">
+                                        <label class="form-check-label" for="formatPdf">PDF</label>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <button type="submit" class="btn btn-primary w-100" id="generateBtn" disabled>
-                            <i class="bi bi-file-earmark-check me-1"></i> Generate
-                        </button>
+                            <button type="submit" class="btn btn-primary w-100" id="generateBtn" disabled>
+                                <i class="bi bi-file-earmark-check me-1"></i> Generate
+                            </button>
+                        </div>
                     </form>
+                    <div id="massalFields" style="display:none;">
+                        <div class="mb-3">
+                            <label class="form-label" for="bulkFilenameCol">Kolom Nama File</label>
+                            <select id="bulkFilenameCol" class="form-select"></select>
+                            <div class="form-text">Nama tiap dokumen diambil dari kolom ini. Duplikat otomatis diberi -2, -3.</div>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted" id="bulkRowInfo">Belum ada data. Ambil data terlebih dahulu (maks 50 baris).</small>
+                        </div>
+                        <button type="button" class="btn btn-primary w-100" id="generateBulkBtn">
+                            <i class="bi bi-files me-1"></i> Generate Massal
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -288,7 +318,18 @@ $(document).ready(function() {
         dataCounter = 1;
         $('#dataCard').hide();
         $('#colFilterPanel').html('<p class="text-muted small mb-0 fst-italic">Muat data terlebih dahulu.</p>');
+        $('#bulkFilenameCol').empty();
+        $('#bulkRowInfo').text('Belum ada data. Ambil data terlebih dahulu (maks 50 baris).');
         updateSelectedPanel();
+    });
+
+    $('input[name="generateMode"]').on('change', function() {
+        var massal = $(this).val() === 'massal';
+        $('#satuanFields').toggle(!massal);
+        $('#massalFields').toggle(massal);
+        $('#templateHelpSatuan').toggle(!massal);
+        $('#templateHelpMassal').toggle(massal);
+        $('#selectedCol').toggle(!massal);
     });
 
     $('#clearSelectedBtn').on('click', function() {
@@ -415,6 +456,17 @@ function renderDataTable(res) {
     });
     $('#colFilterPanel').html(filterHtml);
 
+    // Bulk filename column dropdown
+    var bulkSel = $('#bulkFilenameCol');
+    bulkSel.empty();
+    var defIdx = 0;
+    cols.forEach(function(c, i) {
+        bulkSel.append($('<option>', { value: c, text: c }));
+        if (/^(nama|name)$/i.test(String(c).trim())) defIdx = i;
+    });
+    bulkSel.prop('selectedIndex', defIdx);
+    $('#bulkRowInfo').text(rows.length + ' baris siap diproses massal (maks 50).');
+
     // Build table header with "select all" checkbox per column
     var thead = '<tr><th style="width:40px;" class="row-num">No</th>';
     cols.forEach(function(c) {
@@ -528,6 +580,56 @@ function updateSelectedPanel() {
     });
     panel.html(h);
 }
+
+// Generate massal via AJAX: ZIP + riwayat instan tanpa refresh
+$('#generateBulkBtn').on('click', function() {
+    if (!currentRows.length) { showGenerateAlert('danger', 'Ambil data terlebih dahulu.'); return; }
+    if (currentRows.length > 50) { showGenerateAlert('danger', 'Maksimal 50 baris per sekali generate massal.'); return; }
+    var tpl = $('#templateFile')[0].files[0];
+    if (!tpl) { showGenerateAlert('danger', 'Upload template (.docx) terlebih dahulu.'); return; }
+    var col = $('#bulkFilenameCol').val();
+    if (!col) { showGenerateAlert('danger', 'Pilih kolom nama file terlebih dahulu.'); return; }
+
+    var btn = $(this);
+    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Membuat ' + currentRows.length + ' dokumen...');
+
+    var fd = new FormData();
+    fd.append('_token', $('meta[name="csrf-token"]').attr('content'));
+    fd.append('rows', JSON.stringify(currentRows));
+    fd.append('filename_column', col);
+    fd.append('template', tpl);
+
+    $.ajax({
+        url: '{{ route("admin.generate.bulk") }}',
+        method: 'POST',
+        data: fd,
+        processData: false,
+        contentType: false,
+        success: function(res) {
+            if (res && res.success) {
+                var msg = res.count + ' dokumen "' + res.filename + '" berhasil dibuat dan diunduh.';
+                if (res.skipped) msg += ' (' + res.skipped + ' baris kosong dilewati)';
+                var page = parseInt(new URLSearchParams(window.location.search).get('page') || '1', 10);
+                if (page > 1) {
+                    sessionStorage.setItem('generateSuccess', msg);
+                    sessionStorage.setItem('generateDownloadId', String(res.history_id));
+                    window.location.href = '{{ route("admin.generate") }}';
+                    return;
+                }
+                showGenerateAlert('success', msg);
+                prependHistoryRow(res);
+                window.location.href = '{{ route("admin.generate.download", ":id") }}'.replace(':id', res.history_id);
+            }
+        },
+        error: function(xhr) {
+            var msg = (xhr.responseJSON && (xhr.responseJSON.error || xhr.responseJSON.message)) || 'Gagal generate massal. Silakan coba lagi.';
+            showGenerateAlert('danger', msg);
+        },
+        complete: function() {
+            btn.prop('disabled', false).html('<i class="bi bi-files me-1"></i> Generate Massal');
+        }
+    });
+});
 
 // Generate via AJAX: auto-download + riwayat instan tanpa refresh
 $('#generateForm').on('submit', function(e) {
