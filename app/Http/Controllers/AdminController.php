@@ -401,6 +401,7 @@ class AdminController extends Controller
 
         $config = [
             'folder_size' => $this->getFolderSize(storage_path('app/hasil_generate')),
+            'file_count'  => $this->getFileCount(storage_path('app/hasil_generate')),
         ];
 
         return view('admin.drive-config', compact('driveConfig', 'driveToken', 'clientExists', 'config'));
@@ -520,5 +521,28 @@ class AdminController extends Controller
         }
 
         return round($total, 1) . ' ' . $units[$i];
+    }
+
+    protected function getFileCount(string $path): int
+    {
+        if (!is_dir($path)) {
+            return 0;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS)
+        );
+        $limit = 100000;
+        $count = 0;
+        foreach ($iterator as $file) {
+            if ($file->isFile()) {
+                $count++;
+            }
+            if ($count > $limit) {
+                break;
+            }
+        }
+
+        return $count;
     }
 }
