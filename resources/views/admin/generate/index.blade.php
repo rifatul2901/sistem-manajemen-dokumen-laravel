@@ -34,39 +34,39 @@
     .generate-page .source-help { font-size: .72rem; color: #94a3b8; margin-top: .5rem; }
 
     /* Filter Kolom: chips */
-    .generate-page #colFilterPanel { display: flex; flex-wrap: wrap; align-content: flex-start; gap: .4rem; max-height: 220px; overflow-y: auto; }
+    .generate-page #colFilterPanel { display: flex; flex-wrap: wrap; align-content: flex-start; gap: .4rem; max-height: 13.75rem; overflow-y: auto; }
     .generate-page .col-filter-badge {
         display: inline-flex; align-items: center; gap: .35rem;
         padding: .3rem .7rem; font-size: .75rem; font-weight: 500;
-        border-radius: 999px; cursor: pointer; border: 1px solid transparent;
+        border-radius: 62.4375rem; cursor: pointer; border: 1px solid transparent;
         user-select: none; max-width: 100%; transition: all .15s ease;
     }
-    .generate-page .col-filter-badge .cfb-label { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .generate-page .col-filter-badge .cfb-label { max-width: 11.25rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .generate-page .col-filter-badge.active { background: #E7F3FC; color: #0369A1; border-color: #BAE0F5; }
     .generate-page .col-filter-badge.active:hover { background: #D6EBFA; }
     .generate-page .col-filter-badge.inactive { background: #F1F5F9; color: #94a3b8; border-color: var(--gen-border); }
     .generate-page .col-filter-badge.inactive:hover { background: #E2E8F0; color: var(--gen-muted); }
 
     /* Data Tersedia: tabel */
-    .generate-page .data-table-wrap { max-height: 380px; overflow: auto; }
+    .generate-page .data-table-wrap { max-height: 23.75rem; overflow: auto; }
     .generate-page .data-table-wrap table { font-size: .78rem; }
     .generate-page .data-table-wrap td, .generate-page .data-table-wrap th { padding: .45rem .55rem !important; vertical-align: top; white-space: nowrap; }
     .generate-page .data-table-wrap thead th { position: sticky; top: 0; background: #F8FAFC; z-index: 2; box-shadow: inset 0 -1px 0 var(--gen-border); }
     .generate-page .data-table-wrap td.row-num, .generate-page .data-table-wrap th.row-num { position: sticky; left: 0; background: #fff; z-index: 1; }
     .generate-page .data-table-wrap thead th.row-num { background: #F8FAFC; z-index: 3; }
     .generate-page .cell-content { cursor: pointer; }
-    .generate-page .cell-content:hover { background: #e8f4fd; border-radius: 4px; }
-    .generate-page .cell-checkbox:checked + .cell-content { background: #d4edda; border-radius: 4px; padding: 0 4px; }
-    .generate-page .cell-flash { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: 4px; }
+    .generate-page .cell-content:hover { background: #e8f4fd; border-radius: 0.25rem; }
+    .generate-page .cell-checkbox:checked + .cell-content { background: #d4edda; border-radius: 0.25rem; padding: 0 0.25rem; }
+    .generate-page .cell-flash { outline: 0.125rem solid var(--primary); outline-offset: -0.125rem; border-radius: 0.25rem; }
     .generate-page .col-header-check { cursor: pointer; }
 
     /* Data Terpilih */
-    .generate-page #selectedPanel { max-height: 440px; overflow-y: auto; }
+    .generate-page #selectedPanel { max-height: 27.5rem; overflow-y: auto; }
     .generate-page .selected-item {
         display: flex; align-items: flex-start; gap: .5rem;
         padding: .5rem .65rem; margin-bottom: .4rem; font-size: .78rem; cursor: pointer;
-        background: #F8FAFC; border: 1px solid var(--gen-border); border-left: 3px solid var(--primary);
-        border-radius: 8px; transition: background .15s, border-color .15s;
+        background: #F8FAFC; border: 1px solid var(--gen-border); border-left: 0.1875rem solid var(--primary);
+        border-radius: 0.5rem; transition: background .15s, border-color .15s;
     }
     .generate-page .selected-item:hover { background: #EFF6FF; border-color: #BAE0F5; }
     .generate-page .selected-item .num { flex: 0 0 auto; font-weight: 600; color: var(--primary); white-space: nowrap; }
@@ -79,10 +79,10 @@
     .generate-page .btn-generate { font-weight: 600; padding: .6rem 1rem; }
 
     /* Riwayat */
-    .generate-page .history-table-wrap { max-height: 320px; overflow: auto; }
+    .generate-page .history-table-wrap { max-height: 20rem; overflow: auto; }
     .generate-page .history-table { font-size: .8rem; }
     .generate-page .history-table td, .generate-page .history-table th { padding: .55rem .75rem !important; vertical-align: middle; white-space: nowrap; }
-    .generate-page .history-filename { max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .generate-page .history-filename { max-width: 26.25rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     /* Empty state */
     .generate-page .gen-empty { width: 100%; color: #94a3b8; padding: .5rem 0; }
@@ -159,7 +159,7 @@
             <div class="card-header">
                 <span class="hdr-title"><i class="bi bi-table"></i> Data Tersedia</span>
                 <div class="card-header-actions">
-                    <input type="search" id="dataSearch" class="form-control form-control-sm" placeholder="Cari di tabel..." style="max-width:200px;">
+                    <input type="search" id="dataSearch" class="form-control form-control-sm" placeholder="Cari di tabel..." style="max-width:12.5rem;">
                     <span class="badge bg-light text-dark border" id="totalCells">0 sel</span>
                 </div>
             </div>
@@ -291,7 +291,7 @@
                     <table class="table table-hover history-table mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th style="width:36px;"><input type="checkbox" id="historySelectAll" class="form-check-input mt-0" title="Pilih semua di halaman ini"></th>
+                                <th style="width:2.25rem;"><input type="checkbox" id="historySelectAll" class="form-check-input mt-0" title="Pilih semua di halaman ini"></th>
                                 <th>#</th>
                                 <th>Nama File</th>
                                 <th>Waktu</th>
@@ -549,7 +549,7 @@ function renderDataTable(res) {
     detectBulkTags();
 
     // Build table header with "select all" checkbox per column
-    var thead = '<tr><th style="width:40px;" class="row-num">No</th>';
+    var thead = '<tr><th style="width:2.5rem;" class="row-num">No</th>';
     cols.forEach(function(c) {
         var safeCol = esc(c).replace(/\s+/g, '-');
         thead += '<th data-colkey="' + esc(c) + '">';

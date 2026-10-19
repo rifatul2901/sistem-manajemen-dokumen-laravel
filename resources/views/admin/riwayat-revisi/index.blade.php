@@ -10,7 +10,7 @@
     /* Header halaman */
     .riwayat-page .riwayat-head { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
     .riwayat-page .riwayat-head .head-icon {
-        width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+        width: 2.75rem; height: 2.75rem; border-radius: 0.75rem; flex-shrink: 0;
         display: inline-flex; align-items: center; justify-content: center;
         background: #E7F3FC; color: var(--primary); font-size: 1.25rem;
     }
@@ -19,16 +19,16 @@
     .riwayat-page .count-badge {
         margin-left: auto; display: inline-flex; align-items: center; gap: .35rem;
         background: #E7F3FC; color: #0369a1; font-size: .78rem; font-weight: 500;
-        padding: .4em .8em; border-radius: 999px;
+        padding: .4em .8em; border-radius: 62.4375rem;
     }
 
     /* Panel filter */
     .riwayat-page .filter-panel {
-        background: #fff; border: 1px solid var(--rv-border); border-radius: 12px;
+        background: #fff; border: 1px solid var(--rv-border); border-radius: 0.75rem;
         padding: .8rem .9rem; margin-bottom: 1rem;
         display: flex; flex-wrap: wrap; align-items: flex-end; gap: .6rem;
     }
-    .riwayat-page .filter-field { flex: 1 1 180px; min-width: 0; }
+    .riwayat-page .filter-field { flex: 1 1 11.25rem; min-width: 0; }
     .riwayat-page .filter-field .filter-label {
         display: block; font-size: .68rem; font-weight: 600; text-transform: uppercase;
         letter-spacing: .04em; color: #94a3b8; margin-bottom: .25rem;
@@ -39,13 +39,13 @@
         color: #94a3b8; font-size: .8rem; pointer-events: none;
     }
     .riwayat-page .filter-input .form-control,
-    .riwayat-page .filter-input .form-select { padding-left: 2rem; min-height: 40px; font-size: .82rem; }
-    .riwayat-page .filter-dates { flex: 2 1 300px; }
+    .riwayat-page .filter-input .form-select { padding-left: 2rem; min-height: 2.5rem; font-size: .82rem; }
+    .riwayat-page .filter-dates { flex: 2 1 18.75rem; }
     .riwayat-page .filter-dates .date-row { display: flex; align-items: center; gap: .45rem; }
     .riwayat-page .filter-dates .date-row .filter-input { flex: 1 1 0; min-width: 0; }
     .riwayat-page .filter-dates .date-dash { color: #94a3b8; flex-shrink: 0; }
     .riwayat-page .filter-actions { display: flex; align-items: center; gap: .45rem; }
-    .riwayat-page .filter-actions .btn { min-height: 40px; }
+    .riwayat-page .filter-actions .btn { min-height: 2.5rem; }
     @media (max-width: 575.98px) {
         .riwayat-page .filter-field,
         .riwayat-page .filter-dates { flex: 1 1 100%; }
@@ -61,7 +61,7 @@
     }
     .riwayat-page .date-sep:first-of-type { margin-top: .1rem; }
     .riwayat-page .date-sep .date-sep-icon {
-        width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+        width: 1.625rem; height: 1.625rem; border-radius: 0.5rem; flex-shrink: 0;
         display: inline-flex; align-items: center; justify-content: center;
         background: #EAF2FB; color: var(--primary); font-size: .78rem;
     }
@@ -69,26 +69,26 @@
     .riwayat-page .date-sep:hover .date-sep-label { color: var(--primary); }
     .riwayat-page .date-sep .date-sep-count {
         font-size: .68rem; font-weight: 600; color: #64748b;
-        background: #F1F5F9; border-radius: 999px; padding: .1rem .5rem;
+        background: #F1F5F9; border-radius: 62.4375rem; padding: .1rem .5rem;
     }
     .riwayat-page .date-sep .date-sep-line { flex: 1; height: 1px; background: var(--rv-border); }
     .riwayat-page .date-sep .date-sep-chev { color: #94a3b8; font-size: .8rem; transition: transform .2s ease; }
     .riwayat-page .date-sep[aria-expanded="false"] .date-sep-chev { transform: rotate(-90deg); }
-    .riwayat-page .date-sep:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 6px; }
+    .riwayat-page .date-sep:focus-visible { outline: 0.125rem solid var(--primary); outline-offset: 0.125rem; border-radius: 0.375rem; }
 
     /* Kartu aktivitas (kartu putih, ringkas) */
     .riwayat-page .activity-card {
         display: flex; gap: .7rem; align-items: flex-start;
-        background: #fff; border: 1px solid var(--rv-border); border-left: 3px solid #cbd5e1;
-        border-radius: 10px; padding: .6rem .8rem; margin-bottom: 8px;
+        background: #fff; border: 1px solid var(--rv-border); border-left: 0.1875rem solid #cbd5e1;
+        border-radius: 0.625rem; padding: .6rem .8rem; margin-bottom: 0.5rem;
         transition: box-shadow .15s ease;
     }
-    .riwayat-page .activity-card:hover { box-shadow: 0 3px 10px rgba(15,23,42,.06); }
+    .riwayat-page .activity-card:hover { box-shadow: 0 0.1875rem 0.625rem rgba(15,23,42,.06); }
     .riwayat-page .activity-card.is-approve { border-left-color: #62B846; }
     .riwayat-page .activity-card.is-revision { border-left-color: #ef4444; }
 
     .riwayat-page .activity-icon {
-        width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+        width: 2.125rem; height: 2.125rem; border-radius: 0.5625rem; flex-shrink: 0;
         display: inline-flex; align-items: center; justify-content: center; font-size: .9rem;
     }
     .riwayat-page .activity-card.is-approve .activity-icon { background: #E6F6EC; color: #16a34a; }
@@ -99,7 +99,7 @@
     .riwayat-page .activity-top { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
     .riwayat-page .activity-status {
         display: inline-flex; align-items: center; gap: .25rem;
-        font-size: .7rem; font-weight: 600; padding: .2em .6em; border-radius: 999px;
+        font-size: .7rem; font-weight: 600; padding: .2em .6em; border-radius: 62.4375rem;
     }
     .riwayat-page .activity-card.is-approve .activity-status { background: #E6F6EC; color: #15803d; }
     .riwayat-page .activity-card.is-revision .activity-status { background: #FEE2E2; color: #b91c1c; }
@@ -111,9 +111,9 @@
     }
 
     .riwayat-page .folder-badge {
-        display: inline-flex; align-items: center; gap: .25rem; max-width: 240px;
+        display: inline-flex; align-items: center; gap: .25rem; max-width: 15rem;
         background: #E7F3FC; color: #0369a1; font-size: .7rem; font-weight: 500;
-        padding: .2em .6em; border-radius: 8px;
+        padding: .2em .6em; border-radius: 0.5rem;
     }
     .riwayat-page .folder-badge span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .riwayat-page .assignee { font-size: .73rem; color: var(--rv-muted); display: inline-flex; align-items: center; gap: .25rem; }
@@ -121,11 +121,11 @@
     .riwayat-page .btn-note {
         display: inline-flex; align-items: center; margin-left: auto;
         font-size: .7rem; font-weight: 500; color: #b91c1c;
-        background: #FEF2F2; border: 1px solid #FADADA; border-radius: 8px; padding: .2rem .55rem;
+        background: #FEF2F2; border: 1px solid #FADADA; border-radius: 0.5rem; padding: .2rem .55rem;
     }
     .riwayat-page .btn-note:hover { background: #FDE8E8; color: #991b1b; }
     .riwayat-page .activity-note {
-        background: #FEF2F2; border-left: 3px solid #ef4444; border-radius: 8px;
+        background: #FEF2F2; border-left: 0.1875rem solid #ef4444; border-radius: 0.5rem;
         padding: .55rem .75rem; font-size: .78rem; color: #7f1d1d; margin-top: .5rem;
     }
     .riwayat-page .activity-note > div + div { margin-top: .25rem; }

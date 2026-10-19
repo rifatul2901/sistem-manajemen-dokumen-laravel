@@ -10,7 +10,7 @@
     /* Header halaman */
     .rekap-page .rekap-head { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.25rem; }
     .rekap-page .rekap-head .head-icon {
-        width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+        width: 2.75rem; height: 2.75rem; border-radius: 0.75rem; flex-shrink: 0;
         display: inline-flex; align-items: center; justify-content: center;
         background: #E7F3FC; color: var(--primary); font-size: 1.25rem;
     }
@@ -20,7 +20,7 @@
     /* Card header: judul + info & pencarian */
     .rekap-page .card-header { padding: 1rem 1.25rem; }
     .rekap-page .hdr-icon {
-        width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+        width: 2.5rem; height: 2.5rem; border-radius: 0.625rem; flex-shrink: 0;
         display: inline-flex; align-items: center; justify-content: center;
         background: #E7F3FC; color: var(--primary); font-size: 1.05rem;
     }
@@ -28,7 +28,7 @@
     .rekap-page .hdr-sub { font-size: .75rem; color: var(--rekap-muted); }
 
     .rekap-page .rekap-search { display: flex; align-items: center; gap: .5rem; }
-    .rekap-page .search-field { position: relative; min-width: 230px; }
+    .rekap-page .search-field { position: relative; min-width: 14.375rem; }
     .rekap-page .search-field > i {
         position: absolute; left: .7rem; top: 50%; transform: translateY(-50%);
         color: #94a3b8; font-size: .85rem; pointer-events: none;
@@ -50,12 +50,12 @@
     .rekap-page .rekap-table tbody tr { transition: background .12s ease; }
     .rekap-page .rekap-table tbody tr:hover { background: #F8FAFC; }
     .rekap-page .rekap-username { color: var(--rekap-muted); }
-    .rekap-page .rekap-table .btn { border-radius: 8px; }
+    .rekap-page .rekap-table .btn { border-radius: 0.5rem; }
 
     .rekap-page .badge-doc {
         display: inline-flex; align-items: center; gap: .3rem;
         background: #E7F3FC; color: #0369A1; font-weight: 500;
-        padding: .35em .7em; border-radius: 999px; font-size: .75rem;
+        padding: .35em .7em; border-radius: 62.4375rem; font-size: .75rem;
     }
 
     .rekap-page .rekap-footer { border-top: 1px solid var(--rekap-border); }
@@ -98,11 +98,11 @@
                 <table class="table rekap-table mb-0">
                     <thead>
                         <tr>
-                            <th style="width:64px;">No</th>
+                            <th style="width:4rem;">No</th>
                             <th>Nama User</th>
                             <th>Username</th>
                             <th>Jumlah Dokumen</th>
-                            <th style="width:200px;" class="text-end">Aksi</th>
+                            <th style="width:12.5rem;" class="text-end">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>

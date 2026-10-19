@@ -10,7 +10,7 @@
     /* Header halaman */
     .drive-page .drive-head { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.25rem; }
     .drive-page .drive-head .head-icon {
-        width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+        width: 2.75rem; height: 2.75rem; border-radius: 0.75rem; flex-shrink: 0;
         display: inline-flex; align-items: center; justify-content: center;
         background: #E7F3FC; color: var(--primary); font-size: 1.25rem;
     }
@@ -22,13 +22,13 @@
     .drive-page .card-header .hdr-title i { color: var(--primary); font-size: 1rem; }
 
     /* Panel info biru muda */
-    .drive-page .info-panel { display: flex; gap: .75rem; align-items: flex-start; padding: .9rem 1rem; border-radius: 12px; background: #EAF2FB; border: 1px solid #D7E6F7; margin-bottom: 1.1rem; }
+    .drive-page .info-panel { display: flex; gap: .75rem; align-items: flex-start; padding: .9rem 1rem; border-radius: 0.75rem; background: #EAF2FB; border: 1px solid #D7E6F7; margin-bottom: 1.1rem; }
     .drive-page .info-panel i { color: var(--primary); font-size: 1.15rem; flex-shrink: 0; line-height: 1.4; }
     .drive-page .info-panel p { margin: 0; font-size: .82rem; color: #334155; }
     .drive-page .info-panel strong { color: #0f172a; }
 
     /* Ringkasan koneksi (di card konfigurasi) */
-    .drive-page .conn-strip { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem 1rem; padding: .8rem 1rem; border: 1px solid var(--drive-border); border-radius: 12px; background: #FBFDFF; margin-bottom: 1.25rem; }
+    .drive-page .conn-strip { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem 1rem; padding: .8rem 1rem; border: 1px solid var(--drive-border); border-radius: 0.75rem; background: #FBFDFF; margin-bottom: 1.25rem; }
     .drive-page .conn-strip .conn-label { display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; color: #94a3b8; }
     .drive-page .conn-strip .conn-value { font-size: .85rem; font-weight: 500; color: #0f172a; word-break: break-word; }
     @media (max-width: 575.98px) { .drive-page .conn-strip { grid-template-columns: 1fr; } }
@@ -39,7 +39,7 @@
     .drive-page .divider { margin: 1.25rem 0; border-color: var(--drive-border); opacity: 1; }
 
     /* Panduan OAuth (collapsible) */
-    .drive-page .oauth-guide { border: 1px solid var(--drive-border); border-radius: 10px; padding: .65rem .85rem; margin-bottom: 1rem; background: #F8FAFC; }
+    .drive-page .oauth-guide { border: 1px solid var(--drive-border); border-radius: 0.625rem; padding: .65rem .85rem; margin-bottom: 1rem; background: #F8FAFC; }
     .drive-page .oauth-guide summary { cursor: pointer; font-weight: 600; font-size: .82rem; color: #334155; list-style: none; display: flex; align-items: center; gap: .4rem; }
     .drive-page .oauth-guide summary::-webkit-details-marker { display: none; }
     .drive-page .oauth-guide summary::before { content: "\F282"; font-family: "bootstrap-icons"; font-size: .8rem; color: var(--primary); transition: transform .15s ease; }
@@ -47,18 +47,18 @@
     .drive-page .oauth-guide[open] summary { margin-bottom: .6rem; }
     .drive-page .oauth-guide ol { margin: 0; padding-left: 1.15rem; font-size: .8rem; color: #475569; }
     .drive-page .oauth-guide li { margin-bottom: .25rem; }
-    .drive-page .oauth-guide code { font-size: .75rem; color: #0369a1; background: #EAF2FB; padding: .1rem .35rem; border-radius: 5px; }
+    .drive-page .oauth-guide code { font-size: .75rem; color: #0369a1; background: #EAF2FB; padding: .1rem .35rem; border-radius: 0.3125rem; }
 
     /* Badge status */
-    .drive-page .status-badge { display: inline-flex; align-items: center; gap: .35rem; padding: .35em .75em; border-radius: 999px; font-size: .75rem; font-weight: 500; }
+    .drive-page .status-badge { display: inline-flex; align-items: center; gap: .35rem; padding: .35em .75em; border-radius: 62.4375rem; font-size: .75rem; font-weight: 500; }
     .drive-page .status-badge.ok { background: #E6F6EC; color: #15803d; }
     .drive-page .status-badge.warn { background: #FEF3C7; color: #92400e; }
     .drive-page .status-badge.off { background: #EEF2F7; color: #64748b; }
     .drive-page .status-badge.bad { background: #FEE2E2; color: #b91c1c; }
 
     /* Card status & uji koneksi */
-    .drive-page .status-hero { text-align: center; padding: 1.25rem 1rem; border-radius: 12px; background: #F8FAFC; border: 1px solid var(--drive-border); margin-bottom: 1rem; }
-    .drive-page .status-hero .status-icon { width: 56px; height: 56px; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: .6rem; }
+    .drive-page .status-hero { text-align: center; padding: 1.25rem 1rem; border-radius: 0.75rem; background: #F8FAFC; border: 1px solid var(--drive-border); margin-bottom: 1rem; }
+    .drive-page .status-hero .status-icon { width: 3.5rem; height: 3.5rem; border-radius: 1rem; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: .6rem; }
     .drive-page .status-hero.is-ok .status-icon { background: #E6F6EC; color: #16a34a; }
     .drive-page .status-hero.is-warn .status-icon { background: #FEF3C7; color: #b45309; }
     .drive-page .status-hero.is-off .status-icon { background: #EEF2F7; color: #94a3b8; }
@@ -71,9 +71,9 @@
     .drive-page .status-list .value { font-weight: 500; color: #0f172a; text-align: right; word-break: break-word; }
 
     /* Panel Informasi Sistem */
-    .drive-page .info-tile { height: 100%; display: flex; align-items: center; gap: .8rem; padding: .9rem 1rem; border: 1px solid var(--drive-border); border-radius: 12px; background: #fff; transition: box-shadow .15s ease; }
-    .drive-page .info-tile:hover { box-shadow: 0 4px 12px rgba(0,0,0,.05); }
-    .drive-page .info-tile .tile-icon { width: 42px; height: 42px; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center; background: #EAF2FB; color: var(--primary); font-size: 1.1rem; flex-shrink: 0; }
+    .drive-page .info-tile { height: 100%; display: flex; align-items: center; gap: .8rem; padding: .9rem 1rem; border: 1px solid var(--drive-border); border-radius: 0.75rem; background: #fff; transition: box-shadow .15s ease; }
+    .drive-page .info-tile:hover { box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,.05); }
+    .drive-page .info-tile .tile-icon { width: 2.625rem; height: 2.625rem; border-radius: 0.6875rem; display: inline-flex; align-items: center; justify-content: center; background: #EAF2FB; color: var(--primary); font-size: 1.1rem; flex-shrink: 0; }
     .drive-page .info-tile .tile-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; color: #94a3b8; }
     .drive-page .info-tile .tile-value { font-weight: 600; color: #0f172a; font-size: .9rem; line-height: 1.2; }
     .drive-page .info-tile .tile-sub { font-size: .72rem; color: #94a3b8; }

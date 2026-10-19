@@ -10,7 +10,7 @@
     /* Header halaman */
     .user-page .user-head { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.25rem; }
     .user-page .user-head .head-icon {
-        width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+        width: 2.75rem; height: 2.75rem; border-radius: 0.75rem; flex-shrink: 0;
         display: inline-flex; align-items: center; justify-content: center;
         background: #E7F3FC; color: var(--primary); font-size: 1.25rem;
     }
@@ -20,7 +20,7 @@
     .user-page .card { border: 1px solid var(--u-border); }
     .user-page .card-header { padding: 1rem 1.25rem; }
     .user-page .card-header .hdr-icon {
-        width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+        width: 2.5rem; height: 2.5rem; border-radius: 0.625rem; flex-shrink: 0;
         display: inline-flex; align-items: center; justify-content: center;
         background: #E7F3FC; color: var(--primary); font-size: 1.05rem;
     }
@@ -29,7 +29,7 @@
     .user-page .card-header .hdr-sub { font-size: .75rem; color: var(--u-muted); }
 
     /* Pencarian */
-    .user-page .search-field { position: relative; min-width: 220px; }
+    .user-page .search-field { position: relative; min-width: 13.75rem; }
     .user-page .search-field > i { position: absolute; left: .7rem; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: .85rem; pointer-events: none; }
     .user-page .search-field input { padding-left: 2.1rem; }
     @media (max-width: 575.98px) { .user-page .search-field { min-width: 0; flex: 1 1 auto; } }
@@ -45,12 +45,12 @@
     .user-page .user-table tbody tr { transition: background .12s ease; }
     .user-page .user-table tbody tr:hover { background: #F8FAFC; }
     .user-page .user-table tbody tr.is-inactive { background: #FFFDF5; }
-    .user-page .user-table .btn { border-radius: 8px; }
+    .user-page .user-table .btn { border-radius: 0.5rem; }
     .user-page .u-username { font-weight: 600; color: #0f172a; }
     .user-page .u-muted { color: var(--u-muted); }
 
     /* Badge lembut */
-    .user-page .badge-soft { display: inline-flex; align-items: center; gap: .3rem; padding: .35em .7em; border-radius: 999px; font-size: .75rem; font-weight: 500; }
+    .user-page .badge-soft { display: inline-flex; align-items: center; gap: .3rem; padding: .35em .7em; border-radius: 62.4375rem; font-size: .75rem; font-weight: 500; }
     .user-page .badge-soft.blue { background: #E7F3FC; color: #0369a1; }
     .user-page .badge-soft.yellow { background: #FEF3C7; color: #92400e; }
     .user-page .badge-soft.green { background: #E6F6EC; color: #15803d; }
@@ -63,7 +63,7 @@
 
     /* Modal konfirmasi status */
     .user-page .user-modal .modal-body { padding: 1.5rem 1.25rem .5rem; }
-    .user-page .user-modal .user-modal-icon { width: 56px; height: 56px; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; background: #EEF2F7; color: #64748b; }
+    .user-page .user-modal .user-modal-icon { width: 3.5rem; height: 3.5rem; border-radius: 1rem; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; background: #EEF2F7; color: #64748b; }
     .user-page .user-modal .user-modal-name { font-weight: 600; color: #0f172a; margin: .25rem 0 .35rem; }
     .user-page .user-modal.state-danger .user-modal-icon { background: #FEE2E2; color: #dc2626; }
     .user-page .user-modal.state-success .user-modal-icon { background: #E6F6EC; color: #16a34a; }
@@ -127,13 +127,13 @@
                 <table class="table user-table mb-0">
                     <thead>
                         <tr>
-                            <th style="width:56px;">No</th>
+                            <th style="width:3.5rem;">No</th>
                             <th>Username</th>
                             <th>Nama</th>
                             <th>Role</th>
                             <th>Status</th>
                             <th>Dibuat</th>
-                            <th style="width:110px;" class="text-end">Aksi</th>
+                            <th style="width:6.875rem;" class="text-end">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="userTableBody">

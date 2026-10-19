@@ -21,7 +21,7 @@
     transform: scale(1.05);
 }
 .poin-badge-empty {
-    border: 2px dashed #adb5bd !important;
+    border: 0.125rem dashed #adb5bd !important;
     background: #f8f9fa !important;
     color: #6c757d !important;
 }
@@ -32,11 +32,11 @@
 .poin-badge-full {
     background: linear-gradient(135deg, #f59e0b, #d97706) !important;
     color: #fff !important;
-    box-shadow: 0 2px 8px rgba(245,158,11,0.35);
+    box-shadow: 0 0.125rem 0.5rem rgba(245,158,11,0.35);
 }
 
 @keyframes poinPopupFade {
-    from { opacity: 0; transform: translateY(-6px); }
+    from { opacity: 0; transform: translateY(-0.375rem); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -45,21 +45,21 @@
 #poinPopup {
     position: absolute;
     z-index: 1060;
-    width: 400px;
-    max-width: calc(100vw - 16px);
+    width: 25rem;
+    max-width: calc(100vw - 1rem);
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+    border-radius: 0.75rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(15, 23, 42, 0.12);
     color: #0F172A;
-    font-size: 14px;
+    font-size: 0.875rem;
     animation: poinPopupFade .16s ease-out;
 }
 #poinPopup .poin-popup-arrow {
     position: absolute;
-    top: -6px;
-    width: 12px;
-    height: 12px;
+    top: -0.375rem;
+    width: 0.75rem;
+    height: 0.75rem;
     background: #FFFFFF;
     border-left: 1px solid #E2E8F0;
     border-top: 1px solid #E2E8F0;
@@ -69,53 +69,53 @@
 }
 #poinPopup.is-flipped .poin-popup-arrow {
     top: auto;
-    bottom: -6px;
+    bottom: -0.375rem;
     border-left: none;
     border-top: none;
     border-right: 1px solid #E2E8F0;
     border-bottom: 1px solid #E2E8F0;
 }
 #poinPopup .poin-popup-header {
-    height: 50px;
-    padding: 0 16px;
+    height: 3.125rem;
+    padding: 0 1rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 0.625rem;
     border-bottom: 1px solid #E2E8F0;
 }
 #poinPopup .poin-popup-title {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
+    gap: 0.5rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #0F172A;
 }
 #poinPopup .poin-popup-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.5rem;
     background: #EFF6FF;
     color: #0D6EFD;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
+    font-size: 0.9375rem;
 }
 #poinPopup .poin-popup-close {
-    width: 30px;
-    height: 30px;
+    width: 1.875rem;
+    height: 1.875rem;
     flex: 0 0 auto;
     border: 0;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     padding: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     background: transparent;
     color: #64748B;
-    font-size: 16px;
+    font-size: 1rem;
     line-height: 1;
     cursor: pointer;
     transition: background .15s ease, color .15s ease;
@@ -125,48 +125,48 @@
     color: #0F172A;
 }
 #poinPopup .poin-popup-progress {
-    padding: 12px 16px;
+    padding: 0.75rem 1rem;
     border-bottom: 1px solid #E2E8F0;
 }
 #poinPopup .poin-progress-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 8px;
+    gap: 0.625rem;
+    margin-bottom: 0.5rem;
 }
 #poinPopup .poin-progress-count {
-    font-size: 13px;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: #0F172A;
 }
 #poinPopup .poin-progress-pct {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #64748B;
 }
 #poinPopup .poin-progress-track {
-    height: 6px;
-    border-radius: 999px;
+    height: 0.375rem;
+    border-radius: 62.4375rem;
     background: #E2E8F0;
     overflow: hidden;
 }
 #poinPopup .poin-progress-bar {
     height: 100%;
-    border-radius: 999px;
+    border-radius: 62.4375rem;
     background: #0D6EFD;
     transition: width .2s ease;
 }
 #poinPopup .poin-popup-body {
-    max-height: 320px;
+    max-height: 20rem;
     overflow-y: auto;
     padding: 0;
 }
 #poinPopup .poin-list-item {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: 0.625rem;
     margin: 0;
-    padding: 11px 16px;
+    padding: 0.6875rem 1rem;
     border-bottom: 1px solid #E2E8F0;
     cursor: pointer;
     transition: background .15s ease;
@@ -179,7 +179,7 @@
 }
 #poinPopup .poin-list-item .poin-check {
     flex: 0 0 auto;
-    margin-top: 2px;
+    margin-top: 0.125rem;
     cursor: pointer;
 }
 #poinPopup .poin-check:checked {
@@ -193,7 +193,7 @@
 #poinPopup .poin-label-text {
     display: block;
     color: #334155;
-    font-size: 13.5px;
+    font-size: 0.84375rem;
     line-height: 1.4;
     overflow-wrap: anywhere;
     -webkit-line-clamp: unset;
@@ -204,8 +204,8 @@
 #approveModal .modal-content,
 #revisionModal .modal-content {
     border: none;
-    border-radius: 14px;
-    box-shadow: 0 20px 50px rgba(15, 23, 42, .25);
+    border-radius: 0.875rem;
+    box-shadow: 0 1.25rem 3.125rem rgba(15, 23, 42, .25);
     overflow: hidden;
 }
 #approveModal .modal-header,
@@ -227,8 +227,8 @@
     padding: .8rem 1.1rem;
 }
 .modal-status-icon {
-    width: 72px;
-    height: 72px;
+    width: 4.5rem;
+    height: 4.5rem;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
@@ -244,9 +244,9 @@
 }
 
 .tooltip-inner > div {
-    border-left: 3px solid #62B846;
-    padding-left: 8px;
-    margin-bottom: 2px;
+    border-left: 0.1875rem solid #62B846;
+    padding-left: 0.5rem;
+    margin-bottom: 0.125rem;
 }
 
 /* Legacy dashboard-only rules removed during SIMADO redesign (replaced by scoped .simado-dash theme). */
@@ -274,36 +274,36 @@ html body { background: #F3F7FC; }
 
 .dash-topbar {
     display: flex; align-items: center; justify-content: space-between;
-    background: #fff; border: 1px solid var(--dash-border); border-radius: 14px;
-    padding: .55rem .8rem; margin-bottom: 1.25rem; box-shadow: 0 1px 2px rgba(16,42,77,.04);
+    background: #fff; border: 1px solid var(--dash-border); border-radius: 0.875rem;
+    padding: .55rem .8rem; margin-bottom: 1.25rem; box-shadow: 0 1px 0.125rem rgba(16,42,77,.04);
 }
 .dash-topbar .btn-toggle-dash {
-    border: 0; background: transparent; color: #475569; width: 38px; height: 38px;
-    border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
+    border: 0; background: transparent; color: #475569; width: 2.375rem; height: 2.375rem;
+    border-radius: 0.5625rem; display: inline-flex; align-items: center; justify-content: center;
     font-size: 1.15rem; cursor: pointer; transition: all .15s ease;
 }
 .dash-topbar .btn-toggle-dash:hover { background: var(--dash-bg); color: var(--dash-blue); }
 .dash-topbar-title { font-weight: 600; font-size: .95rem; color: var(--dash-text); }
 .dash-date {
     display: inline-flex; align-items: center; gap: .45rem; font-size: .78rem; color: var(--dash-muted);
-    background: var(--dash-bg); border: 1px solid var(--dash-border); padding: .4rem .75rem; border-radius: 8px;
+    background: var(--dash-bg); border: 1px solid var(--dash-border); padding: .4rem .75rem; border-radius: 0.5rem;
 }
 
 .dash-welcome h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.02em; color: var(--dash-text); margin: 0; }
 .dash-welcome p { color: var(--dash-muted); font-size: .875rem; margin: .3rem 0 0; }
 
 .simado-dash .card {
-    border: 1px solid var(--dash-border); border-radius: 14px;
-    box-shadow: 0 1px 2px rgba(16,42,77,.04), 0 1px 3px rgba(16,42,77,.05);
+    border: 1px solid var(--dash-border); border-radius: 0.875rem;
+    box-shadow: 0 1px 0.125rem rgba(16,42,77,.04), 0 1px 0.1875rem rgba(16,42,77,.05);
 }
-.simado-dash .card:hover { box-shadow: 0 6px 18px rgba(16,42,77,.07); }
+.simado-dash .card:hover { box-shadow: 0 0.375rem 1.125rem rgba(16,42,77,.07); }
 .simado-dash .card-header {
     background: #fff; border-bottom: 1px solid var(--dash-border); padding: .9rem 1.15rem;
-    font-weight: 600; font-size: .875rem; border-radius: 14px 14px 0 0 !important; color: var(--dash-text);
+    font-weight: 600; font-size: .875rem; border-radius: 0.875rem 0.875rem 0 0 !important; color: var(--dash-text);
 }
 
 .dash-stat { display: flex; align-items: center; gap: .9rem; padding: 1rem 1.1rem; }
-.dash-stat-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.dash-stat-icon { width: 2.875rem; height: 2.875rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
 .icon-total { background: #E7F1FF; color: #1687F8; }
 .icon-approved { background: #E6F7F1; color: #10B981; }
 .icon-pending { background: #FEF4E6; color: #F59E0B; }
@@ -311,24 +311,24 @@ html body { background: #F3F7FC; }
 .dash-stat-value { font-size: 1.45rem; font-weight: 700; line-height: 1.1; color: var(--dash-text); }
 .dash-stat-label { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--dash-muted); margin-top: .1rem; }
 
-.dash-panel { background: #F8FAFD; border: 1px solid var(--dash-border); border-radius: 10px; padding: .75rem .85rem; }
-.dash-folder-active { display: flex; align-items: center; gap: .6rem; background: #fff; border: 1px solid var(--dash-border); border-radius: 9px; padding: .5rem .7rem; }
+.dash-panel { background: #F8FAFD; border: 1px solid var(--dash-border); border-radius: 0.625rem; padding: .75rem .85rem; }
+.dash-folder-active { display: flex; align-items: center; gap: .6rem; background: #fff; border: 1px solid var(--dash-border); border-radius: 0.5625rem; padding: .5rem .7rem; }
 
 .dash-progress-wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .dash-progress { flex: 1; min-width: 0; }
-.simado-dash #completenessProgress { border-radius: 999px; transition: width .5s ease; background: var(--dash-blue); }
+.simado-dash #completenessProgress { border-radius: 62.4375rem; transition: width .5s ease; background: var(--dash-blue); }
 #completenessProgress.bg-danger { background: var(--dash-red) !important; }
 #completenessProgress.bg-warning { background: var(--dash-amber) !important; }
 #completenessProgress.bg-success { background: var(--dash-green) !important; }
 #completenessProgress.bg-gold { background: linear-gradient(135deg,#f59e0b,#d97706) !important; }
-.dash-progress-value { font-size: 1.35rem; font-weight: 700; color: var(--dash-text); min-width: 62px; text-align: right; }
+.dash-progress-value { font-size: 1.35rem; font-weight: 700; color: var(--dash-text); min-width: 3.875rem; text-align: right; }
 
 .simado-dash #poinFilterBar { background: #fff; }
-.simado-dash #poinFilterBar .btn { border-radius: 999px; font-size: .72rem; padding: .28rem .7rem; }
+.simado-dash #poinFilterBar .btn { border-radius: 62.4375rem; font-size: .72rem; padding: .28rem .7rem; }
 .simado-dash #poinFilterBar .btn-outline-secondary { border-color: var(--dash-border); color: var(--dash-muted); }
 .simado-dash #poinFilterBar .btn-outline-secondary:hover { background: var(--dash-bg); color: var(--dash-text); }
 .simado-dash #poinFilterBar .btn.active { background: #E7F1FF; border-color: var(--dash-blue); color: var(--dash-blue); font-weight: 600; }
-.simado-dash #poinFilterBar .btn.active::before { content: "\F26A"; font-family: "bootstrap-icons"; margin-right: 4px; }
+.simado-dash #poinFilterBar .btn.active::before { content: "\F26A"; font-family: "bootstrap-icons"; margin-right: 0.25rem; }
 
 .simado-dash #berkasCard .table { font-size: .8rem; table-layout: fixed; width: 100%; }
 .simado-dash #berkasCard .table thead th {
@@ -339,20 +339,20 @@ html body { background: #F3F7FC; }
 .simado-dash #berkasCard .table tbody td { padding: .6rem .7rem; vertical-align: middle; border-color: #EEF3F9; }
 .simado-dash #berkasCard .table tbody tr:hover { background: #F8FAFD; }
 .simado-dash #berkasCard .table td { overflow: hidden; }
-.simado-dash #berkasCard .table th:nth-child(1){ width: 48px; }
+.simado-dash #berkasCard .table th:nth-child(1){ width: 3rem; }
 .simado-dash #berkasCard .table th:nth-child(2){ width: 24%; }
 .simado-dash #berkasCard .table th:nth-child(3){ width: 15%; }
-.simado-dash #berkasCard .table th:nth-child(4){ width: 120px; }
-.simado-dash #berkasCard .table th:nth-child(5){ width: 140px; }
-.simado-dash #berkasCard .table th:nth-child(6){ width: 120px; }
-.simado-dash #berkasCard .table th:nth-child(7){ width: 110px; }
-.simado-dash #berkasCard .table th:nth-child(8){ width: 170px; }
-.simado-dash #berkasCard .chip-subfolder { background: #E7F1FF; color: #1687F8; border-radius: 6px; }
+.simado-dash #berkasCard .table th:nth-child(4){ width: 7.5rem; }
+.simado-dash #berkasCard .table th:nth-child(5){ width: 8.75rem; }
+.simado-dash #berkasCard .table th:nth-child(6){ width: 7.5rem; }
+.simado-dash #berkasCard .table th:nth-child(7){ width: 6.875rem; }
+.simado-dash #berkasCard .table th:nth-child(8){ width: 10.625rem; }
+.simado-dash #berkasCard .chip-subfolder { background: #E7F1FF; color: #1687F8; border-radius: 0.375rem; }
 .simado-dash #berkasCard .chip { font-size: .7rem; padding: .2rem .5rem; }
 .simado-dash #berkasCard .btn-icon { font-size: .78rem; }
 .simado-dash #berkasCard .action-group { display: flex; gap: .25rem; flex-wrap: wrap; }
 
-.simado-dash .badge { border-radius: 7px; font-weight: 600; letter-spacing: .01em; }
+.simado-dash .badge { border-radius: 0.4375rem; font-weight: 600; letter-spacing: .01em; }
 .simado-dash .badge-pending { background: #FEF4E6; color: #B45309; }
 .simado-dash .badge-approved { background: #E6F7F1; color: #047857; }
 .simado-dash .badge-revision { background: #FDECEC; color: #B91C1C; }
@@ -360,7 +360,7 @@ html body { background: #F3F7FC; }
 @media (max-width: 991.98px) { .dash-welcome h1 { font-size: 1.3rem; } }
 @media (max-width: 575.98px) {
     .dash-stat { padding: .8rem .85rem; gap: .6rem; }
-    .dash-stat-icon { width: 40px; height: 40px; font-size: 1.05rem; }
+    .dash-stat-icon { width: 2.5rem; height: 2.5rem; font-size: 1.05rem; }
     .dash-stat-value { font-size: 1.2rem; }
     .dash-stat-label { font-size: .64rem; }
     .dash-welcome h1 { font-size: 1.15rem; }
@@ -492,7 +492,7 @@ html body { background: #F3F7FC; }
             <div id="progressMain" style="display:none;">
                 <div class="dash-progress-wrap">
                     <div class="dash-progress">
-                        <div class="progress" style="height:12px;border-radius:999px;background:#E9F0F8;">
+                        <div class="progress" style="height:0.75rem;border-radius:62.4375rem;background:#E9F0F8;">
                             <div class="progress-bar" id="completenessProgress" style="width:0%;"></div>
                         </div>
                         <small class="text-muted d-block mt-2" id="progressText">0 dari 0 file disetujui</small>
