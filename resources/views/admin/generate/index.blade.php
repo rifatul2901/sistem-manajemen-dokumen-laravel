@@ -37,7 +37,8 @@
     <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
             <h4 class="page-title mb-0">Generate Dokumen</h4>
-            <p class="text-muted small mb-0 mt-1">Buat dokumen dari data spreadsheet atau Excel dengan pemilihan sel manual.</p>
+            <p class="text-muted small mb-0 mt-1">Buat doku
+            men dari data spreadsheet atau Excel dengan pemilihan sel manual.</p>
         </div>
     </div>
 
@@ -140,9 +141,9 @@
                         <label class="form-label">Mode Generate</label>
                         <div class="btn-group w-100" role="group" aria-label="Mode Generate">
                             <input type="radio" class="btn-check" name="generateMode" value="satuan" id="modeSatuan" checked autocomplete="off">
-                            <label class="btn btn-outline-primary btn-sm" for="modeSatuan"><i class="bi bi-file-earmark me-1"></i>Satuan</label>
+                            <label class="btn btn-outline-primary btn-sm" for="modeSatuan"><i class="bi bi-file-earmark me-1"></i>Single Generate</label>
                             <input type="radio" class="btn-check" name="generateMode" value="massal" id="modeMassal" autocomplete="off">
-                            <label class="btn btn-outline-primary btn-sm" for="modeMassal"><i class="bi bi-files me-1"></i>Massal</label>
+                            <label class="btn btn-outline-primary btn-sm" for="modeMassal"><i class="bi bi-files me-1"></i>Multiple</label>
                         </div>
                         <div class="form-text" id="modeHelpText">Satuan: 1 dokumen dari sel tercentang. Hasil 1 file.</div>
                     </div>
@@ -164,7 +165,7 @@
                                     <span class="text-muted fw-light" style="font-size:.75rem;">(opsional)</span>
                                 </label>
                                 <input type="text" name="document_name" class="form-control"
-                                       placeholder="Kosongkan untuk mengikuti nama template" maxlength="200">
+                                    placeholder="Kosongkan untuk mengikuti nama template" maxlength="200">
                                 <div class="form-text">Jika dikosongkan, nama file akan mengikuti nama template yang diupload.</div>
                             </div>
 
