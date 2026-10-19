@@ -52,13 +52,17 @@
         .sidebar {
             position: fixed; inset: 0 auto 0 0;
             width: var(--sidebar-width);
-            background: linear-gradient(180deg, #0f172a 0%, #0a0f1e 100%);
+            background: linear-gradient(180deg, #0B1730 0%, #0A1226 100%);
+            border-right: 1px solid rgba(255,255,255,.05);
             z-index: 1040;
             display: flex; flex-direction: column;
-            transition: transform .3s cubic-bezier(.4,0,.2,1);
+            transition: transform .3s cubic-bezier(.4,0,.2,1), width .25s cubic-bezier(.4,0,.2,1);
         }
-        .sidebar-brand { padding: .75rem 1rem; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,.06); }
-        .sidebar-brand img { height: 90px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,.2)); }
+        .sidebar-brand { padding: .75rem 1rem; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,.06); overflow: hidden; min-width: 0; }
+        .sidebar-brand .brand-logo-full { display: flex; align-items: center; justify-content: center; max-width: 100%; }
+        .sidebar-brand .brand-logo-full img { height: 100px; width: auto; max-width: 100%; filter: drop-shadow(0 2px 8px rgba(0,0,0,.2)); }
+        .sidebar-brand .brand-logo-compact { display: none; }
+        .sidebar-brand .brand-logo-compact img { height: 36px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,.2)); }
         .sidebar-user { padding: .6rem 1.1rem; display: flex; align-items: center; gap: .6rem; }
         .sidebar-user .avatar {
             width: 32px; height: 32px; border-radius: 8px;
@@ -82,11 +86,31 @@
         }
         .sidebar-nav .nav-link:hover { color: #e2e8f0; background: rgba(255,255,255,.06); }
         .sidebar-nav .nav-link.active {
-            color: #fff; background: rgba(0,146,223,.2);
-            box-shadow: inset 3px 0 0 var(--primary);
+            color: #fff; background: linear-gradient(135deg, #1687F8, #0f6fd6);
+            box-shadow: 0 6px 16px rgba(22,135,248,.35);
         }
+        .sidebar-nav .nav-link.active i { color: #fff; }
         .sidebar-nav .nav-link i { font-size: 1rem; width: 18px; text-align: center; flex-shrink: 0; }
+        .sidebar-nav .nav-link .nav-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sidebar-nav .nav-link .nav-badge { margin-left: auto; font-size: .65rem; padding: .15rem .5rem; border-radius: 20px; background: rgba(255,255,255,.1); color: #94a3b8; }
+
+        /* === Desktop / tablet sidebar collapse === */
+        @media (min-width: 768px) {
+            body.sidebar-collapsed { --sidebar-width: 78px; }
+            body.sidebar-collapsed .sidebar-brand { padding: .75rem .5rem; }
+            body.sidebar-collapsed .sidebar-brand .brand-logo-full { display: none; }
+            body.sidebar-collapsed .sidebar-brand .brand-logo-compact { display: flex; align-items: center; justify-content: center; }
+            body.sidebar-collapsed .sidebar-user { justify-content: center; padding: .6rem .5rem; }
+            body.sidebar-collapsed .sidebar-user .user-info,
+            body.sidebar-collapsed .sidebar-nav .nav-text,
+            body.sidebar-collapsed .sidebar-nav .nav-badge,
+            body.sidebar-collapsed .sidebar-quote,
+            body.sidebar-collapsed .sidebar-watermark,
+            body.sidebar-collapsed .sidebar-footer .btn-logout .btn-logout-text { display: none; }
+            body.sidebar-collapsed .sidebar-nav { padding: .4rem .5rem; }
+            body.sidebar-collapsed .sidebar-nav .nav-link { justify-content: center; padding: .6rem; }
+            body.sidebar-collapsed .sidebar-footer .btn-logout { justify-content: center; }
+        }
         .sidebar-footer { padding: .75rem; border-top: 1px solid rgba(255,255,255,.06); }
         .sidebar-footer .btn-logout {
             display: flex; align-items: center; justify-content: center; gap: .5rem;
@@ -474,9 +498,13 @@
     @auth
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <picture>
+            <picture class="brand-logo-full">
                 <source srcset="{{ asset('images/logo.webp') }}" type="image/webp">
-                <img src="{{ asset('images/logo.png') }}" alt="Sistem Manajemen Dokumen" width="512" height="279" style="height:100px;width:auto;" loading="eager" fetchpriority="high" decoding="async">
+                <img src="{{ asset('images/logo.png') }}" alt="SIMADO - Sistem Manajemen Dokumen" width="512" height="279" loading="eager" fetchpriority="high" decoding="async">
+            </picture>
+            <picture class="brand-logo-compact">
+                <source srcset="{{ asset('images/logo_no_text.webp') }}" type="image/webp">
+                <img src="{{ asset('images/logo_no_text.png') }}" alt="SIMADO" loading="eager" decoding="async">
             </picture>
         </div>
         <div class="sidebar-divider"></div>
@@ -492,43 +520,43 @@
             @if (Auth::user()->role === 'admin')
             <div class="nav-item">
                 <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                    <i class="bi bi-clipboard-data"></i> Dashboard
+                    <i class="bi bi-clipboard-data"></i> <span class="nav-text">Dashboard</span>
                 </a>
             </div>
             <div class="nav-item">
                 <a href="{{ route('admin.generate') }}" class="nav-link {{ request()->routeIs('admin.generate*') ? 'active' : '' }}">
-                    <i class="bi bi-file-earmark-plus"></i> Generate Dokumen
+                    <i class="bi bi-file-earmark-plus"></i> <span class="nav-text">Generate Dokumen</span>
                 </a>
             </div>
             <div class="nav-item">
                 <a href="{{ route('admin.rekapitulasi') }}" class="nav-link {{ request()->routeIs('admin.rekapitulasi*') ? 'active' : '' }}">
-                    <i class="bi bi-bar-chart"></i> Rekapitulasi
+                    <i class="bi bi-bar-chart"></i> <span class="nav-text">Rekapitulasi</span>
                 </a>
             </div>
             <div class="nav-item">
                 <a href="{{ route('admin.drive-config') }}" class="nav-link {{ request()->routeIs('admin.drive-config') ? 'active' : '' }}">
-                    <i class="bi bi-google"></i> Drive Config
+                    <i class="bi bi-google"></i> <span class="nav-text">Drive Config</span>
                 </a>
             </div>
             <div class="nav-item">
                 <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
-                    <i class="bi bi-people"></i> Manajemen User
+                    <i class="bi bi-people"></i> <span class="nav-text">Manajemen User</span>
                 </a>
             </div>
             <div class="nav-item">
                 <a href="{{ route('admin.riwayat-revisi') }}" class="nav-link {{ request()->routeIs('admin.riwayat-revisi') ? 'active' : '' }}">
-                    <i class="bi bi-clock-history"></i> Riwayat Revisi
+                    <i class="bi bi-clock-history"></i> <span class="nav-text">Riwayat Revisi</span>
                 </a>
             </div>
             @else
             <div class="nav-item">
                 <a href="{{ route('status.index') }}" class="nav-link {{ request()->routeIs('status*') ? 'active' : '' }}">
-                    <i class="bi bi-check-circle"></i> Status Berkas
+                    <i class="bi bi-check-circle"></i> <span class="nav-text">Status Berkas</span>
                 </a>
             </div>
             <div class="nav-item">
                 <a href="{{ route('riwayat.index') }}" class="nav-link {{ request()->routeIs('riwayat*') ? 'active' : '' }}">
-                    <i class="bi bi-archive"></i> Riwayat
+                    <i class="bi bi-archive"></i> <span class="nav-text">Riwayat</span>
                 </a>
             </div>
             @endif
@@ -546,7 +574,7 @@
         <div class="sidebar-footer">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right"></i> Keluar</button>
+                <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right"></i> <span class="btn-logout-text">Keluar</span></button>
             </form>
         </div>
     </nav>

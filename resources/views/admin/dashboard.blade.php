@@ -36,38 +36,211 @@
 }
 
 @keyframes poinPopupFade {
-    from { opacity: 0; transform: translateY(-8px); }
+    from { opacity: 0; transform: translateY(-6px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* Tooltip Poin Checklist: kartu popover modern, aksen biru SIMADO.
+   Hanya menata popup checklist; tidak menyentuh tabel/badge/filter/layout. */
 #poinPopup {
-    animation: poinPopupFade .18s ease-out;
-    font-size: .85rem;
+    position: absolute;
+    z-index: 1060;
+    width: 400px;
+    max-width: calc(100vw - 16px);
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+    color: #0F172A;
+    font-size: 14px;
+    animation: poinPopupFade .16s ease-out;
 }
 #poinPopup .poin-popup-arrow {
     position: absolute;
     top: -6px;
     width: 12px;
     height: 12px;
-    background: inherit;
-    border-left: 1px solid #dee2e6;
-    border-top: 1px solid #dee2e6;
+    background: #FFFFFF;
+    border-left: 1px solid #E2E8F0;
+    border-top: 1px solid #E2E8F0;
     transform: rotate(45deg);
     z-index: 1;
     pointer-events: none;
 }
+#poinPopup.is-flipped .poin-popup-arrow {
+    top: auto;
+    bottom: -6px;
+    border-left: none;
+    border-top: none;
+    border-right: 1px solid #E2E8F0;
+    border-bottom: 1px solid #E2E8F0;
+}
 #poinPopup .poin-popup-header {
-    background: #f8f9fa;
-    border-radius: 6px 6px 0 0;
+    height: 50px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 1px solid #E2E8F0;
+}
+#poinPopup .poin-popup-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0F172A;
+}
+#poinPopup .poin-popup-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #EFF6FF;
+    color: #0D6EFD;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+}
+#poinPopup .poin-popup-close {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+    border: 0;
+    border-radius: 8px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: #64748B;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+}
+#poinPopup .poin-popup-close:hover {
+    background: #F1F5F9;
+    color: #0F172A;
+}
+#poinPopup .poin-popup-progress {
+    padding: 12px 16px;
+    border-bottom: 1px solid #E2E8F0;
+}
+#poinPopup .poin-progress-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+#poinPopup .poin-progress-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0F172A;
+}
+#poinPopup .poin-progress-pct {
+    font-size: 12px;
+    color: #64748B;
+}
+#poinPopup .poin-progress-track {
+    height: 6px;
+    border-radius: 999px;
+    background: #E2E8F0;
+    overflow: hidden;
+}
+#poinPopup .poin-progress-bar {
+    height: 100%;
+    border-radius: 999px;
+    background: #0D6EFD;
+    transition: width .2s ease;
 }
 #poinPopup .poin-popup-body {
-    padding: .4rem 0;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 0;
 }
-#poinPopup .poin-popup-body .list-group-item {
-    padding: .5rem .75rem !important;
-    font-size: .8rem;
+#poinPopup .poin-list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 11px 16px;
+    border-bottom: 1px solid #E2E8F0;
+    cursor: pointer;
+    transition: background .15s ease;
 }
-#poinPopup .poin-popup-body .list-group-item:hover {
-    background-color: #f0f7ff !important;
+#poinPopup .poin-list-item:last-child {
+    border-bottom: none;
+}
+#poinPopup .poin-list-item:hover {
+    background: #F8FAFC;
+}
+#poinPopup .poin-list-item .poin-check {
+    flex: 0 0 auto;
+    margin-top: 2px;
+    cursor: pointer;
+}
+#poinPopup .poin-check:checked {
+    background-color: #0D6EFD;
+    border-color: #0D6EFD;
+}
+#poinPopup .poin-check:focus {
+    border-color: #86B7FE;
+    box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .2);
+}
+#poinPopup .poin-label-text {
+    display: block;
+    color: #334155;
+    font-size: 13.5px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+}
+
+/* Modal aksi (Approve & Revisi) - modern, konsisten, tanpa duplikasi */
+#approveModal .modal-content,
+#revisionModal .modal-content {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, .25);
+    overflow: hidden;
+}
+#approveModal .modal-header,
+#revisionModal .modal-header {
+    border-bottom: 1px solid #eef2f7;
+    padding: .9rem 1.1rem;
+}
+#approveModal .modal-title,
+#revisionModal .modal-title {
+    font-size: 1rem;
+    font-weight: 600;
+}
+#revisionModal .modal-title i {
+    color: #ef4444;
+}
+#approveModal .modal-footer,
+#revisionModal .modal-footer {
+    border-top: 1px solid #eef2f7;
+    padding: .8rem 1.1rem;
+}
+.modal-status-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+.modal-status-icon i { font-size: 2rem; }
+.modal-status-icon.is-success { background: #e7f8f0; color: #10b981; }
+.modal-doc-name {
+    font-weight: 600;
+    color: #172b4d;
+    word-break: break-word;
 }
 
 .tooltip-inner > div {
@@ -76,141 +249,140 @@
     margin-bottom: 2px;
 }
 
-#poinFilterBar .btn.active {
-    background: #e7f1ff;
-    border-color: #0d6efd;
-    color: #0d6efd;
-}
-#poinFilterBar .btn.active::before {
-    content: "\F26A";
-    font-family: "bootstrap-icons";
-    margin-right: 4px;
+/* Legacy dashboard-only rules removed during SIMADO redesign (replaced by scoped .simado-dash theme). */
+</style>
+@endpush
+
+@push('styles')
+<style>
+/* ===== SIMADO Dashboard — scoped theme (only applies on this page) ===== */
+html body { background: #F3F7FC; }
+.simado-dash {
+    --dash-navy: #0B1730;
+    --dash-blue: #1687F8;
+    --dash-blue-dark: #0f6fd6;
+    --dash-bg: #F3F7FC;
+    --dash-text: #172B4D;
+    --dash-muted: #64748B;
+    --dash-border: #E2EAF3;
+    --dash-green: #10B981;
+    --dash-amber: #F59E0B;
+    --dash-red: #EF4444;
+    color: var(--dash-text);
+    padding-bottom: 1rem;
 }
 
-.card-compact .card-body {
-    padding: .75rem 1rem .5rem;
+.dash-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border: 1px solid var(--dash-border); border-radius: 14px;
+    padding: .55rem .8rem; margin-bottom: 1.25rem; box-shadow: 0 1px 2px rgba(16,42,77,.04);
 }
-.card-compact .card-body .form-label {
-    font-size: .75rem;
-    margin-bottom: .2rem;
+.dash-topbar .btn-toggle-dash {
+    border: 0; background: transparent; color: #475569; width: 38px; height: 38px;
+    border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; cursor: pointer; transition: all .15s ease;
 }
-.card-compact .btn-sm {
-    font-size: .75rem;
-    padding: .3rem .6rem;
-}
-.card-compact .badge {
-    font-size: .7rem;
-    padding: .25rem .5rem;
-}
-.card-compact .text-muted.small {
-    font-size: .7rem;
-}
-.card-compact .fw-medium.text-truncate {
-    font-size: .75rem;
+.dash-topbar .btn-toggle-dash:hover { background: var(--dash-bg); color: var(--dash-blue); }
+.dash-topbar-title { font-weight: 600; font-size: .95rem; color: var(--dash-text); }
+.dash-date {
+    display: inline-flex; align-items: center; gap: .45rem; font-size: .78rem; color: var(--dash-muted);
+    background: var(--dash-bg); border: 1px solid var(--dash-border); padding: .4rem .75rem; border-radius: 8px;
 }
 
-#berkasCard .table {
-    font-size: .75rem;
-    table-layout: fixed;
-    width: 100%;
+.dash-welcome h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.02em; color: var(--dash-text); margin: 0; }
+.dash-welcome p { color: var(--dash-muted); font-size: .875rem; margin: .3rem 0 0; }
+
+.simado-dash .card {
+    border: 1px solid var(--dash-border); border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(16,42,77,.04), 0 1px 3px rgba(16,42,77,.05);
 }
-#berkasCard .table th:nth-child(2) { width: 22%; }
-#berkasCard .table th:nth-child(3) { width: 14%; }
-#berkasCard .table th:nth-child(4) { width: 110px; }
-#berkasCard .table th:nth-child(5) { width: 130px; }
-#berkasCard .table th:nth-child(6) { width: 110px; }
-#berkasCard .table th:nth-child(7) { width: 100px; }
-#berkasCard .poin-cell { width: 130px; }
-#berkasCard .table td { overflow: hidden; }
-#berkasCard .table .text-truncate { max-width: 100%; }
-#berkasCard .table th {
-    font-weight: 600;
-    font-size: .7rem;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-    color: #64748b;
-    border-bottom-width: 1px;
-    padding: .4rem .5rem;
-}
-#berkasCard .table td {
-    padding: .3rem .5rem;
-    vertical-align: middle;
-}
-#berkasCard .table .badge {
-    font-size: .65rem;
-    padding: .2rem .4rem;
-}
-#berkasCard .table .chip-subfolder {
-    font-size: .65rem;
-}
-#berkasCard .table .action-group {
-    display: flex;
-    gap: .2rem;
-}
-#berkasCard .table .btn-icon {
-    font-size: .7rem;
-    padding: .15rem .35rem;
+.simado-dash .card:hover { box-shadow: 0 6px 18px rgba(16,42,77,.07); }
+.simado-dash .card-header {
+    background: #fff; border-bottom: 1px solid var(--dash-border); padding: .9rem 1.15rem;
+    font-weight: 600; font-size: .875rem; border-radius: 14px 14px 0 0 !important; color: var(--dash-text);
 }
 
-#completenessProgress {
-    border-radius: 7px;
-    transition: width .5s ease;
-}
-#completenessProgress.bg-danger { background: #ef4444; }
-#completenessProgress.bg-warning { background: #f59e0b; }
-#completenessProgress.bg-success { background: #62B846; }
-#completenessProgress.bg-gold {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-}
+.dash-stat { display: flex; align-items: center; gap: .9rem; padding: 1rem 1.1rem; }
+.dash-stat-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.icon-total { background: #E7F1FF; color: #1687F8; }
+.icon-approved { background: #E6F7F1; color: #10B981; }
+.icon-pending { background: #FEF4E6; color: #F59E0B; }
+.icon-revision { background: #FDECEC; color: #EF4444; }
+.dash-stat-value { font-size: 1.45rem; font-weight: 700; line-height: 1.1; color: var(--dash-text); }
+.dash-stat-label { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--dash-muted); margin-top: .1rem; }
 
-.stat-card .card-body {
-    padding: .45rem .70rem;
+.dash-panel { background: #F8FAFD; border: 1px solid var(--dash-border); border-radius: 10px; padding: .75rem .85rem; }
+.dash-folder-active { display: flex; align-items: center; gap: .6rem; background: #fff; border: 1px solid var(--dash-border); border-radius: 9px; padding: .5rem .7rem; }
+
+.dash-progress-wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.dash-progress { flex: 1; min-width: 0; }
+.simado-dash #completenessProgress { border-radius: 999px; transition: width .5s ease; background: var(--dash-blue); }
+#completenessProgress.bg-danger { background: var(--dash-red) !important; }
+#completenessProgress.bg-warning { background: var(--dash-amber) !important; }
+#completenessProgress.bg-success { background: var(--dash-green) !important; }
+#completenessProgress.bg-gold { background: linear-gradient(135deg,#f59e0b,#d97706) !important; }
+.dash-progress-value { font-size: 1.35rem; font-weight: 700; color: var(--dash-text); min-width: 62px; text-align: right; }
+
+.simado-dash #poinFilterBar { background: #fff; }
+.simado-dash #poinFilterBar .btn { border-radius: 999px; font-size: .72rem; padding: .28rem .7rem; }
+.simado-dash #poinFilterBar .btn-outline-secondary { border-color: var(--dash-border); color: var(--dash-muted); }
+.simado-dash #poinFilterBar .btn-outline-secondary:hover { background: var(--dash-bg); color: var(--dash-text); }
+.simado-dash #poinFilterBar .btn.active { background: #E7F1FF; border-color: var(--dash-blue); color: var(--dash-blue); font-weight: 600; }
+.simado-dash #poinFilterBar .btn.active::before { content: "\F26A"; font-family: "bootstrap-icons"; margin-right: 4px; }
+
+.simado-dash #berkasCard .table { font-size: .8rem; table-layout: fixed; width: 100%; }
+.simado-dash #berkasCard .table thead th {
+    background: #F8FAFD; border-bottom: 1px solid var(--dash-border); font-weight: 600;
+    font-size: .7rem; text-transform: uppercase; letter-spacing: .03em; color: var(--dash-muted);
+    padding: .65rem .7rem; white-space: nowrap;
 }
-.stat-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: .95rem;
-    flex-shrink: 0;
-}
-.stat-icon-pending {
-    background: #fff3cd;
-    color: #856404;
-}
-.stat-icon-approved {
-    background: #d4edda;
-    color: #155724;
-}
-.stat-icon-revision {
-    background: #f8d7da;
-    color: #721c24;
-}
-.stat-number {
-    font-size: 1.05rem;
-    font-weight: 700;
-    line-height: 1.2;
-    color: #0f172a;
-}
-.stat-label {
-    font-size: .60rem;
-    color: #64748b;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: .03em;
+.simado-dash #berkasCard .table tbody td { padding: .6rem .7rem; vertical-align: middle; border-color: #EEF3F9; }
+.simado-dash #berkasCard .table tbody tr:hover { background: #F8FAFD; }
+.simado-dash #berkasCard .table td { overflow: hidden; }
+.simado-dash #berkasCard .table th:nth-child(1){ width: 48px; }
+.simado-dash #berkasCard .table th:nth-child(2){ width: 24%; }
+.simado-dash #berkasCard .table th:nth-child(3){ width: 15%; }
+.simado-dash #berkasCard .table th:nth-child(4){ width: 120px; }
+.simado-dash #berkasCard .table th:nth-child(5){ width: 140px; }
+.simado-dash #berkasCard .table th:nth-child(6){ width: 120px; }
+.simado-dash #berkasCard .table th:nth-child(7){ width: 110px; }
+.simado-dash #berkasCard .table th:nth-child(8){ width: 170px; }
+.simado-dash #berkasCard .chip-subfolder { background: #E7F1FF; color: #1687F8; border-radius: 6px; }
+.simado-dash #berkasCard .chip { font-size: .7rem; padding: .2rem .5rem; }
+.simado-dash #berkasCard .btn-icon { font-size: .78rem; }
+.simado-dash #berkasCard .action-group { display: flex; gap: .25rem; flex-wrap: wrap; }
+
+.simado-dash .badge { border-radius: 7px; font-weight: 600; letter-spacing: .01em; }
+.simado-dash .badge-pending { background: #FEF4E6; color: #B45309; }
+.simado-dash .badge-approved { background: #E6F7F1; color: #047857; }
+.simado-dash .badge-revision { background: #FDECEC; color: #B91C1C; }
+
+@media (max-width: 991.98px) { .dash-welcome h1 { font-size: 1.3rem; } }
+@media (max-width: 575.98px) {
+    .dash-stat { padding: .8rem .85rem; gap: .6rem; }
+    .dash-stat-icon { width: 40px; height: 40px; font-size: 1.05rem; }
+    .dash-stat-value { font-size: 1.2rem; }
+    .dash-stat-label { font-size: .64rem; }
+    .dash-welcome h1 { font-size: 1.15rem; }
 }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-0">
-    <div class="d-flex align-items-center justify-content-between mb-4">
-        <div>
-            <h4 class="page-title mb-0">Dashboard</h4>
-            <p class="text-muted small mb-0 mt-1">Pindai folder, review kelengkapan dokumen, dan kelola revisi.</p>
+<div class="container-fluid px-0 simado-dash">
+    <div class="dash-topbar d-none d-lg-flex">
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn-toggle-dash" onclick="toggleDashSidebar()" aria-label="Ciutkan sidebar" title="Ciutkan sidebar">
+                <i class="bi bi-list"></i>
+            </button>
+            <span class="dash-topbar-title">Dashboard</span>
         </div>
+        <span class="dash-date"><i class="bi bi-calendar3"></i> {{ now()->locale('id')->translatedFormat('l, d F Y') }}</span>
+    </div>
+
+    <div class="dash-welcome mb-4">
+        <h1>Selamat datang, {{ Auth::user()->nama ?? Auth::user()->username ?? 'Admin' }}</h1>
+        <p>Kelola dokumen, folder, dan data dengan lebih mudah dan terintegrasi.</p>
     </div>
 
     @session('success')
@@ -220,42 +392,88 @@
         <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2">{{ $value }}<button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button></div>
     @endsession
 
-    <div class="card card-compact mb-4">
-        <div class="card-header d-flex align-items-center gap-2 py-2">
-            <i class="bi bi-hdd-stack text-muted"></i> Workspace Drive
-            <span class="badge bg-light text-dark border ms-auto d-none d-sm-inline-flex align-items-center gap-1"><i class="bi bi-hdd"></i> {{ $config['folder_size'] ?? '0 B' }}</span>
+    <div class="row g-3 mb-3" id="statCards">
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="dash-stat">
+                    <div class="dash-stat-icon icon-total"><i class="bi bi-files"></i></div>
+                    <div class="min-w-0">
+                        <div class="dash-stat-value" id="statTotal">0</div>
+                        <div class="dash-stat-label">Total File</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="dash-stat">
+                    <div class="dash-stat-icon icon-approved"><i class="bi bi-check-circle"></i></div>
+                    <div class="min-w-0">
+                        <div class="dash-stat-value" id="statApproved">0</div>
+                        <div class="dash-stat-label">Disetujui</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="dash-stat">
+                    <div class="dash-stat-icon icon-pending"><i class="bi bi-clock"></i></div>
+                    <div class="min-w-0">
+                        <div class="dash-stat-value" id="statPending">0</div>
+                        <div class="dash-stat-label">Menunggu Review</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="dash-stat">
+                    <div class="dash-stat-icon icon-revision"><i class="bi bi-pencil"></i></div>
+                    <div class="min-w-0">
+                        <div class="dash-stat-value" id="statRevision">0</div>
+                        <div class="dash-stat-label">Butuh Revisi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3" id="workspaceCard">
+        <div class="card-header">
+            <span class="d-flex align-items-center gap-2"><i class="bi bi-hdd-stack text-primary"></i> Workspace Drive</span>
+            <span class="badge bg-light text-dark border d-none d-sm-inline-flex align-items-center gap-1"><i class="bi bi-hdd"></i> {{ $config['folder_size'] ?? '0 B' }}</span>
         </div>
         <div class="card-body">
             <!-- Konfigurasi -->
-            <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="d-flex align-items-center gap-3 flex-wrap mb-3">
                 <div class="flex-grow-1 min-w-0">
-                    <div class="text-muted small mb-1 d-flex align-items-center gap-1" style="font-size:.68rem;"><i class="bi bi-folder2 text-primary"></i> Folder aktif</div>
+                    <div class="text-muted mb-1 d-flex align-items-center gap-1" style="font-size:.72rem;"><i class="bi bi-folder2 text-primary"></i> Folder aktif</div>
                     @if ($driveConfig && $driveConfig->folder_link)
-                        <div class="d-flex align-items-center gap-2 px-2 py-1 rounded" style="background:#f8fafc;border:1px solid #e2e8f0;">
-                            <span class="fw-medium text-truncate small" style="font-size:.75rem;">{{ $driveConfig->folder_link }}</span>
-                            <span class="text-muted small d-sm-none ms-auto"><i class="bi bi-hdd me-1"></i>{{ $config['folder_size'] ?? '0 B' }}</span>
+                        <div class="dash-folder-active">
+                            <i class="bi bi-folder-fill text-primary"></i>
+                            <span class="fw-medium text-truncate" style="font-size:.8rem;">{{ $driveConfig->folder_link }}</span>
                         </div>
                     @else
-                        <div class="px-2 py-2 rounded text-center" style="background:#f8fafc;border:1px dashed #cbd5e1;">
+                        <div class="dash-panel text-center">
                             <span class="text-muted small">Belum ada folder dikonfigurasi.</span>
                         </div>
                     @endif
                 </div>
                 <a href="{{ route('admin.drive-config') }}" class="btn btn-outline-primary btn-sm flex-shrink-0"><i class="bi bi-gear me-1"></i> Atur</a>
             </div>
-            <hr class="my-3" style="border-color:#e2e8f0;opacity:1;">
             <!-- Navigasi -->
-            <div>
-                <label class="form-label d-flex align-items-center gap-1 mb-1" style="font-size:.7rem;"><i class="bi bi-signpost-split text-muted"></i> Navigasi Folder</label>
+            <div class="dash-panel">
+                <label class="form-label d-flex align-items-center gap-1 mb-2"><i class="bi bi-signpost-split text-muted"></i> Navigasi Folder</label>
                 <nav id="breadcrumbNav" class="breadcrumb-nav mb-2" aria-label="Navigasi folder"></nav>
                 <div class="subfolder-toolbar" id="subfolderToolbar" style="display:none;">
                     <input type="search" id="subfolderSearch" placeholder="Cari subfolder..." aria-label="Cari subfolder">
                     <span class="subfolder-count" id="subfolderCount"></span>
                 </div>
                 <div id="subfolderButtons" class="subfolder-grid subfolder-area"></div>
-                <div class="d-flex gap-2 mt-2">
-                    <button class="btn btn-sm btn-primary py-1" onclick="scanCurrent(false)"><i class="bi bi-search me-1"></i> Pindai</button>
-                    <button class="btn btn-sm btn-outline-primary py-1" onclick="scanCurrent(true)"><i class="bi bi-files me-1"></i> Scan All</button>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-sm btn-primary" onclick="scanCurrent(false)"><i class="bi bi-search me-1"></i> Pindai</button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="scanCurrent(true)"><i class="bi bi-files me-1"></i> Scan All</button>
                 </div>
                 <input type="hidden" id="currentFolderId" value="">
                 <input type="hidden" id="currentFolderName" value="(folder utama)">
@@ -263,75 +481,39 @@
         </div>
     </div>
 
-    <div class="card card-compact mb-4" id="progressCard">
-        <div class="card-header d-flex align-items-center gap-2 py-2">
-            <i class="bi bi-bar-chart-line text-muted"></i> Progress Kelengkapan
+    <div class="card mb-3" id="progressCard">
+        <div class="card-header">
+            <span class="d-flex align-items-center gap-2"><i class="bi bi-bar-chart-line text-primary"></i> Progres Kelengkapan</span>
         </div>
         <div class="card-body">
-            <div id="progressEmpty">
-                <div class="text-center py-1">
-                    <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Lakukan scan folder untuk melihat progress kelengkapan.</small>
-                </div>
+            <div id="progressEmpty" class="text-center py-1">
+                <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Lakukan scan folder untuk melihat progress kelengkapan.</small>
             </div>
             <div id="progressMain" style="display:none;">
-                <div class="progress" style="height:14px;border-radius:7px;">
-                    <div class="progress-bar" id="completenessProgress" style="width:0%;"></div>
-                </div>
-                <div class="d-flex justify-content-between mt-1">
-                    <small class="text-muted" id="progressText">0 dari 0 file disetujui</small>
-                    <small class="fw-bold" id="progressPercent">0%</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-4" id="statCards" style="display:none;">
-        <div class="col-md-4">
-            <div class="card card-compact h-100 stat-card">
-                <div class="card-body d-flex align-items-center gap-3 py-3">
-                    <div class="stat-icon stat-icon-pending"><i class="bi bi-clock"></i></div>
-                    <div>
-                        <div class="stat-number" id="statPending">0</div>
-                        <div class="stat-label">Pending</div>
+                <div class="dash-progress-wrap">
+                    <div class="dash-progress">
+                        <div class="progress" style="height:12px;border-radius:999px;background:#E9F0F8;">
+                            <div class="progress-bar" id="completenessProgress" style="width:0%;"></div>
+                        </div>
+                        <small class="text-muted d-block mt-2" id="progressText">0 dari 0 file disetujui</small>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card card-compact h-100 stat-card">
-                <div class="card-body d-flex align-items-center gap-3 py-3">
-                    <div class="stat-icon stat-icon-approved"><i class="bi bi-check-circle"></i></div>
-                    <div>
-                        <div class="stat-number" id="statApproved">0</div>
-                        <div class="stat-label">Disetujui</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card card-compact h-100 stat-card">
-                <div class="card-body d-flex align-items-center gap-3 py-3">
-                    <div class="stat-icon stat-icon-revision"><i class="bi bi-pencil"></i></div>
-                    <div>
-                        <div class="stat-number" id="statRevision">0</div>
-                        <div class="stat-label">Butuh Revisi</div>
-                    </div>
+                    <div class="dash-progress-value" id="progressPercent">0%</div>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="card" id="berkasCard">
-        <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <span><i class="bi bi-files me-1"></i> Daftar Berkas</span>
-            <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-light text-dark px-3 py-2" id="scanTime" style="display:none;"><i class="bi bi-clock me-1"></i><span></span></span>
-                <span class="badge bg-light text-dark px-3 py-2" id="fileCount" style="display:none;"><i class="bi bi-file-earmark me-1"></i><span></span></span>
-                <span class="badge bg-light text-dark px-3 py-2">Ukuran: {{ $config['folder_size'] ?? '0 B' }}</span>
+        <div class="card-header">
+            <span class="d-flex align-items-center gap-2"><i class="bi bi-files text-primary"></i> Daftar Berkas Terbaru</span>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge bg-light text-dark border" id="scanTime" style="display:none;"><i class="bi bi-clock me-1"></i><span></span></span>
+                <span class="badge bg-light text-dark border" id="fileCount" style="display:none;"><i class="bi bi-file-earmark me-1"></i><span></span></span>
+                <span class="badge bg-light text-dark border"><i class="bi bi-hdd me-1"></i>{{ $config['folder_size'] ?? '0 B' }}</span>
             </div>
         </div>
         <div class="card-body p-0">
-            <div class="px-3 pt-2 pb-1 border-bottom d-flex flex-wrap align-items-center gap-1" id="poinFilterBar" style="display:none;">
+            <div class="px-3 pt-3 pb-2 border-bottom d-flex flex-wrap align-items-center gap-1" id="poinFilterBar" style="display:none;">
                 <span class="text-muted small me-1">Filter Poin:</span>
                 <button class="btn btn-sm btn-outline-secondary active" data-filter="all">Semua</button>
                 <button class="btn btn-sm btn-outline-secondary" data-filter="poin_pengukuran_kinerja">Pengukuran Kinerja</button>
@@ -344,14 +526,14 @@
                 <table class="table table-hover mb-0" id="uploadsTable">
                     <thead>
                         <tr>
-                            <th style="width:50px;">No</th>
+                            <th>No</th>
                             <th>Nama Berkas</th>
                             <th>Subfolder</th>
                             <th>Status</th>
                             <th>Poin</th>
                             <th>Diupload</th>
                             <th>Oleh</th>
-                            <th style="width:180px;">Aksi</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="uploadsBody">
@@ -374,16 +556,21 @@
 <form id="approveForm" method="POST" style="display:none;">@csrf</form>
 <form id="deleteForm" method="POST" style="display:none;">@csrf</form>
 
-<div class="modal fade" id="approveModal" tabindex="-1">
-    <div class="modal-dialog modal-sm modal-dialog-centered">
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-body text-center py-4">
-                <i class="bi bi-check-circle text-success" style="font-size:3rem;"></i>
-                <h5 class="mt-3">Setujui Berkas</h5>
-                <p class="text-muted mb-0 small" id="approveModalFileName"></p>
+            <div class="modal-header">
+                <h5 class="modal-title" id="approveModalTitle">Setujui Berkas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
-            <div class="modal-footer border-0 justify-content-center pt-0 pb-4">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <div class="modal-body text-center py-4">
+                <div class="modal-status-icon is-success mb-3"><i class="bi bi-check-circle-fill"></i></div>
+                <p class="mb-2 small text-muted">Berkas berikut akan ditandai sebagai <strong>disetujui</strong>.</p>
+                <p class="modal-doc-name mb-0" id="approveModalFileName"></p>
+                <div class="alert alert-danger py-2 px-3 mt-3 mb-0 small d-none" id="approveModalError"></div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-success px-4" id="approveModalConfirm"><i class="bi bi-check-lg me-1"></i>Ya, Setujui</button>
             </div>
         </div>
@@ -407,14 +594,14 @@
     </div>
 </div>
 
-<div class="modal fade" id="revisionModal" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="revisionModal" tabindex="-1" aria-labelledby="revisionModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form method="POST" id="revisionForm">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-pencil me-1"></i> Catatan Revisi</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="revisionModalTitle"><i class="bi bi-pencil-square me-2"></i>Catatan Revisi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -422,7 +609,7 @@
                         <select name="user_id" class="form-select" required>
                             <option value="">-- Pilih User --</option>
                             @foreach (\App\Models\User::where('role', 'user')->where('is_active', true)->orderBy('nama')->get() as $u)
-                                <option value="{{ $u->id }}">{{ $u->nama }} (@<span>{{ $u->username }}</span>)</option>
+                                <option value="{{ $u->id }}">{{ $u->nama }} ({{ '@'.$u->username }})</option>
                             @endforeach
                         </select>
                     </div>
@@ -433,9 +620,10 @@
                             <button type="button" class="btn btn-outline-success addCatatan"><i class="bi bi-plus-lg"></i></button>
                         </div>
                     </div>
+                    <div class="alert alert-danger py-2 px-3 mb-0 small d-none" id="revisionModalError"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-danger"><i class="bi bi-send me-1"></i> Kirim Revisi</button>
                 </div>
             </form>
@@ -451,6 +639,13 @@ var _allFiles = [];
 var _currentPage = 1;
 var _perPage = 20;
 var _activeFilter = 'all';
+
+window.toggleDashSidebar = function() {
+    document.body.classList.toggle('sidebar-collapsed');
+};
+$(document).on('turbo:before-cache', function() {
+    document.body.classList.remove('sidebar-collapsed');
+});
 
 function getFilteredFiles() {
     if (_activeFilter === 'all') return _allFiles;
@@ -472,7 +667,7 @@ function pageInit() {
     $('#paginationControls').empty();
     $('#progressEmpty').show();
     $('#progressMain').hide();
-    $('#statCards').hide();
+    updateStatCards();
     $('#scanTime').hide();
     $('#fileCount').hide();
     $('#poinFilterBar').hide();
@@ -509,6 +704,11 @@ if (!window._dashboardEvents) {
     $(document).on('click', '#approveModalConfirm', doApprove);
     $(document).on('click', '#deleteModalConfirm', doDeleteUpload);
 
+    // Sinkronkan state modal aktif saat modal ditutup (termasuk via X / Batal / backdrop).
+    $(document).on('hidden.bs.modal', '.modal', function() {
+        if (this.id === _activeModal) _activeModal = null;
+    });
+
     $(document).on('click', '.btn-scan-folder', function() {
         navigateToFolder($(this).data('folder-id'), $(this).data('folder-name'));
     });
@@ -524,50 +724,66 @@ if (!window._dashboardEvents) {
         if (tip) tip.hide();
         $('#poinPopup').remove();
         var badge = $(this);
-        var contentId = badge.data('popin-id');
-        var $contentDiv = $('#' + contentId);
-        var checkedCount = $contentDiv.find('input.poin-check:checked').length;
-        var totalItems = poinKeys.length;
-        var pct = Math.round(checkedCount / totalItems * 100);
+        var key = badge.data('file-key');
+        var file = findFileByKey(key);
+        if (!file) return;
 
-        var arrowHtml = '<div class="poin-popup-arrow"></div>';
-        var headerHtml = '<div class="poin-popup-header d-flex align-items-center justify-content-between px-3 py-2 border-bottom">';
-        headerHtml += '<strong class="small"><i class="bi bi-check2-square me-1"></i>Poin Checklist</strong>';
-        headerHtml += '<button type="button" class="btn-close btn-close-sm" id="poinPopupClose" aria-label="Close"></button>';
-        headerHtml += '</div>';
-        headerHtml += '<div class="px-3 pt-2 pb-1" style="background:#fff;">';
-        headerHtml += '<div class="d-flex align-items-center gap-2"><small class="text-muted">' + checkedCount + '/' + totalItems + '</small><div class="progress flex-grow-1" style="height:6px;"><div class="progress-bar" role="progressbar" style="width:' + pct + '%;" aria-valuenow="' + checkedCount + '" aria-valuemax="' + totalItems + '"></div></div></div>';
-        headerHtml += '</div>';
+        var popup = $('<div id="poinPopup">')
+            .attr('data-file-key', key)
+            .html(
+                '<div class="poin-popup-arrow"></div>' +
+                '<div class="poin-popup-header">' +
+                '<span class="poin-popup-title"><span class="poin-popup-icon"><i class="bi bi-check2-square"></i></span>Poin Checklist</span>' +
+                '<button type="button" class="poin-popup-close" id="poinPopupClose" aria-label="Tutup"><i class="bi bi-x-lg"></i></button>' +
+                '</div>' +
+                '<div class="poin-popup-progress">' + poinProgressHtml(file) + '</div>' +
+                '<div class="poin-popup-body">' + poinChecklistHtml(file, key) + '</div>'
+            )
+            .appendTo('body');
 
-        var bodyHtml = '<div class="poin-popup-body">' + $contentDiv.html() + '</div>';
-        var popup = $('<div id="poinPopup">').html(arrowHtml + headerHtml + bodyHtml).appendTo('body');
-        var pos = badge.offset();
-        var popupLeft = Math.max(4, pos.left + badge.outerWidth() - 420);
-        var badgeCenter = pos.left + badge.outerWidth() / 2;
-        var arrowLeft = badgeCenter - popupLeft - 6;
-        popup.css({
-            position: 'absolute',
-            top: pos.top + badge.outerHeight() + 4,
-            left: popupLeft,
-            zIndex: 1060,
-            background: '#fff',
-            border: '1px solid #dee2e6',
-            borderRadius: '6px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-            width: '420px'
-        });
-        popup.find('.poin-popup-arrow').css('left', Math.max(10, Math.min(arrowLeft, 408)));
+        positionPoinPopup(popup, badge);
     });
 
     $(document).on('click', '#poinPopupClose', function() {
         $('#poinPopup').remove();
     });
 
+    // Tooltip poin: didelegasikan agar badge yang baru dirender selalu dapat tooltip
+    // tanpa digandakan (pakai getOrCreateInstance) dan tanpa kehilangan konten.
+    $(document).on('mouseenter focusin', '.poin-badge[data-poin-tip]', function() {
+        try {
+            var opts = Object.assign({ title: this.getAttribute('data-poin-tip') || '' }, poinTooltipOptions);
+            bootstrap.Tooltip.getOrCreateInstance(this, opts).show();
+        } catch(e) {}
+    });
+    $(document).on('mouseleave focusout', '.poin-badge[data-poin-tip]', function() {
+        try {
+            var tip = bootstrap.Tooltip.getInstance(this);
+            if (tip) tip.hide();
+        } catch(e) {}
+    });
+
     $(document).on('change', '.poin-check', function() {
         var cb = $(this);
+        var key = cb.data('file-key');
         var uploadId = cb.data('upload-id');
         var poin = cb.data('poin');
-        var row = $('.poin-check[data-upload-id="' + uploadId + '"]').first().closest('tr');
+        var file = findFileByKey(key);
+
+        // Identitas wajib: tanpa file/ID yang jelas jangan menulis ke baris lain.
+        if (!file || !uploadId) {
+            cb.prop('checked', !cb.prop('checked'));
+            showAppToast('danger', 'Poin ini tidak dapat disimpan.');
+            return;
+        }
+
+        var desired = cb.is(':checked');
+        file[poin] = desired; // optimistic; sumber kebenaran = objek file ini
+        cb.prop('disabled', true);
+
+        // Token per file per poin: respons usang tidak boleh menimpa state terbaru.
+        file._poinReq = file._poinReq || {};
+        var reqId = file._poinReq[poin] = (file._poinReq[poin] || 0) + 1;
 
         $.ajax({
             url: '{{ route("admin.toggle-poin") }}',
@@ -575,40 +791,28 @@ if (!window._dashboardEvents) {
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content'),
                 upload_id: uploadId,
-                poin: poin
+                poin: poin,
+                value: desired ? 1 : 0
             },
             success: function(res) {
-                var $popup = $('#poinPopup');
-                $popup.find('.poin-check[data-poin="' + poin + '"]').prop('checked', res.value);
-
-                var checkedCount = $popup.find('.poin-check:checked').length;
-                var totalItems = poinKeys.length;
-                var pct = Math.round(checkedCount / totalItems * 100);
-                $popup.find('.text-muted').first().text(checkedCount + '/' + totalItems);
-                $popup.find('.progress-bar').css('width', pct + '%').attr('aria-valuenow', checkedCount);
-
-                row.find('.poin-check[data-poin="' + poin + '"]').prop('checked', res.value);
-
-                var matched = (_allFiles || []).find(function(f) { return String(f.database_id) === String(uploadId); });
-                if (matched) matched[poin] = res.value;
-
-                var file = { database_id: uploadId };
-                poinKeys.forEach(function(k) { file[k] = row.find('.poin-check[data-poin="' + k + '"]').is(':checked'); });
-                row.find('.poin-cell').replaceWith(buildPoinCell(file));
-                initPoinTooltips();
-
-                updatePoinCounts();
-
-                var activeFilter = $('#poinFilterBar .active').data('filter');
-                if (activeFilter && activeFilter !== 'all') {
-                    var fc = row.find('.poin-check[data-poin="' + activeFilter + '"]');
-                    if (!fc.length || !fc.is(':checked')) row.hide();
+                if (file._poinReq[poin] !== reqId) return; // sudah ada request lebih baru
+                if (!res || !res.success) {
+                    file[poin] = !desired;
+                    applyFilePoinUpdate(file);
+                    showAppToast('danger', 'Gagal menyimpan poin. Silakan coba lagi.');
+                    return;
                 }
+                file[poin] = !!res.value;
+                applyFilePoinUpdate(file);
             },
             error: function() {
-                cb.prop('checked', !cb.prop('checked'));
-                row.find('.poin-check[data-poin="' + poin + '"]').prop('checked', cb.prop('checked'));
+                if (file._poinReq[poin] !== reqId) return;
+                file[poin] = !desired; // revert; tidak menampilkan keberhasilan palsu
+                applyFilePoinUpdate(file);
                 showAppToast('danger', 'Gagal menyimpan poin. Silakan coba lagi.');
+            },
+            complete: function() {
+                if (file._poinReq[poin] === reqId) cb.prop('disabled', false);
             }
         });
     });
@@ -624,75 +828,123 @@ if (!window._dashboardEvents) {
         e.preventDefault();
         var $form = $(this);
         var $btn = $form.find('[type="submit"]');
-        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>');
+        if ($btn.prop('disabled')) return; // cegah pengiriman ganda
+        document.activeElement?.blur();
+        $('#revisionModalError').addClass('d-none').text('');
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Mengirim...');
         $.ajax({
             url: $form.attr('action'),
             method: 'POST',
             dataType: 'json',
             data: $form.serialize(),
             success: function(res) {
-                if (!res.success) return;
+                if (!res || !res.success) {
+                    // Pertahankan modal + input agar admin dapat memperbaiki dan mencoba lagi.
+                    $('#revisionModalError').removeClass('d-none').text('Gagal mengirim revisi. Silakan coba lagi.');
+                    resetRevisionButton();
+                    return;
+                }
                 var f = res.file;
                 var $row = $('tr[data-db-id="' + f.database_id + '"]');
                 $row.attr('data-status', 'revision');
                 $row.find('td').eq(3).html(badgeHtml('revision'));
                 $row.find('td').eq(7).html(buildActions(f));
-                bootstrap.Modal.getOrCreateInstance(document.getElementById('revisionModal')).hide();
                 var matched = _allFiles.find(function(x) { return String(x.database_id) === String(f.database_id); });
                 if (matched) matched.status = 'revision';
                 updateProgress();
                 updateStatCards();
+                // Tutup modal hanya setelah berhasil, lalu bersihkan form untuk pemakaian berikutnya.
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('revisionModal')).hide();
+                $form[0].reset();
+                $('#catatanContainer .input-group:gt(0)').remove();
+                resetRevisionButton();
             },
             error: function() {
-                showAppToast('danger', 'Gagal mengirim revisi.');
-            },
-            complete: function() {
-                $btn.prop('disabled', false).html('<i class="bi bi-send me-1"></i> Kirim Revisi');
+                $('#revisionModalError').removeClass('d-none').text('Gagal mengirim revisi. Silakan coba lagi.');
+                resetRevisionButton();
             }
         });
     });
 }
 
 var approveTargetId = null;
+var revisionTargetId = null;
+
+// Satu state modal aktif (null | 'approveModal' | 'revisionModal' | 'deleteModal').
+// Hanya satu modal bisa terbuka agar tidak ada overlay bertumpuk.
+var _activeModal = null;
+var modalEls = ['approveModal', 'revisionModal', 'deleteModal'];
+function showAppModal(id) {
+    modalEls.forEach(function(other) {
+        if (other === id) return;
+        var inst = bootstrap.Modal.getInstance(document.getElementById(other));
+        if (inst) inst.hide();
+    });
+    _activeModal = id;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).show();
+}
+function resetApproveButton() {
+    $('#approveModalConfirm').prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Ya, Setujui');
+}
+function resetRevisionButton() {
+    $('#revisionForm [type="submit"]').prop('disabled', false).html('<i class="bi bi-send me-1"></i> Kirim Revisi');
+}
 
 window.approve = function(id) {
     approveTargetId = id;
     var fileName = $('tr[data-db-id="' + id + '"] td').eq(1).text();
     $('#approveModalFileName').text(fileName || 'Berkas ini');
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('approveModal')).show();
+    $('#approveModalError').addClass('d-none').text('');
+    resetApproveButton();
+    showAppModal('approveModal');
 };
 
 function doApprove() {
     var id = approveTargetId;
     if (!id) return;
+    var $btn = $('#approveModalConfirm');
+    if ($btn.prop('disabled')) return; // cegah pengiriman ganda
     document.activeElement?.blur();
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('approveModal')).hide();
+    $('#approveModalError').addClass('d-none').text('');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Menyetujui...');
     $.ajax({
         url: '{{ url("admin/approve") }}/' + id,
         method: 'POST',
         dataType: 'json',
         data: { _token: $('meta[name="csrf-token"]').attr('content') },
         success: function(res) {
-            if (!res.success) return;
+            if (!res || !res.success) {
+                $('#approveModalError').removeClass('d-none').text('Gagal menyetujui berkas. Silakan coba lagi.');
+                resetApproveButton();
+                return;
+            }
             var f = res.file;
             var $row = $('tr[data-db-id="' + id + '"]');
             $row.attr('data-status', 'approved');
             $row.find('td').eq(3).html(badgeHtml('approved'));
             $row.find('td').eq(7).html(buildActions(f));
-            var matched = _allFiles.find(function(f) { return String(f.database_id) === String(id); });
+            var matched = _allFiles.find(function(x) { return String(x.database_id) === String(id); });
             if (matched) matched.status = 'approved';
             updateProgress();
             updateStatCards();
+            // Tutup modal hanya setelah berhasil.
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('approveModal')).hide();
+            resetApproveButton();
         },
         error: function() {
-            showAppToast('danger', 'Gagal menyetujui berkas. Silakan coba lagi.');
+            // Pertahankan modal agar admin dapat mencoba lagi.
+            $('#approveModalError').removeClass('d-none').text('Gagal menyetujui berkas. Silakan coba lagi.');
+            resetApproveButton();
         }
     });
-};
+}
 
 window.showRevision = function(id) {
+    revisionTargetId = id;
     $('#revisionForm').attr('action', '{{ url("admin/revision") }}/' + id);
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('revisionModal')).show();
+    $('#revisionModalError').addClass('d-none').text('');
+    resetRevisionButton();
+    showAppModal('revisionModal');
 };
 
 var deleteTargetId = null;
@@ -701,7 +953,7 @@ window.deleteUpload = function(id) {
     deleteTargetId = id;
     var fileName = $('tr[data-db-id="' + id + '"] td').eq(1).text();
     $('#deleteModalFileName').text(fileName || 'Berkas ini');
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal')).show();
+    showAppModal('deleteModal');
 };
 
 function doDeleteUpload() {
@@ -939,55 +1191,165 @@ function firstCheckedPoin(f) {
     return null;
 }
 
+function poinTooltipHtml(f) {
+    var h = '';
+    for (var i = 0; i < poinKeys.length; i++) {
+        if (f[poinKeys[i]]) {
+            h += '<div class="d-flex align-items-center gap-1 py-1"><i class="bi bi-check-circle-fill text-success"></i> ' + esc(poinLabels[poinKeys[i]]) + '</div>';
+        }
+    }
+    return h || '<div class="py-1">Belum ada poin checklist.</div>';
+}
+
 function buildPoinCell(f) {
     var count = poinCount(f);
-    var dbId = f.database_id;
-    var uid = dbId ? esc(String(dbId)) : 'fallback-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
-    var popId = 'poin-pop-' + uid;
+    var key = fileKeyOf(f);
     var badgeHtml = '';
+    var tip = '';
 
     if (count === 0) {
-        badgeHtml = '<span class="badge bg-light text-dark px-2 py-1 border poin-badge poin-badge-empty" style="cursor:pointer;" title="Poin" data-popin-id="' + popId + '"><i class="bi bi-square me-1"></i>Poin</span>';
+        tip = poinTooltipHtml(f);
+        badgeHtml = '<span class="badge bg-light text-dark px-2 py-1 border poin-badge poin-badge-empty" role="button" tabindex="0" style="cursor:pointer;" aria-label="Poin checklist" data-file-key="' + escAttr(key) + '" data-poin-tip="' + escAttr(tip) + '"><i class="bi bi-square me-1"></i>Poin</span>';
     } else if (count === 1) {
-        var key = firstCheckedPoin(f);
-        badgeHtml = '<span class="badge bg-success px-2 py-1 poin-badge" style="cursor:pointer;" title="' + esc(poinLabels[key]) + '" data-popin-id="' + popId + '"><i class="bi bi-check-square me-1"></i>' + esc(poinShortLabels[key]) + '</span>';
+        var k1 = firstCheckedPoin(f);
+        tip = poinTooltipHtml(f);
+        badgeHtml = '<span class="badge bg-success px-2 py-1 poin-badge" role="button" tabindex="0" style="cursor:pointer;" aria-label="' + escAttr(poinLabels[k1]) + '" data-file-key="' + escAttr(key) + '" data-poin-tip="' + escAttr(tip) + '"><i class="bi bi-check-square me-1"></i>' + esc(poinShortLabels[k1]) + '</span>';
     } else {
-        var key = firstCheckedPoin(f);
-        var rest = count - 1;
-        var tipHtml = '';
-        for (var ti = 0; ti < poinKeys.length; ti++) {
-            if (f[poinKeys[ti]]) {
-                tipHtml += '<div class="d-flex align-items-center gap-1 py-1"><i class="bi bi-check-circle-fill text-success"></i> ' + esc(poinLabels[poinKeys[ti]]) + '</div>';
-            }
-        }
+        var k2 = firstCheckedPoin(f);
         var cls = count === 5 ? 'poin-badge-full' : 'bg-success';
-        badgeHtml = '<span class="badge ' + cls + ' px-2 py-1 poin-badge" style="cursor:pointer;" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title=\'' + tipHtml + '\' data-popin-id="' + popId + '"><i class="bi bi-check-square me-1"></i>' + esc(poinShortLabels[key]) + ' +' + rest + '</span>';
+        tip = poinTooltipHtml(f);
+        badgeHtml = '<span class="badge ' + cls + ' px-2 py-1 poin-badge" role="button" tabindex="0" style="cursor:pointer;" data-file-key="' + escAttr(key) + '" data-poin-tip="' + escAttr(tip) + '"><i class="bi bi-check-square me-1"></i>' + esc(poinShortLabels[k2]) + ' +' + (count - 1) + '</span>';
     }
 
-    var popoverContent = '<div class="poin-popin-content" id="' + popId + '" style="display:none;"><div class="list-group list-group-flush">';
-    for (var i = 0; i < poinKeys.length; i++) {
-        var k = poinKeys[i];
-        var checked = f[k] ? 'checked' : '';
-        popoverContent += '<label class="list-group-item list-group-item-action d-flex align-items-start gap-2 px-2 py-1" style="cursor:pointer;font-size:.8rem;">';
-        popoverContent += '<input type="checkbox" class="form-check-input mt-1 poin-check" data-upload-id="' + esc(String(dbId || '')) + '" data-poin="' + k + '" ' + checked + '>';
-        popoverContent += '<span class="poin-label-text">' + esc(poinLabels[k]) + '</span>';
-        popoverContent += '</label>';
-    }
-    popoverContent += '</div></div>';
+    return '<td class="poin-cell">' + badgeHtml + '</td>';
+}
 
-    return '<td class="poin-cell">' + badgeHtml + popoverContent + '</td>';
+// State checklist selalu dibaca dari objek file (satu sumber kebenaran), bukan dari klon DOM.
+function fileKeyOf(f) {
+    if (!f) return '';
+    if (f.database_id !== undefined && f.database_id !== null && String(f.database_id) !== '') return 'db-' + String(f.database_id);
+    if (f.drive_file_id) return 'dr-' + String(f.drive_file_id);
+    return '';
+}
+
+function findFileByKey(key) {
+    if (!key) return null;
+    return (_allFiles || []).find(function(f) { return fileKeyOf(f) === key; }) || null;
+}
+
+function escAttr(str) {
+    if (str === undefined || str === null) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// Posisi popup: dekat badge, flip ke atas bila ruang bawah tidak cukup,
+// dan selalu dikunci di dalam viewport (tidak keluar kiri/kanan).
+function positionPoinPopup(popup, badge) {
+    var pos = badge.offset();
+    var badgeW = badge.outerWidth();
+    var badgeH = badge.outerHeight();
+    var popupW = popup.outerWidth();
+    var popupH = popup.outerHeight();
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    var scrollTop = $(window).scrollTop();
+    var scrollLeft = $(window).scrollLeft();
+    var gap = 8;
+
+    var left = pos.left + badgeW - popupW;
+    left = Math.max(scrollLeft + gap, Math.min(left, scrollLeft + vw - popupW - gap));
+
+    var belowTop = pos.top + badgeH + gap;
+    var aboveTop = pos.top - popupH - gap;
+    var viewBottom = scrollTop + vh;
+
+    if (belowTop + popupH > viewBottom - gap && aboveTop >= scrollTop + gap) {
+        popup.addClass('is-flipped').css({ top: aboveTop, left: left });
+    } else {
+        popup.removeClass('is-flipped').css({ top: belowTop, left: left });
+    }
+
+    var badgeCenter = pos.left + badgeW / 2;
+    var arrowLeft = Math.max(12, Math.min(badgeCenter - left - 6, popupW - 24));
+    popup.find('.poin-popup-arrow').css('left', arrowLeft);
+}
+
+function poinProgressHtml(f) {
+    var checkedCount = poinCount(f);
+    var totalItems = poinKeys.length;
+    var pct = totalItems ? Math.round(checkedCount / totalItems * 100) : 0;
+    return '<div class="poin-progress-top">' +
+        '<span class="poin-progress-count">' + checkedCount + '/' + totalItems + '</span>' +
+        '<span class="poin-progress-pct">' + pct + '%</span>' +
+        '</div>' +
+        '<div class="poin-progress-track" role="progressbar" aria-valuenow="' + checkedCount +
+        '" aria-valuemin="0" aria-valuemax="' + totalItems + '">' +
+        '<div class="poin-progress-bar" style="width:' + pct + '%;"></div>' +
+        '</div>';
+}
+
+function poinChecklistHtml(f, key) {
+    var dbId = (f && f.database_id !== undefined && f.database_id !== null && String(f.database_id) !== '') ? String(f.database_id) : '';
+    var h = '';
+    poinKeys.forEach(function(k) {
+        h += '<label class="poin-list-item">';
+        h += '<input type="checkbox" class="form-check-input poin-check" data-file-key="' + escAttr(key) + '" data-upload-id="' + escAttr(dbId) + '" data-poin="' + k + '" ' + (f[k] ? 'checked' : '') + (dbId ? '' : ' disabled') + '>';
+        h += '<span class="poin-label-text">' + esc(poinLabels[k]) + '</span>';
+        h += '</label>';
+    });
+    return h;
+}
+
+// Perbarui UI (badge, popup, filter) dari objek file yang benar saja.
+function applyFilePoinUpdate(file) {
+    var key = fileKeyOf(file);
+    if (!key) return;
+
+    var $popup = $('#poinPopup');
+    if ($popup.length && $popup.attr('data-file-key') === key) {
+        $popup.find('.poin-popup-progress').html(poinProgressHtml(file));
+        $popup.find('.poin-popup-body').html(poinChecklistHtml(file, key));
+    }
+
+    var $row = $('#uploadsTable tr[data-file-key="' + key + '"]');
+    if ($row.length) {
+        destroyPoinTooltips();
+        $row.find('.poin-cell').replaceWith(buildPoinCell(file));
+        initPoinTooltips();
+
+        var activeFilter = $('#poinFilterBar .active').data('filter');
+        if (activeFilter && activeFilter !== 'all' && !file[activeFilter]) $row.hide();
+    }
+
+    updatePoinCounts();
+}
+
+var poinTooltipOptions = {
+    html: true,
+    sanitize: false,
+    placement: 'top',
+    fallbackPlacements: ['bottom'],
+    container: 'body',
+    trigger: 'manual',
+    boundary: 'viewport'
+};
+
+function destroyPoinTooltips() {
+    try {
+        document.querySelectorAll('#uploadsTable .poin-badge[data-poin-tip]').forEach(function(el) {
+            var tip = bootstrap.Tooltip.getInstance(el);
+            if (tip) tip.dispose();
+        });
+        // Buang tooltip yang tertinggal di DOM setelah tabel dirender ulang.
+        document.querySelectorAll('body > .tooltip').forEach(function(el) { el.remove(); });
+    } catch(e) {}
 }
 
 function initPoinTooltips() {
     try {
-        document.querySelectorAll('.poin-cell .poin-badge[data-bs-toggle="tooltip"]').forEach(function(el) {
-            var tip = bootstrap.Tooltip.getInstance(el);
-            if (tip) tip.dispose();
-        });
-        requestAnimationFrame(function() {
-            document.querySelectorAll('.poin-cell .poin-badge[data-bs-toggle="tooltip"]').forEach(function(el) {
-                new bootstrap.Tooltip(el, { html: true, sanitize: false });
-            });
+        document.querySelectorAll('#uploadsTable .poin-badge[data-poin-tip]').forEach(function(el) {
+            var opts = Object.assign({ title: el.getAttribute('data-poin-tip') || '' }, poinTooltipOptions);
+            bootstrap.Tooltip.getOrCreateInstance(el, opts); // tidak menggandakan instance
         });
     } catch(e) {}
 }
@@ -1017,14 +1379,10 @@ function updateProgress() {
 
 function updateStatCards() {
     var files = getFilteredFiles();
-    $('#statPending').text(files.filter(function(f) { return f.status === 'pending'; }).length);
+    $('#statTotal').text(files.length);
     $('#statApproved').text(files.filter(function(f) { return f.status === 'approved'; }).length);
+    $('#statPending').text(files.filter(function(f) { return f.status === 'pending'; }).length);
     $('#statRevision').text(files.filter(function(f) { return f.status === 'revision'; }).length);
-    if (files.length > 0) {
-        $('#statCards').show();
-    } else {
-        $('#statCards').hide();
-    }
 }
 
 function updatePoinCounts() {
@@ -1057,6 +1415,7 @@ function renderPage() {
     var end = Math.min(start + perPage, total);
     var pageFiles = files.slice(start, end);
 
+    destroyPoinTooltips();
     $('#uploadsBody').html(buildTableRows(pageFiles, page, perPage));
     renderPagination(total, page, perPage);
 
@@ -1090,10 +1449,10 @@ function buildTableRows(files, page, perPage) {
     var startOffset = ((page || 1) - 1) * (perPage || 1);
     let h = '';
     files.forEach(function(f, i) {
-        h += '<tr data-status="' + esc(f.status) + '" data-db-id="' + esc(String(f.database_id || '')) + '">';
+        h += '<tr data-status="' + esc(f.status) + '" data-db-id="' + esc(String(f.database_id || '')) + '" data-file-key="' + escAttr(fileKeyOf(f)) + '">';
         h += '<td>' + (startOffset + i + 1) + '</td>';
-        h += '<td class="fw-medium">' + esc(f.filename || '-') + '</td>';
-        h += '<td><span class="chip chip-subfolder"><i class="bi bi-folder"></i> ' + esc(f.subfolder || '(folder utama)') + '</span></td>';
+        h += '<td class="fw-medium text-truncate" title="' + esc(f.filename || '-') + '">' + esc(f.filename || '-') + '</td>';
+        h += '<td><span class="chip chip-subfolder text-truncate" title="' + esc(f.subfolder || '(folder utama)') + '"><i class="bi bi-folder"></i> ' + esc(f.subfolder || '(folder utama)') + '</span></td>';
         h += '<td>' + badgeHtml(f.status) + '</td>';
         h += buildPoinCell(f);
         h += '<td class="text-muted small">' + esc(f.upload_time ? f.upload_time : '-') + '</td>';

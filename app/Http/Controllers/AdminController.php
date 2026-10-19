@@ -195,17 +195,27 @@ class AdminController extends Controller
         $request->validate([
             'upload_id' => 'required|exists:uploads,id',
             'poin' => 'required|in:' . implode(',', $validPoin),
+            'value' => 'nullable|boolean',
         ]);
 
         $upload = Upload::findOrFail($request->upload_id);
         $poin = $request->poin;
-        $upload->$poin = !$upload->$poin;
+
+        // Idempoten: jika frontend mengirim nilai yang diinginkan, set langsung
+        // agar request duplikat/out-of-order tidak membalik nilai secara salah.
+        // Tanpa 'value' tetap mendukung mode toggle lama.
+        if ($request->has('value')) {
+            $upload->$poin = $request->boolean('value');
+        } else {
+            $upload->$poin = !$upload->$poin;
+        }
         $upload->save();
 
         return response()->json([
             'success' => true,
+            'upload_id' => $upload->id,
             'poin' => $poin,
-            'value' => $upload->$poin,
+            'value' => (bool) $upload->$poin,
             'checkedCount' => collect($validPoin)->filter(fn($p) => $upload->$p)->count(),
             'poinLabels' => Upload::poinLabels(),
         ]);
