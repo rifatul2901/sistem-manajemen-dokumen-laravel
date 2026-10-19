@@ -111,9 +111,20 @@ class RiwayatRevisiController extends Controller
         return view('admin.riwayat-revisi.index', compact('activities', 'users', 'folders', 'uploads'));
     }
 
-    public function rekapIndex()
+    public function rekapIndex(Request $request)
     {
-        $users = User::where('role', 'user')->orderBy('nama')->paginate(20)->withQueryString();
+        $q = trim((string) $request->query('q', ''));
+
+        $users = User::where('role', 'user')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($sub) use ($q) {
+                    $sub->where('nama', 'like', '%' . $q . '%')
+                        ->orWhere('username', 'like', '%' . $q . '%');
+                });
+            })
+            ->orderBy('nama')
+            ->paginate(20)
+            ->withQueryString();
 
         $docCounts = Upload::selectRaw('user_id, assigned_user_id, COUNT(*) as total')
             ->where(function ($q) {
