@@ -2,6 +2,27 @@
 
 @section('content')
 <div class="login-page">
+    <div class="login-bg" aria-hidden="true">
+        <span class="lb-glow lb-glow-a"></span>
+        <span class="lb-glow lb-glow-b"></span>
+        <span class="lb-dots lb-dots-l"></span>
+        <span class="lb-dots lb-dots-r"></span>
+
+        {{-- Gelombang utama di dasar layar: 3 lapisan navy/biru + 1 garis aksen cyan --}}
+        <svg class="lb-wave lb-wave-bottom" viewBox="0 0 1440 420" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
+            <defs>
+                <linearGradient id="lbWaveBlue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#0B3B70" stop-opacity="0"/>
+                    <stop offset="100%" stop-color="#0B3B70" stop-opacity=".5"/>
+                </linearGradient>
+            </defs>
+            <path d="M0,240 C240,200 420,270 720,225 C960,188 1200,250 1440,215 L1440,420 L0,420 Z" fill="url(#lbWaveBlue)"/>
+            <path d="M0,300 C260,265 460,330 760,288 C1020,254 1240,310 1440,282 L1440,420 L0,420 Z" fill="#08264A" opacity=".5"/>
+            <path d="M0,300 C260,265 460,330 760,288 C1020,254 1240,310 1440,282" fill="none" stroke="#0EA5E9" stroke-opacity=".22" stroke-width="1.2"/>
+            <path d="M0,360 C280,330 500,385 800,355 C1060,330 1260,368 1440,356 L1440,420 L0,420 Z" fill="#071A35" opacity=".65"/>
+        </svg>
+    </div>
+
     <div class="login-split">
         <div class="login-card login-panel-form">
             <div class="card">

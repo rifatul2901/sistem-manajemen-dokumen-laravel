@@ -302,29 +302,44 @@
         .login-page {
             min-height: 100vh;
             display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, #0a3d5a 0%, #0c2a40 50%, #0f4b6e 100%);
             padding: 1rem;
             position: relative;
             overflow: hidden;
+            background:
+                radial-gradient(ellipse 90% 70% at 50% -10%, rgba(22,139,255,.16) 0%, transparent 60%),
+                radial-gradient(ellipse 90% 70% at 0% 100%, rgba(11,40,80,.45) 0%, transparent 60%),
+                linear-gradient(160deg, #071A35 0%, #0A2246 50%, #0B2850 100%);
         }
+        /* Tengah dibuat lebih tenang agar card tetap fokus & kontras terjaga */
         .login-page::before {
             content: '';
             position: absolute; inset: 0;
-            background:
-                radial-gradient(ellipse at 20% 30%, rgba(28,141,203,.2) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 20%, rgba(107,190,69,.12) 0%, transparent 50%),
-                radial-gradient(ellipse at 60% 80%, rgba(242,140,0,.08) 0%, transparent 50%);
+            background: radial-gradient(ellipse 58% 54% at 50% 46%, rgba(6,20,42,.62) 0%, rgba(6,20,42,.30) 55%, transparent 80%);
             pointer-events: none;
         }
+        /* Vignette halus di tepi layar */
         .login-page::after {
             content: '';
-            position: absolute;
-            width: 25rem; height: 25rem;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(28,141,203,.06) 0%, transparent 70%);
-            top: -6.25rem; right: -6.25rem;
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse 125% 125% at 50% 50%, transparent 58%, rgba(3,10,22,.5) 100%);
             pointer-events: none;
         }
+        /* Latar dekoratif minimalis: glow sudut + titik sudut + 1 kelompok gelombang */
+        .login-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .login-bg .lb-glow { position: absolute; border-radius: 50%; }
+        .login-bg .lb-glow-a { top: -14%; left: -10%; width: 44%; height: 44%; background: radial-gradient(circle, rgba(22,139,255,.20) 0%, rgba(22,139,255,0) 70%); }
+        .login-bg .lb-glow-b { right: -12%; bottom: -16%; width: 46%; height: 46%; background: radial-gradient(circle, rgba(8,125,232,.18) 0%, rgba(8,125,232,0) 70%); }
+        .login-bg .lb-dots {
+            position: absolute; width: 10rem; height: 10rem; opacity: .35;
+            background-image: radial-gradient(rgba(14,165,233,.5) 1px, transparent 1.6px);
+            background-size: 1rem 1rem;
+            -webkit-mask-image: radial-gradient(circle at center, #000 0%, transparent 72%);
+            mask-image: radial-gradient(circle at center, #000 0%, transparent 72%);
+        }
+        .login-bg .lb-dots-l { top: 7%; left: 5%; }
+        .login-bg .lb-dots-r { right: 5%; bottom: 7%; }
+        .login-bg .lb-wave { position: absolute; display: block; }
+        .login-bg .lb-wave-bottom { left: 0; right: 0; bottom: 0; width: 100%; height: 42%; }
         .login-card { width: 100%; max-width: 26.25rem; position: relative; z-index: 1; }
         .login-card .card {
             background: rgba(255,255,255,.08);
