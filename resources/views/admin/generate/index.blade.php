@@ -4,42 +4,101 @@
 
 @push('styles')
 <style>
-    .cell-checkbox:checked + .cell-content { background: #d4edda; border-radius: 4px; padding: 0 4px; }
-    .cell-content { cursor: pointer; }
-    .cell-content:hover { background: #e8f4fd; border-radius: 4px; }
-    .selected-item { padding: 4px 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid var(--primary); margin-bottom: 4px; font-size: .75rem; cursor: pointer; }
-    .selected-item:hover { background: #e8f4fd; }
-    .selected-item .num { font-weight: 600; color: var(--primary); margin-right: 6px; }
-    .cell-flash { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: 4px; }
-    #selectedPanel { flex: 1 1 0; min-height: 0; overflow: auto; }
-    #colFilterPanel { flex: 1 1 0; min-height: 0; overflow: auto; }
-    #dataCard { display: block; }
-    .data-table-wrap { max-height: 320px; overflow: auto; }
-    .data-table-wrap table { font-size: .75rem; }
-    .data-table-wrap td, .data-table-wrap th { padding: .35rem .5rem !important; vertical-align: top; white-space: nowrap; }
-    .data-table-wrap thead th { position: sticky; top: 0; background: var(--bs-body-bg, #fff); z-index: 2; box-shadow: 0 1px 0 #dee2e6; }
-    .data-table-wrap td.row-num, .data-table-wrap th.row-num { position: sticky; left: 0; background: var(--bs-body-bg, #fff); z-index: 1; }
-    .data-table-wrap thead th.row-num { z-index: 3; }
-    .col-header-check { cursor: pointer; }
-    .col-filter-badge { display: inline-block; padding: 3px 10px; margin: 2px; font-size: .75rem; border-radius: 12px; cursor: pointer; border: 1px solid #dee2e6; user-select: none; white-space: nowrap; }
-    .col-filter-badge.active { background: #0d6efd; color: #fff; border-color: #0d6efd; }
-    .col-filter-badge.inactive { background: #f8f9fa; color: #6c757d; }
-    .tag-map-row.tag-unmapped .tag-map-select { border-color: #ffc107; }
-    .tag-map-row .badge { flex-shrink: 0; max-width: 45%; overflow: hidden; text-overflow: ellipsis; }
-    .history-table-wrap { max-height: 250px; overflow: auto; }
-    .history-table { font-size: .75rem; }
-    .history-table td, .history-table th { padding: .3rem .5rem !important; vertical-align: middle; white-space: nowrap; }
+    /* === Generate Dokumen — scoped theme (konsisten dengan dashboard SIMADO) === */
+    .generate-page { --gen-border: #E2E8F0; --gen-muted: #64748B; }
+
+    /* Heading */
+    .generate-page .gen-head { margin-bottom: 1.25rem; }
+    .generate-page .gen-head p { color: var(--gen-muted); font-size: .875rem; margin: .25rem 0 0; }
+
+    /* Card header: judul berikon */
+    .generate-page .card-header .hdr-title { display: inline-flex; align-items: center; gap: .5rem; font-weight: 600; }
+    .generate-page .card-header .hdr-title i { color: var(--primary); font-size: 1rem; }
+
+    /* Sumber Data: segmented control */
+    .generate-page .source-seg .btn,
+    .generate-page .mode-seg .btn { font-size: .8rem; padding: .45rem .6rem; display: inline-flex; align-items: center; justify-content: center; gap: .35rem; }
+    @media (max-width: 575.98px) {
+        .generate-page .source-seg .btn,
+        .generate-page .mode-seg .btn { font-size: .72rem; padding: .4rem .35rem; }
+    }
+
+    /* Baris "Ambil Data": tombol turun ke baris berikutnya pada layar kecil */
+    .generate-page .fetch-row { display: flex; gap: .5rem; }
+    .generate-page .fetch-row .form-control { flex: 1 1 auto; min-width: 0; }
+    .generate-page .fetch-row .btn { flex: 0 0 auto; white-space: nowrap; }
+    @media (max-width: 575.98px) {
+        .generate-page .fetch-row { flex-direction: column; }
+        .generate-page .fetch-row .btn { width: 100%; }
+    }
+    .generate-page .source-help { font-size: .72rem; color: #94a3b8; margin-top: .5rem; }
+
+    /* Filter Kolom: chips */
+    .generate-page #colFilterPanel { display: flex; flex-wrap: wrap; align-content: flex-start; gap: .4rem; max-height: 220px; overflow-y: auto; }
+    .generate-page .col-filter-badge {
+        display: inline-flex; align-items: center; gap: .35rem;
+        padding: .3rem .7rem; font-size: .75rem; font-weight: 500;
+        border-radius: 999px; cursor: pointer; border: 1px solid transparent;
+        user-select: none; max-width: 100%; transition: all .15s ease;
+    }
+    .generate-page .col-filter-badge .cfb-label { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .generate-page .col-filter-badge.active { background: #E7F3FC; color: #0369A1; border-color: #BAE0F5; }
+    .generate-page .col-filter-badge.active:hover { background: #D6EBFA; }
+    .generate-page .col-filter-badge.inactive { background: #F1F5F9; color: #94a3b8; border-color: var(--gen-border); }
+    .generate-page .col-filter-badge.inactive:hover { background: #E2E8F0; color: var(--gen-muted); }
+
+    /* Data Tersedia: tabel */
+    .generate-page .data-table-wrap { max-height: 380px; overflow: auto; }
+    .generate-page .data-table-wrap table { font-size: .78rem; }
+    .generate-page .data-table-wrap td, .generate-page .data-table-wrap th { padding: .45rem .55rem !important; vertical-align: top; white-space: nowrap; }
+    .generate-page .data-table-wrap thead th { position: sticky; top: 0; background: #F8FAFC; z-index: 2; box-shadow: inset 0 -1px 0 var(--gen-border); }
+    .generate-page .data-table-wrap td.row-num, .generate-page .data-table-wrap th.row-num { position: sticky; left: 0; background: #fff; z-index: 1; }
+    .generate-page .data-table-wrap thead th.row-num { background: #F8FAFC; z-index: 3; }
+    .generate-page .cell-content { cursor: pointer; }
+    .generate-page .cell-content:hover { background: #e8f4fd; border-radius: 4px; }
+    .generate-page .cell-checkbox:checked + .cell-content { background: #d4edda; border-radius: 4px; padding: 0 4px; }
+    .generate-page .cell-flash { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: 4px; }
+    .generate-page .col-header-check { cursor: pointer; }
+
+    /* Data Terpilih */
+    .generate-page #selectedPanel { max-height: 440px; overflow-y: auto; }
+    .generate-page .selected-item {
+        display: flex; align-items: flex-start; gap: .5rem;
+        padding: .5rem .65rem; margin-bottom: .4rem; font-size: .78rem; cursor: pointer;
+        background: #F8FAFC; border: 1px solid var(--gen-border); border-left: 3px solid var(--primary);
+        border-radius: 8px; transition: background .15s, border-color .15s;
+    }
+    .generate-page .selected-item:hover { background: #EFF6FF; border-color: #BAE0F5; }
+    .generate-page .selected-item .num { flex: 0 0 auto; font-weight: 600; color: var(--primary); white-space: nowrap; }
+    .generate-page .selected-item .si-val { flex: 1 1 auto; min-width: 0; color: #334155; overflow-wrap: anywhere; word-break: break-word; }
+    .generate-page .selected-item .si-meta { flex: 0 0 auto; color: #94a3b8; font-size: .68rem; white-space: nowrap; }
+    .generate-page .selected-item .selected-remove { flex: 0 0 auto; line-height: 1; }
+    @media (max-width: 575.98px) { .generate-page #selectedPanel { max-height: 320px; } }
+
+    /* Generate Dokumen */
+    .generate-page .btn-generate { font-weight: 600; padding: .6rem 1rem; }
+
+    /* Riwayat */
+    .generate-page .history-table-wrap { max-height: 320px; overflow: auto; }
+    .generate-page .history-table { font-size: .8rem; }
+    .generate-page .history-table td, .generate-page .history-table th { padding: .55rem .75rem !important; vertical-align: middle; white-space: nowrap; }
+    .generate-page .history-filename { max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Empty state */
+    .generate-page .gen-empty { width: 100%; color: #94a3b8; padding: .5rem 0; }
+    .generate-page .gen-empty i { display: block; font-size: 1.5rem; color: #cbd5e1; margin-bottom: .35rem; }
+
+    /* Pemetaan tag (generate massal) */
+    .generate-page .tag-map-row.tag-unmapped .tag-map-select { border-color: #ffc107; }
+    .generate-page .tag-map-row .badge { flex-shrink: 0; max-width: 45%; overflow: hidden; text-overflow: ellipsis; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-0">
-    <div class="d-flex align-items-center justify-content-between mb-4">
-        <div>
-            <h4 class="page-title mb-0">Generate Dokumen</h4>
-            <p class="text-muted small mb-0 mt-1">Buat doku
-            men dari data spreadsheet atau Excel dengan pemilihan sel manual.</p>
-        </div>
+<div class="container-fluid px-0 generate-page">
+    <div class="gen-head">
+        <h4 class="page-title">Generate Dokumen</h4>
+        <p>Buat dokumen dari data spreadsheet atau Excel dengan pemilihan sel manual.</p>
     </div>
 
     @session('success')
@@ -53,44 +112,42 @@
 
     {{-- ROW 1: Sumber Data | Filter Kolom --}}
     <div class="row g-4 mb-4">
-        <div class="col-lg-8">
-            <div class="card">
-                <div class="card-header"><i class="bi bi-database me-1"></i> Sumber Data</div>
+        <div class="col-lg-8 d-flex">
+            <div class="card h-100 w-100">
+                <div class="card-header"><span class="hdr-title"><i class="bi bi-database"></i> Sumber Data</span></div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="sourceType" id="sourceSpreadsheet" value="spreadsheet" checked>
-                            <label class="form-check-label" for="sourceSpreadsheet">Google Spreadsheet</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="sourceType" id="sourceExcel" value="excel">
-                            <label class="form-check-label" for="sourceExcel">Upload Excel</label>
+                        <div class="btn-group source-seg w-100" role="group" aria-label="Sumber Data">
+                            <input class="btn-check" type="radio" name="sourceType" id="sourceSpreadsheet" value="spreadsheet" checked autocomplete="off">
+                            <label class="btn btn-outline-primary" for="sourceSpreadsheet"><i class="bi bi-google"></i>Google Spreadsheet</label>
+                            <input class="btn-check" type="radio" name="sourceType" id="sourceExcel" value="excel" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="sourceExcel"><i class="bi bi-file-earmark-spreadsheet"></i>Upload Excel</label>
                         </div>
                     </div>
 
                     <div id="spreadsheetSection">
-                        <div class="input-group mb-2">
+                        <div class="fetch-row">
                             <input type="url" id="spreadsheetUrl" class="form-control" placeholder="https://docs.google.com/spreadsheets/d/..." value="">
                             <button class="btn btn-primary" id="fetchSpreadsheetBtn"><i class="bi bi-cloud-download me-1"></i> Ambil Data</button>
                         </div>
-                        <div class="form-text">Spreadsheet harus di-share ke email Google yang sudah terhubung (Drive Config).</div>
+                        <div class="source-help">Spreadsheet harus di-share ke email Google yang sudah terhubung (Drive Config).</div>
                     </div>
 
                     <div id="excelSection" style="display:none;">
-                        <div class="input-group mb-2">
+                        <div class="fetch-row">
                             <input type="file" id="excelFile" class="form-control" accept=".xlsx,.xls">
                             <button class="btn btn-primary" id="fetchExcelBtn"><i class="bi bi-upload me-1"></i> Ambil Data</button>
                         </div>
-                        <div class="form-text">Upload file Excel (.xlsx, maks 10MB).</div>
+                        <div class="source-help">Upload file Excel (.xlsx, maks 10MB).</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-4 d-flex">
             <div class="card h-100 w-100 d-flex flex-column">
-                <div class="card-header"><i class="bi bi-funnel me-1"></i> Filter Kolom</div>
-                <div class="card-body py-2" id="colFilterPanel">
-                    <p class="text-muted small mb-0 fst-italic">Muat data terlebih dahulu.</p>
+                <div class="card-header"><span class="hdr-title"><i class="bi bi-funnel"></i> Filter Kolom</span></div>
+                <div class="card-body" id="colFilterPanel">
+                    <div class="gen-empty text-center"><i class="bi bi-funnel"></i><p class="mb-0 small">Muat data terlebih dahulu.</p></div>
                 </div>
             </div>
         </div>
@@ -99,11 +156,11 @@
     {{-- ROW 2: Data Tersedia --}}
     <div class="mb-4">
         <div class="card" id="dataCard" style="display:none;">
-            <div class="card-header d-flex align-items-center justify-content-between gap-2">
-                <span><i class="bi bi-table me-1"></i> Data Tersedia</span>
-                <div class="d-flex align-items-center gap-2">
+            <div class="card-header">
+                <span class="hdr-title"><i class="bi bi-table"></i> Data Tersedia</span>
+                <div class="card-header-actions">
                     <input type="search" id="dataSearch" class="form-control form-control-sm" placeholder="Cari di tabel..." style="max-width:200px;">
-                    <span class="badge bg-light text-dark" id="totalCells">0 sel</span>
+                    <span class="badge bg-light text-dark border" id="totalCells">0 sel</span>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -121,29 +178,29 @@
     <div class="row g-4 mb-4">
         <div class="col-lg-8 d-flex" id="selectedCol">
             <div class="card h-100 w-100 d-flex flex-column">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <span><i class="bi bi-check2-square me-1"></i> Data Terpilih</span>
-                    <div class="d-flex align-items-center gap-1">
-                        <button class="btn btn-sm btn-link text-danger text-decoration-none p-0" id="clearSelectedBtn" title="Bersihkan semua pilihan">Bersihkan</button>
+                <div class="card-header">
+                    <span class="hdr-title"><i class="bi bi-check2-square"></i> Data Terpilih</span>
+                    <div class="card-header-actions">
                         <span class="badge bg-primary" id="selectedCount">0</span>
+                        <button class="btn btn-sm btn-outline-danger" id="clearSelectedBtn" title="Bersihkan semua pilihan"><i class="bi bi-eraser me-1"></i>Bersihkan</button>
                     </div>
                 </div>
                 <div class="card-body" id="selectedPanel">
-                    <p class="text-muted small mb-0 fst-italic">Centang sel pada tabel data untuk memilih.</p>
+                    <div class="gen-empty text-center"><i class="bi bi-check2-square"></i><p class="mb-0 small">Centang sel pada tabel data untuk memilih.</p></div>
                 </div>
             </div>
         </div>
         <div class="col-lg-4 d-flex">
             <div class="card h-100 w-100">
-                <div class="card-header"><i class="bi bi-file-earmark-arrow-up me-1"></i> Generate Dokumen</div>
+                <div class="card-header"><span class="hdr-title"><i class="bi bi-file-earmark-arrow-up"></i> Generate Dokumen</span></div>
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label">Mode Generate</label>
-                        <div class="btn-group w-100" role="group" aria-label="Mode Generate">
+                        <div class="btn-group mode-seg w-100" role="group" aria-label="Mode Generate">
                             <input type="radio" class="btn-check" name="generateMode" value="satuan" id="modeSatuan" checked autocomplete="off">
-                            <label class="btn btn-outline-primary btn-sm" for="modeSatuan"><i class="bi bi-file-earmark me-1"></i>Single Generate</label>
+                            <label class="btn btn-outline-primary" for="modeSatuan"><i class="bi bi-file-earmark"></i>Single Generate</label>
                             <input type="radio" class="btn-check" name="generateMode" value="massal" id="modeMassal" autocomplete="off">
-                            <label class="btn btn-outline-primary btn-sm" for="modeMassal"><i class="bi bi-files me-1"></i>Multiple</label>
+                            <label class="btn btn-outline-primary" for="modeMassal"><i class="bi bi-files"></i>Multiple</label>
                         </div>
                         <div class="form-text" id="modeHelpText">Satuan: 1 dokumen dari sel tercentang. Hasil 1 file.</div>
                     </div>
@@ -183,7 +240,7 @@
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn btn-primary w-100" id="generateBtn" disabled>
+                            <button type="submit" class="btn btn-primary w-100 btn-generate" id="generateBtn" disabled>
                                 <i class="bi bi-file-earmark-check me-1"></i> Generate
                             </button>
                         </div>
@@ -202,7 +259,7 @@
                             <div class="form-text mb-2" id="tagMappingHint">Pilih template untuk membaca tag-nya.</div>
                             <div id="tagMappingList" class="d-flex flex-column gap-1"></div>
                         </div>
-                        <button type="button" class="btn btn-primary w-100" id="generateBulkBtn">
+                        <button type="button" class="btn btn-primary w-100 btn-generate" id="generateBulkBtn">
                             <i class="bi bi-files me-1"></i> Generate Massal
                         </button>
                     </div>
@@ -214,9 +271,9 @@
     {{-- ROW 4: Riwayat Generate --}}
     <div>
         <div class="card">
-            <div class="card-header d-flex align-items-center gap-2">
-                <span><i class="bi bi-clock-history me-1"></i> Riwayat Generate</span>
-                <div class="dropdown ms-auto">
+            <div class="card-header">
+                <span class="hdr-title"><i class="bi bi-clock-history"></i> Riwayat Generate</span>
+                <div class="dropdown">
                     <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Opsi riwayat">
                         <i class="bi bi-three-dots-vertical"></i>
                     </button>
@@ -246,7 +303,7 @@
                             <tr data-id="{{ $h->id }}">
                                 <td><input type="checkbox" class="history-check form-check-input mt-0" value="{{ $h->id }}"></td>
                                 <td>{{ $loop->iteration + ($history->currentPage() - 1) * $history->perPage() }}</td>
-                                <td>{{ $h->filename }}</td>
+                                <td class="history-filename" title="{{ $h->filename }}">{{ $h->filename }}</td>
                                 <td>{{ \Carbon\Carbon::parse($h->waktu)->format('d M Y H:i') }}</td>
                                 <td>
                                     @if (file_exists($h->filepath))
@@ -323,7 +380,7 @@ $(document).ready(function() {
         selectionIdCounter = 0;
         dataCounter = 1;
         $('#dataCard').hide();
-        $('#colFilterPanel').html('<p class="text-muted small mb-0 fst-italic">Muat data terlebih dahulu.</p>');
+        $('#colFilterPanel').html('<div class="gen-empty text-center"><i class="bi bi-funnel"></i><p class="mb-0 small">Muat data terlebih dahulu.</p></div>');
         $('#bulkFilenameCol').empty();
         $('#bulkRowInfo').text('Belum ada data. Ambil data terlebih dahulu (maks 50 baris).');
         bulkCols = [];
@@ -474,7 +531,7 @@ function renderDataTable(res) {
     // Column filter panel — badge style
     var filterHtml = '';
     cols.forEach(function(c) {
-        filterHtml += '<span class="col-filter-badge active" data-col="' + esc(c) + '">' + esc(c) + ' <i class="bi bi-eye"></i></span>';
+        filterHtml += '<span class="col-filter-badge active" data-col="' + esc(c) + '"><span class="cfb-label">' + esc(c) + '</span><i class="bi bi-eye"></i></span>';
     });
     $('#colFilterPanel').html(filterHtml);
 
@@ -589,17 +646,17 @@ function updateSelectedPanel() {
     $('#selectedDataInput').val(JSON.stringify(selectedData.map(function(item) { return item.val; })));
 
     if (count === 0) {
-        panel.html('<p class="text-muted small mb-0 fst-italic">Centang sel pada tabel data untuk memilih.</p>');
+        panel.html('<div class="gen-empty text-center"><i class="bi bi-check2-square"></i><p class="mb-0 small">Centang sel pada tabel data untuk memilih.</p></div>');
         return;
     }
 
     var h = '';
     selectedData.forEach(function(item, i) {
         h += '<div class="selected-item" data-selid="' + item.id + '" title="Klik untuk melihat sel asal">';
-        h += '<span class="num">Data ' + (i + 1) + ':</span> ';
-        h += esc(item.val || '(kosong)');
-        h += ' <span class="text-muted fw-light" style="font-size:.7rem;">(Baris ' + (parseInt(item.row, 10) + 1) + ' &middot; ' + esc(item.col) + ')</span>';
-        h += ' <button class="btn btn-sm btn-link text-danger text-decoration-none p-0 ms-1 selected-remove" data-selid="' + item.id + '" title="Hapus pilihan ini"><i class="bi bi-x-lg"></i></button>';
+        h += '<span class="num">Data ' + (i + 1) + '</span>';
+        h += '<span class="si-val">' + esc(item.val || '(kosong)') + '</span>';
+        h += '<span class="si-meta">(Baris ' + (parseInt(item.row, 10) + 1) + ' &middot; ' + esc(item.col) + ')</span>';
+        h += '<button class="btn btn-sm btn-link text-danger text-decoration-none p-0 selected-remove" data-selid="' + item.id + '" title="Hapus pilihan ini"><i class="bi bi-x-lg"></i></button>';
         h += '</div>';
     });
     panel.html(h);
@@ -799,7 +856,7 @@ function prependHistoryRow(res) {
     var row = '<tr data-id="' + res.history_id + '">' +
         '<td><input type="checkbox" class="history-check form-check-input mt-0" value="' + res.history_id + '"></td>' +
         '<td>' + (offset + 1) + '</td>' +
-        '<td>' + esc(res.filename) + '</td>' +
+        '<td class="history-filename" title="' + esc(res.filename).replace(/"/g, '&quot;') + '">' + esc(res.filename) + '</td>' +
         '<td>' + esc(res.waktu) + '</td>' +
         '<td><a href="' + downloadUrl + '" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i></a></td>' +
         '</tr>';
