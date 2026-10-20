@@ -59,6 +59,14 @@
     .generate-page .cell-checkbox:checked + .cell-content { background: #d4edda; border-radius: 0.25rem; padding: 0 0.25rem; }
     .generate-page .cell-flash { outline: 0.125rem solid var(--primary); outline-offset: -0.125rem; border-radius: 0.25rem; }
     .generate-page .col-header-check { cursor: pointer; }
+    .generate-page .cell-checkbox:disabled, .generate-page .row-check:disabled, .generate-page .col-header-check:disabled { opacity: .35; cursor: not-allowed; }
+    .generate-page .cell-checkbox:disabled + .cell-content { opacity: .6; cursor: not-allowed; }
+    .generate-page .cell-checkbox:disabled + .cell-content:hover { background: transparent; }
+    .generate-page .gen-massal-hint {
+        display: flex; align-items: center; gap: .45rem;
+        padding: .6rem .9rem; font-size: .78rem;
+        color: #0369a1; background: #E7F3FC; border-bottom: 1px solid var(--gen-border);
+    }
 
     /* Data Terpilih */
     .generate-page #selectedPanel { max-height: 27.5rem; overflow-y: auto; }
@@ -164,6 +172,9 @@
                 </div>
             </div>
             <div class="card-body p-0">
+                <div class="gen-massal-hint" id="massalTableHint" style="display:none;">
+                    <i class="bi bi-info-circle"></i> Mode massal memproses semua baris data. Pemilihan sel dinonaktifkan.
+                </div>
                 <div class="data-table-wrap">
                     <table class="table table-bordered mb-0" id="dataTable">
                         <thead id="dataTableHead"></thead>
@@ -400,6 +411,7 @@ $(document).ready(function() {
         $('#modeHelpText').text(massal
             ? 'Massal: 1 baris = 1 dokumen (ala Autocrat). Hasil 1 file ZIP.'
             : 'Satuan: 1 dokumen dari sel tercentang. Hasil 1 file.');
+        applySelectionMode();
         detectBulkTags();
     });
 
@@ -509,6 +521,18 @@ function showDataSkeleton() {
     $('#dataCard').show();
 }
 
+function applySelectionMode() {
+    var massal = $('input[name="generateMode"]:checked').val() === 'massal';
+    if (massal) {
+        $('.cell-checkbox, .row-check, .col-header-check').prop('checked', false);
+        selectedData = [];
+        dataCounter = 1;
+        updateSelectedPanel();
+    }
+    $('.cell-checkbox, .row-check, .col-header-check').prop('disabled', massal);
+    $('#massalTableHint').css('display', massal ? 'flex' : 'none');
+}
+
 function renderDataTable(res) {
     selectedData = [];
     dataCounter = 1;
@@ -582,6 +606,8 @@ function renderDataTable(res) {
 
     var cellCount = rows.length * cols.length;
     $('#totalCells').text(rows.length + ' baris × ' + cols.length + ' kolom (' + cellCount + ' sel)');
+
+    applySelectionMode();
 
     // Individual cell checkbox
     $('.cell-checkbox').on('change', function() {
