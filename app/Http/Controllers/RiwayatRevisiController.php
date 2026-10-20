@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Upload;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -15,83 +17,90 @@ class RiwayatRevisiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Upload::with('user')
-            ->where(function ($q) {
-                $q->whereNotNull('approved_at')
-                  ->orWhereNotNull('revision_requested_at');
-            });
-
         $currentActivity = $request->activity;
 
-        if ($request->filled('user_id')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('user_id', $request->user_id)
-                  ->orWhere('assigned_user_id', $request->user_id);
-            });
-        }
+        $dateFrom = $request->filled('date_from')
+            ? Carbon::parse($request->date_from)->startOfDay()
+            : null;
+        $dateTo = $request->filled('date_to')
+            ? Carbon::parse($request->date_to)->endOfDay()
+            : null;
 
-        if ($request->filled('folder')) {
-            $query->where('subfolder', $request->folder);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('filename', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($uq) use ($search) {
-                      $uq->where('nama', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        $uploads = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
-
-        $activities = collect();
-
-        foreach ($uploads as $u) {
-            if ($u->revision_requested_at) {
-                $activities->push([
-                    'type'      => 'minta_revisi',
-                    'timestamp' => $u->revision_requested_at,
-                    'filename'  => $u->filename,
-                    'subfolder' => $u->subfolder ?? '(folder utama)',
-                    'pelaku'    => 'Admin',
-                    'assigned_nama' => $u->assignedUser?->nama,
-                    'catatan'   => $u->catatan_admin,
-                    'upload_id' => $u->id,
-                ]);
+        $applyFilters = function ($query) use ($request) {
+            if ($request->filled('user_id')) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('user_id', $request->user_id)
+                      ->orWhere('assigned_user_id', $request->user_id);
+                });
             }
-            if ($u->approved_at) {
-                $activities->push([
-                    'type'      => 'disetujui',
-                    'timestamp' => $u->approved_at,
-                    'filename'  => $u->filename,
-                    'subfolder' => $u->subfolder ?? '(folder utama)',
-                    'pelaku'    => 'Admin',
-                    'assigned_nama' => null,
-                    'catatan'   => null,
-                    'upload_id' => $u->id,
-                ]);
+
+            if ($request->filled('folder')) {
+                $query->where('subfolder', $request->folder);
             }
+
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('filename', 'like', "%{$search}%")
+                      ->orWhereHas('user', function ($uq) use ($search) {
+                          $uq->where('nama', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            return $query;
+        };
+
+        $approved = null;
+        if ($currentActivity !== 'minta_revisi') {
+            $approved = $applyFilters(Upload::query())
+                ->whereNotNull('approved_at')
+                ->when($dateFrom, fn ($q) => $q->where('approved_at', '>=', $dateFrom))
+                ->when($dateTo, fn ($q) => $q->where('approved_at', '<=', $dateTo))
+                ->selectRaw("'disetujui' as activity_type, approved_at as activity_at, filename, subfolder, id as upload_id, NULL as assigned_nama, NULL as catatan");
         }
 
-        if ($request->filled('date_from')) {
-            $from = \Carbon\Carbon::parse($request->date_from)->startOfDay();
-            $activities = $activities->filter(fn($a) => \Carbon\Carbon::parse($a['timestamp'])->greaterThanOrEqualTo($from));
+        $revision = null;
+        if ($currentActivity !== 'disetujui') {
+            $revision = $applyFilters(Upload::query())
+                ->leftJoin('users as assigned_users', 'uploads.assigned_user_id', '=', 'assigned_users.id')
+                ->whereNotNull('revision_requested_at')
+                ->when($dateFrom, fn ($q) => $q->where('revision_requested_at', '>=', $dateFrom))
+                ->when($dateTo, fn ($q) => $q->where('revision_requested_at', '<=', $dateTo))
+                ->selectRaw("'minta_revisi' as activity_type, revision_requested_at as activity_at, uploads.filename, uploads.subfolder, uploads.id as upload_id, assigned_users.nama as assigned_nama, uploads.catatan_admin as catatan");
         }
 
-        if ($request->filled('date_to')) {
-            $to = \Carbon\Carbon::parse($request->date_to)->endOfDay();
-            $activities = $activities->filter(fn($a) => \Carbon\Carbon::parse($a['timestamp'])->lessThanOrEqualTo($to));
+        if ($approved && $revision) {
+            $activityQuery = DB::query()->fromSub(
+                $approved->toBase()->unionAll($revision->toBase()),
+                'events'
+            );
+        } elseif ($approved) {
+            $activityQuery = DB::query()->fromSub($approved->toBase(), 'events');
+        } else {
+            $activityQuery = DB::query()->fromSub($revision->toBase(), 'events');
         }
 
-        $activities = $activities->sortByDesc('timestamp')->values();
+        $activityQuery
+            ->orderByDesc('activity_at')
+            ->orderByDesc('upload_id')
+            ->orderByDesc('activity_type');
 
-        if ($currentActivity === 'disetujui') {
-            $activities = $activities->filter(fn($a) => $a['type'] === 'disetujui');
-        } elseif ($currentActivity === 'minta_revisi') {
-            $activities = $activities->filter(fn($a) => $a['type'] === 'minta_revisi');
-        }
+        $totalBerkas = (clone $activityQuery)->reorder()->distinct()->count('upload_id');
+        $activityPaginator = $activityQuery->paginate(15)->withQueryString();
+
+        $activities = collect($activityPaginator->items())->map(function ($row) {
+            return [
+                'type'      => $row->activity_type,
+                'timestamp' => $row->activity_at,
+                'filename'  => $row->filename,
+                'subfolder' => $row->subfolder ?? '(folder utama)',
+                'pelaku'    => 'Admin',
+                'assigned_nama' => $row->assigned_nama,
+                'catatan'   => $row->catatan !== null ? json_decode($row->catatan, true) : null,
+                'upload_id' => $row->upload_id,
+            ];
+        });
 
         $users = User::where('role', 'user')->orderBy('nama')->get();
 
@@ -108,7 +117,7 @@ class RiwayatRevisiController extends Controller
 
         $folders = collect(['(folder utama)'])->merge($folders);
 
-        return view('admin.riwayat-revisi.index', compact('activities', 'users', 'folders', 'uploads'));
+        return view('admin.riwayat-revisi.index', compact('activities', 'activityPaginator', 'totalBerkas', 'users', 'folders'));
     }
 
     public function rekapIndex(Request $request)

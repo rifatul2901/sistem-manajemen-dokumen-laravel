@@ -179,7 +179,7 @@
             <h4 class="page-title">Riwayat Revisi</h4>
             <p>Catatan aktivitas admin — persetujuan dan permintaan revisi dokumen.</p>
         </div>
-        <span class="count-badge"><i class="bi bi-files"></i>{{ $uploads->total() }} berkas</span>
+        <span class="count-badge"><i class="bi bi-files"></i>{{ $totalBerkas }} berkas</span>
     </div>
 
     @session('success')
@@ -333,7 +333,7 @@
     @endforelse
 
     {{-- Pagination --}}
-    {{ $uploads->links('admin.riwayat-revisi.pagination') }}
+    {{ $activityPaginator->links('admin.riwayat-revisi.pagination') }}
 </div>
 @endsection
 
