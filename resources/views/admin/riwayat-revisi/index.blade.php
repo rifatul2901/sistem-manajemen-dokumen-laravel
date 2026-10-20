@@ -131,9 +131,43 @@
     .riwayat-page .activity-note > div + div { margin-top: .25rem; }
 
     /* Pagination ringkas */
-    .riwayat-page .pagination { margin-bottom: 0; }
-    .riwayat-page .page-link { padding: .3rem .6rem; font-size: .8rem; color: var(--primary); }
-    .riwayat-page .page-item.active .page-link { background: var(--primary); border-color: var(--primary); }
+    .riwayat-page .rv-pagination {
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: .5rem 1rem;
+        margin-top: 1rem; padding: .55rem .85rem;
+        background: #fff; border: 1px solid var(--rv-border); border-radius: 0.625rem;
+    }
+    .riwayat-page .rv-page-info { margin: 0; font-size: .8rem; color: var(--rv-muted); line-height: 1.4; }
+    .riwayat-page .rv-page-info strong { color: #334155; font-weight: 600; }
+    .riwayat-page .rv-pagination .pagination { margin: 0; gap: .25rem; flex-wrap: wrap; }
+    .riwayat-page .rv-pagination .page-item .page-link { margin-left: 0; }
+    .riwayat-page .rv-pagination .page-link {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 2.375rem; height: 2.375rem; padding: 0 .5rem;
+        font-size: .8rem; line-height: 1;
+        color: var(--primary); background: #fff;
+        border: 1px solid var(--rv-border); border-radius: 0.5rem;
+        transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+    }
+    .riwayat-page .rv-pagination .page-item:not(.disabled):not(.active) .page-link:hover {
+        background: #EAF2FB; border-color: #B9D9F2; color: #0369a1;
+    }
+    .riwayat-page .rv-pagination .page-item.active .page-link {
+        background: var(--primary); border-color: var(--primary); color: #fff;
+        box-shadow: 0 0.125rem 0.375rem rgba(0,146,223,.25);
+    }
+    .riwayat-page .rv-pagination .page-item.disabled .page-link {
+        color: #cbd5e1; background: #F8FAFC; border-color: #E2E8F0;
+        pointer-events: none; cursor: default;
+    }
+    .riwayat-page .rv-pagination .page-link:focus-visible {
+        outline: 0.125rem solid var(--primary); outline-offset: 0.125rem; box-shadow: none;
+    }
+    @media (max-width: 575.98px) {
+        .riwayat-page .rv-pagination { justify-content: center; }
+        .riwayat-page .rv-page-info { flex: 1 1 100%; text-align: center; }
+        .riwayat-page .rv-pagination .pagination { justify-content: center; }
+    }
 </style>
 @endpush
 
@@ -299,11 +333,7 @@
     @endforelse
 
     {{-- Pagination --}}
-    @if ($uploads->hasPages())
-        <div class="d-flex justify-content-center mt-3">
-            {{ $uploads->links() }}
-        </div>
-    @endif
+    {{ $uploads->links('admin.riwayat-revisi.pagination') }}
 </div>
 @endsection
 

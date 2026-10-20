@@ -388,6 +388,12 @@ class AdminGenerateController extends Controller
             if (!is_dir($outputDir)) {
                 mkdir($outputDir, 0755, true);
             }
+
+            $templateBase = pathinfo($request->file('template')->getClientOriginalName(), PATHINFO_FILENAME);
+            $templateBase = preg_replace('/[^a-zA-Z0-9\s\-_\.]/', '', $templateBase);
+            $templateBase = trim($templateBase) !== '' ? trim($templateBase) : 'Dokumen';
+            $downloadName = $templateBase . '_' . now()->format('Ymd') . '.zip';
+
             $batchDir = $outputDir . '/bulk_' . now()->format('Ymd_His') . '_' . uniqid();
             mkdir($batchDir, 0755, true);
 
@@ -462,7 +468,7 @@ class AdminGenerateController extends Controller
                 return response()->json(['error' => 'Semua baris kosong, tidak ada dokumen dibuat.'], 400);
             }
 
-            $zipName = 'Bulk_' . now()->format('Ymd_His') . '_' . uniqid() . '.zip';
+            $zipName = $templateBase . '_' . now()->format('Ymd_His') . '_' . uniqid() . '.zip';
             $zipPath = $outputDir . '/' . $zipName;
             $zip = new \ZipArchive();
             if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
@@ -478,7 +484,7 @@ class AdminGenerateController extends Controller
 
             $history = GenerateHistory::create([
                 'user_id'  => auth()->id(),
-                'filename' => $zipName,
+                'filename' => $downloadName,
                 'filepath' => $zipPath,
                 'waktu'    => now(),
             ]);
@@ -486,7 +492,7 @@ class AdminGenerateController extends Controller
             return response()->json([
                 'success'    => true,
                 'history_id' => $history->id,
-                'filename'   => $zipName,
+                'filename'   => $downloadName,
                 'waktu'      => \Carbon\Carbon::parse($history->waktu)->format('d M Y H:i'),
                 'count'      => count($made),
                 'skipped'    => $skipped,

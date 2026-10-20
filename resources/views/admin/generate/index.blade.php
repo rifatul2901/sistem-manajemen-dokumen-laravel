@@ -97,8 +97,54 @@
     .generate-page .gen-empty i { display: block; font-size: 1.5rem; color: #cbd5e1; margin-bottom: .35rem; }
 
     /* Pemetaan tag (generate massal) */
-    .generate-page .tag-map-row.tag-unmapped .tag-map-select { border-color: #ffc107; }
-    .generate-page .tag-map-row .badge { flex-shrink: 0; max-width: 45%; overflow: hidden; text-overflow: ellipsis; }
+    .generate-page .tag-map-top { display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem; }
+    .generate-page .tag-map-count { font-size: .74rem; font-weight: 600; color: #92400e; white-space: nowrap; }
+    .generate-page .tag-map-count.is-done { color: #15803d; }
+    .generate-page .tag-progress { flex: 1 1 auto; height: .3rem; max-width: 7rem; background: #E2E8F0; border-radius: 999px; overflow: hidden; }
+    .generate-page .tag-progress > span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #0EA5E9, #22C55E); transition: width .25s ease; }
+    .generate-page #tagMappingList { max-height: 23.5rem; overflow-y: auto; overflow-x: hidden; padding-right: .15rem; }
+    .generate-page .tag-section-title { display: flex; align-items: center; gap: .4rem; margin: .3rem 0 .2rem; font-size: .68rem; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: #64748B; }
+    .generate-page .tag-section-title .badge { font-size: .62rem; }
+    .generate-page .tag-map-row { display: flex; align-items: center; gap: .45rem; min-height: 2.7rem; padding: .18rem .3rem; border: 1px solid transparent; border-radius: .45rem; }
+    .generate-page .tag-map-row:hover { background: #F8FAFC; border-color: #E6ECF5; }
+    .generate-page .tag-map-row .badge { flex: 0 0 auto; max-width: 46%; overflow: hidden; text-overflow: ellipsis; font-size: .68rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
+    .generate-page .tag-map-row.tag-unmapped .badge { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+    .generate-page .tag-map-row:not(.tag-unmapped) .badge { background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0; }
+    .generate-page .tag-select { position: relative; flex: 1 1 auto; min-width: 0; }
+    .generate-page .tag-select-btn { display: flex; align-items: center; gap: .35rem; width: 100%; height: 2.1rem; padding: 0 .5rem; font-size: .76rem; color: #334155; text-align: left; background: #fff; border: 1px solid #E2EAF5; border-radius: .45rem; }
+    .generate-page .tag-select-btn:hover { background: #F8FBFE; border-color: #BAE0F5; }
+    .generate-page .tag-select-btn.is-empty { color: #94A3B8; background: #FFFDF5; border-color: #FCD34D; }
+    .generate-page .tag-select-btn.is-open { border-color: #0EA5E9; box-shadow: 0 0 0 .15rem rgba(14,165,233,.14); }
+    .generate-page .col-select-btn { height: 2.4rem; }
+
+    .generate-page .tag-select-btn .tag-select-label { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .generate-page .tag-select-btn > i { flex: 0 0 auto; font-size: .68rem; color: #94A3B8; }
+    .generate-page .tag-state-ico { flex: 0 0 auto; font-size: .8rem; }
+    .generate-page .tag-state-ico.warn { color: #F59E0B; }
+    .generate-page .tag-state-ico.ok { color: #22C55E; }
+    .generate-page .tag-show-all { display: inline-flex; align-items: center; gap: .25rem; margin: .15rem 0 .05rem .3rem; padding: .1rem 0; font-size: .72rem; color: #0369A1; background: none; border: 0; }
+    .generate-page .tag-show-all:hover { text-decoration: underline; }
+    .generate-page .tag-matched { margin-top: .35rem; padding-top: .3rem; border-top: 1px dashed #E2EAF5; }
+    .generate-page .tag-matched > summary { display: flex; align-items: center; gap: .35rem; padding: .2rem 0; font-size: .72rem; color: #15803D; cursor: pointer; list-style: none; }
+    .generate-page .tag-matched > summary::-webkit-details-marker { display: none; }
+    .generate-page .tag-matched-rows { padding-top: .15rem; }
+    .generate-page .tag-all-done { display: flex; align-items: center; gap: .4rem; margin-top: .3rem; padding: .55rem .6rem; font-size: .76rem; color: #15803D; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: .5rem; }
+    .generate-page .bulk-footer { margin-top: .2rem; padding-top: .6rem; border-top: 1px solid #E6ECF5; }
+
+    /* Popover searchable pemetaan tag */
+    .generate-page .tag-pop { position: fixed; z-index: 1085; width: 18rem; max-width: calc(100vw - 1rem); background: #fff; border: 1px solid #E2EAF5; border-radius: .6rem; box-shadow: 0 .75rem 1.5rem rgba(15,23,42,.14); overflow: hidden; }
+    .generate-page .tag-pop-search { display: flex; align-items: center; gap: .35rem; padding: .4rem .55rem; border-bottom: 1px solid #EEF2F7; }
+    .generate-page .tag-pop-search i { flex: 0 0 auto; font-size: .72rem; color: #94A3B8; }
+    .generate-page .tag-pop-search input { flex: 1 1 auto; min-width: 0; padding: 0; font-size: .78rem; color: #0F172A; background: transparent; border: 0; outline: 0; }
+    .generate-page .tag-pop-list { max-height: 15.5rem; overflow-y: auto; padding: .2rem; }
+    .generate-page .tag-pop-opt { display: flex; align-items: center; gap: .4rem; padding: .38rem .45rem; font-size: .76rem; color: #334155; border-radius: .4rem; cursor: pointer; }
+    .generate-page .tag-pop-opt:hover,
+    .generate-page .tag-pop-opt.active { color: #0369A1; background: #E7F3FC; }
+    .generate-page .tag-pop-opt.is-selected { font-weight: 600; }
+    .generate-page .tag-pop-opt.is-ignore { color: #92400E; }
+    .generate-page .tag-pop-opt > span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .generate-page .tag-pop-opt .bi-check2 { flex: 0 0 auto; margin-left: auto; color: #0EA5E9; }
+    .generate-page .tag-pop-empty { padding: .6rem; font-size: .75rem; color: #94A3B8; text-align: center; }
 </style>
 @endpush
 
@@ -258,25 +304,43 @@
                     </form>
                     <div id="massalFields" style="display:none;">
                         <div class="mb-3">
-                            <label class="form-label" for="bulkFilenameCol">Kolom Nama File</label>
-                            <select id="bulkFilenameCol" class="form-select"></select>
+                            <label class="form-label">Kolom Nama File</label>
+                            <select id="bulkFilenameCol" class="d-none"></select>
+                            <button type="button" class="tag-select-btn col-select-btn" id="bulkFilenameBtn" aria-haspopup="listbox">
+                                <span class="tag-select-label" id="bulkFilenameLabel">Pilih kolom...</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
                             <div class="form-text">Nama tiap dokumen diambil dari kolom ini. Duplikat otomatis diberi -2, -3.</div>
                         </div>
+
                         <div class="mb-3">
                             <small class="text-muted" id="bulkRowInfo">Belum ada data. Ambil data terlebih dahulu (maks 50 baris).</small>
                         </div>
                         <div class="mb-3" id="tagMappingWrap" style="display:none;">
-                            <label class="form-label">Pemetaan Placeholder <span class="text-muted fw-light" style="font-size:.75rem;">(ala Autocrat)</span></label>
+                            <label class="form-label">Pemetaan Placeholder</label>
+
                             <div class="form-text mb-2" id="tagMappingHint">Pilih template untuk membaca tag-nya.</div>
-                            <div id="tagMappingList" class="d-flex flex-column gap-1"></div>
+                            <div id="tagMappingList"></div>
                         </div>
-                        <button type="button" class="btn btn-primary w-100 btn-generate" id="generateBulkBtn">
-                            <i class="bi bi-files me-1"></i> Generate Massal
-                        </button>
+                        <div class="bulk-footer">
+                            <button type="button" class="btn btn-primary w-100 btn-generate" id="generateBulkBtn">
+                                <i class="bi bi-files me-1"></i> Generate Massal
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    {{-- Popover searchable untuk pemetaan placeholder --}}
+    <div class="tag-pop" id="tagPop" style="display:none;" role="listbox" aria-label="Pilih kolom">
+
+        <div class="tag-pop-search">
+            <i class="bi bi-search"></i>
+            <input type="text" id="tagPopSearch" placeholder="Cari kolom..." autocomplete="off">
+        </div>
+        <div class="tag-pop-list" id="tagPopList"></div>
     </div>
 
     {{-- ROW 4: Riwayat Generate --}}
@@ -356,6 +420,13 @@ var selectionIdCounter = 0;
 var currentSource = 'spreadsheet';
 var bulkCols = [];
 var bulkTags = [];
+var tagMapState = [];
+var tagShowAll = false;
+var tagPopKey = null;
+var tagPopMode = 'tag';
+var tagPopOptions = [];
+var tagPopIndex = 0;
+
 
 $(document).ready(function() {
     var saved = sessionStorage.getItem('generateSuccess');
@@ -393,6 +464,8 @@ $(document).ready(function() {
         $('#dataCard').hide();
         $('#colFilterPanel').html('<div class="gen-empty text-center"><i class="bi bi-funnel"></i><p class="mb-0 small">Muat data terlebih dahulu.</p></div>');
         $('#bulkFilenameCol').empty();
+        syncFilenameLabel();
+
         $('#bulkRowInfo').text('Belum ada data. Ambil data terlebih dahulu (maks 50 baris).');
         bulkCols = [];
         bulkTags = [];
@@ -409,7 +482,8 @@ $(document).ready(function() {
         $('#templateHelpMassal').toggle(massal);
         $('#selectedCol').toggle(!massal);
         $('#modeHelpText').text(massal
-            ? 'Massal: 1 baris = 1 dokumen (ala Autocrat). Hasil 1 file ZIP.'
+            ? 'Massal: 1 baris = 1 dokumen. Hasil 1 file ZIP.'
+
             : 'Satuan: 1 dokumen dari sel tercentang. Hasil 1 file.');
         applySelectionMode();
         detectBulkTags();
@@ -418,6 +492,68 @@ $(document).ready(function() {
     $('#templateFile').on('change', function() {
         detectBulkTags();
     });
+
+    $('#tagMappingList').on('click', '.tag-select-btn', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openTagPop(this);
+    });
+
+    $('#bulkFilenameBtn').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openFilenamePop(this);
+    });
+
+
+    $('#tagMappingList').on('click', '#tagShowAll', function(e) {
+        e.preventDefault();
+        tagShowAll = !tagShowAll;
+        renderTagSections();
+    });
+
+    $('#tagMappingList').on('scroll', function() { closeTagPop(); });
+
+    $('#tagPopSearch').on('input', function() {
+        tagPopIndex = 0;
+        renderTagPopOptions($(this).val());
+    });
+
+    $('#tagPopSearch').on('keydown', function(e) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (!tagPopOptions.length) return;
+            var step = e.key === 'ArrowDown' ? 1 : -1;
+            tagPopIndex = (tagPopIndex + step + tagPopOptions.length) % tagPopOptions.length;
+            renderTagPopOptions($(this).val());
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (tagPopOptions[tagPopIndex]) chooseTagValue(tagPopOptions[tagPopIndex].value);
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            var focusKey = tagPopKey;
+            closeTagPop();
+            if (focusKey !== null) {
+                $('#tagMappingList .tag-map-row').filter(function() {
+                    return String($(this).data('key')) === String(focusKey);
+                }).find('.tag-select-btn').trigger('focus');
+            }
+        }
+
+    });
+
+    $('#tagPopList').on('click', '.tag-pop-opt', function() {
+        chooseTagValue($(this).attr('data-value') || '');
+    });
+
+    $(document).on('click', function(e) {
+        if (!$('#tagPop').is(':visible')) return;
+        if ($(e.target).closest('.tag-pop, .tag-select-btn').length) return;
+        closeTagPop();
+    });
+
+    $(window).on('resize scroll', closeTagPop);
+
 
     $('#clearSelectedBtn').on('click', function() {
         $('.cell-checkbox:checked').prop('checked', false);
@@ -534,6 +670,7 @@ function applySelectionMode() {
 }
 
 function renderDataTable(res) {
+    closeTagPop();
     selectedData = [];
     dataCounter = 1;
     currentRows = res.rows || [];
@@ -568,6 +705,8 @@ function renderDataTable(res) {
         if (/^(nama|name)$/i.test(String(c).trim())) defIdx = i;
     });
     bulkSel.prop('selectedIndex', defIdx);
+    syncFilenameLabel();
+
     $('#bulkRowInfo').text(rows.length + ' baris siap diproses massal (maks 50).');
     bulkCols = cols.slice();
     detectBulkTags();
@@ -689,12 +828,15 @@ function updateSelectedPanel() {
 }
 
 function detectBulkTags() {
+    closeTagPop();
     var wrap = $('#tagMappingWrap');
     var isMassal = $('input[name="generateMode"]:checked').val() === 'massal';
     if (!isMassal) { wrap.hide(); return; }
     var fileInput = $('#templateFile')[0];
     var tpl = fileInput && fileInput.files[0];
     if (!currentRows.length || !tpl || !bulkCols.length) { wrap.hide(); return; }
+    tagMapState = [];
+    tagShowAll = false;
     $('#tagMappingHint').text('Membaca tag template...');
     $('#tagMappingList').html('<div class="placeholder-glow"><span class="placeholder col-12"></span></div>');
     wrap.show();
@@ -717,40 +859,210 @@ function detectBulkTags() {
 }
 
 function renderTagMapping(tags) {
-    bulkTags = tags;
+    bulkTags = tags || [];
+    closeTagPop();
+    tagShowAll = false;
+    tagMapState = bulkTags.map(function(t) {
+        var auto = t.matched || '';
+        return { key: String(t.key), tag: t.tag, value: auto };
+    });
     var list = $('#tagMappingList');
-    if (!tags.length) {
+    if (!tagMapState.length) {
         $('#tagMappingHint').text('Tidak ada tag {..} di template selain tag sistem.');
         list.empty();
         return;
     }
-    var need = tags.filter(function(t) { return !t.matched; }).length;
-    $('#tagMappingHint').html(need
-        ? '<span class="text-warning">' + need + ' dari ' + tags.length + ' tag perlu dihubungkan.</span> Tag sistem & {data N} otomatis.'
-        : 'Semua ' + tags.length + ' tag otomatis cocok. Tag sistem & {data N} otomatis.');
-    var sorted = tags.slice().sort(function(a, b) { return (a.matched ? 1 : 0) - (b.matched ? 1 : 0); });
-    function tagRowHtml(t) {
-        var opts = '<option value="">— Pilih —</option>';
-        bulkCols.forEach(function(c) {
-            opts += '<option value="' + esc(c) + '"' + (t.matched === c ? ' selected' : '') + '>' + esc(c) + '</option>';
-        });
-        opts += '<option value="__ignore__">Abaikan (biarkan apa adanya)</option>';
-        return '<div class="d-flex align-items-center gap-2 tag-map-row' + (t.matched ? '' : ' tag-unmapped') + '" data-key="' + esc(t.key) + '">'
-           + '<span class="badge ' + (t.matched ? 'bg-success' : 'bg-warning text-dark') + '">{' + '{' + esc(t.tag) + '}' + '}</span>'
-           + '<select class="form-select form-select-sm tag-map-select">' + opts + '</select>'
-           + '</div>';
-    }
-    var needRows = '', autoRows = '', autoCount = 0;
-    sorted.forEach(function(t) {
-        if (t.matched) { autoRows += tagRowHtml(t); autoCount++; }
-        else { needRows += tagRowHtml(t); }
-    });
-    var h = needRows;
-    if (autoCount) {
-        h += '<details class="mt-1"><summary class="text-muted small" style="cursor:pointer;">' + autoCount + ' tag otomatis cocok — klik untuk lihat</summary><div class="d-flex flex-column gap-1 mt-1">' + autoRows + '</div></details>';
-    }
-    list.html(h);
+    $('#tagMappingHint').text('Tag sistem & {data N} otomatis. Pilih kolom untuk tiap placeholder.');
+    renderTagSections();
 }
+
+function tagRowHtml(t, hidden) {
+    var v = t.value || '';
+    var label = !v ? '— Pilih —' : (v === '__ignore__' ? 'Abaikan (biarkan apa adanya)' : v);
+    var cls = 'tag-map-row' + (v ? '' : ' tag-unmapped') + (hidden ? ' tag-extra' : '');
+    var style = hidden ? ' style="display:none"' : '';
+    return '<div class="' + cls + '" data-key="' + esc(String(t.key)) + '"' + style + '>'
+        + '<span class="badge">' + '{' + '{' + esc(t.tag) + '}' + '}</span>'
+        + '<div class="tag-select">'
+        + '<input type="hidden" class="tag-map-select" value="' + esc(v) + '">'
+        + '<button type="button" class="tag-select-btn' + (v ? '' : ' is-empty') + '">'
+        + '<span class="tag-select-label">' + esc(label) + '</span>'
+        + '<i class="bi bi-chevron-down"></i>'
+        + '</button>'
+        + '</div>'
+        + '<i class="bi ' + (v ? 'bi-check-circle-fill tag-state-ico ok' : 'bi-exclamation-circle-fill tag-state-ico warn') + '"></i>'
+        + '</div>';
+}
+
+function renderTagSections() {
+    var list = $('#tagMappingList');
+    var scrollTop = list.scrollTop();
+    var matchedOpen = $('#tagMappingList .tag-matched').prop('open') || false;
+    var unresolved = tagMapState.filter(function(t) { return !t.value; });
+    var resolved = tagMapState.filter(function(t) { return !!t.value; });
+    var total = tagMapState.length;
+    var need = unresolved.length;
+    var pct = total ? Math.round(((total - need) / total) * 100) : 100;
+
+    var h = '<div class="tag-map-top">'
+        + '<span class="tag-map-count' + (need ? '' : ' is-done') + '">'
+        + (need ? need + ' belum cocok dari ' + total + ' tag' : 'Semua ' + total + ' tag sudah cocok')
+        + '</span>'
+        + '<span class="tag-progress"><span style="width:' + pct + '%"></span></span>'
+        + '</div>';
+
+    if (need) {
+        h += '<div class="tag-section-title">Belum dicocokkan <span class="badge bg-warning text-dark">' + need + '</span></div>';
+        unresolved.forEach(function(t, i) {
+            h += tagRowHtml(t, !tagShowAll && i >= 5);
+        });
+        if (unresolved.length > 5) {
+            h += '<button type="button" class="tag-show-all" id="tagShowAll">'
+                + '<i class="bi bi-chevron-' + (tagShowAll ? 'up' : 'down') + '"></i> '
+                + (tagShowAll ? 'Sembunyikan sebagian' : 'Lihat semua tag (' + unresolved.length + ')')
+                + '</button>';
+        }
+    } else {
+        h += '<div class="tag-all-done"><i class="bi bi-check-circle-fill"></i> Semua tag sudah cocok atau diabaikan. Siap generate.</div>';
+    }
+
+    if (resolved.length) {
+        var open = need ? matchedOpen : true;
+        h += '<details class="tag-matched"' + (open ? ' open' : '') + '>'
+            + '<summary><i class="bi bi-check2-circle"></i> Sudah dicocokkan <span class="badge bg-success">' + resolved.length + '</span></summary>'
+            + '<div class="tag-matched-rows">';
+        resolved.forEach(function(t) { h += tagRowHtml(t, false); });
+        h += '</div></details>';
+    }
+
+    list.html(h);
+    list.scrollTop(scrollTop);
+}
+
+function openTagPop(btn) {
+    var $btn = $(btn);
+    tagPopMode = 'tag';
+    var key = String($btn.closest('.tag-map-row').data('key'));
+    var state = tagMapState.filter(function(t) { return String(t.key) === key; })[0];
+    tagPopKey = key;
+    positionPickerPop($btn, state ? (state.value || '') : '');
+}
+
+function openFilenamePop(btn) {
+    tagPopMode = 'filename';
+    tagPopKey = null;
+    positionPickerPop($(btn), $('#bulkFilenameCol').val() || '');
+}
+
+function positionPickerPop($btn, current) {
+    var pop = $('#tagPop');
+    var rect = $btn[0].getBoundingClientRect();
+    var width = Math.max(rect.width, 288);
+    width = Math.min(width, window.innerWidth - 16);
+    var left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8));
+    pop.css({ left: left + 'px', top: '0px', width: width + 'px' }).show();
+
+    $('.tag-select-btn').removeClass('is-open');
+    $btn.addClass('is-open');
+    $('#tagPopSearch').val('');
+    tagPopIndex = 0;
+    renderTagPopOptions('');
+    var idx = 0;
+    tagPopOptions.forEach(function(o, i) { if (o.value === current) idx = i; });
+    tagPopIndex = idx;
+    renderTagPopOptions('');
+
+    var popH = pop.outerHeight() || 300;
+    var top = rect.bottom + 6;
+    if (top + popH > window.innerHeight - 8 && rect.top > popH) {
+        top = rect.top - popH - 6;
+    }
+    top = Math.max(8, Math.min(top, window.innerHeight - popH - 8));
+    pop.css('top', top + 'px');
+
+    setTimeout(function() { $('#tagPopSearch').trigger('focus'); }, 0);
+}
+
+
+function closeTagPop() {
+    $('#tagPop').hide();
+    tagPopKey = null;
+    $('.tag-select-btn').removeClass('is-open');
+}
+
+function renderTagPopOptions(query) {
+    var q = String(query || '').toLowerCase().trim();
+    var current = '';
+    var opts = [];
+    if (tagPopMode === 'filename') {
+        current = $('#bulkFilenameCol').val() || '';
+        bulkCols.forEach(function(c) { opts.push({ value: c, label: c }); });
+    } else {
+        var state = tagMapState.filter(function(t) { return String(t.key) === String(tagPopKey); })[0];
+        current = state ? (state.value || '') : '';
+        opts.push({ value: '', label: '— Pilih —' });
+        bulkCols.forEach(function(c) { opts.push({ value: c, label: c }); });
+        opts.push({ value: '__ignore__', label: 'Abaikan (biarkan apa adanya)' });
+    }
+    tagPopOptions = opts.filter(function(o) {
+        return !q || String(o.label).toLowerCase().indexOf(q) !== -1;
+    });
+
+    if (tagPopIndex >= tagPopOptions.length) tagPopIndex = tagPopOptions.length - 1;
+    if (tagPopIndex < 0) tagPopIndex = 0;
+
+    var h = '';
+    tagPopOptions.forEach(function(o, i) {
+        var cls = 'tag-pop-opt'
+            + (i === tagPopIndex ? ' active' : '')
+            + (o.value === current ? ' is-selected' : '')
+            + (o.value === '__ignore__' ? ' is-ignore' : '');
+        h += '<div class="' + cls + '" data-value="' + esc(o.value) + '">'
+            + '<span>' + esc(o.label) + '</span>'
+            + (o.value === current ? '<i class="bi bi-check2"></i>' : '')
+            + '</div>';
+    });
+    if (!h) h = '<div class="tag-pop-empty">Tidak ada kolom yang cocok.</div>';
+    $('#tagPopList').html(h);
+    var active = $('#tagPopList .tag-pop-opt.active')[0];
+    if (active && active.scrollIntoView) active.scrollIntoView({ block: 'nearest' });
+}
+
+function syncFilenameLabel() {
+    var v = $('#bulkFilenameCol').val();
+    $('#bulkFilenameLabel').text(v ? v : 'Pilih kolom...');
+    $('#bulkFilenameBtn').toggleClass('is-empty', !v);
+}
+
+function chooseTagValue(value) {
+    if (tagPopMode === 'filename') {
+        closeTagPop();
+        $('#bulkFilenameCol').val(value || '');
+        syncFilenameLabel();
+        $('#bulkFilenameBtn').trigger('focus');
+        return;
+    }
+    var key = tagPopKey;
+    var state = tagMapState.filter(function(t) { return String(t.key) === String(key); })[0];
+    closeTagPop();
+    if (!state) return;
+    state.value = value || '';
+    renderTagSections();
+    var $row = $('#tagMappingList .tag-map-row').filter(function() {
+        return String($(this).data('key')) === String(key);
+    });
+    if ($row.length && $row.is(':visible')) {
+        $row.find('.tag-select-btn').trigger('focus');
+        return;
+    }
+    var next = tagMapState.filter(function(t) { return !t.value; })[0];
+    if (next) {
+        $('#tagMappingList .tag-map-row').filter(function() {
+            return String($(this).data('key')) === String(next.key);
+        }).find('.tag-select-btn').trigger('focus');
+    }
+}
+
 
 // Generate massal via AJAX: ZIP + riwayat instan tanpa refresh
 $('#generateBulkBtn').on('click', function() {
@@ -770,6 +1082,8 @@ $('#generateBulkBtn').on('click', function() {
             if (v !== '__ignore__') mapping[$(this).data('key')] = v;
         });
         if (incomplete) {
+            tagShowAll = true;
+            renderTagSections();
             showGenerateAlert('danger', 'Masih ada placeholder yang belum dipetakan. Pilih kolom atau Abaikan.');
             $('#tagMappingWrap')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;

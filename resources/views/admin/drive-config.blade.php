@@ -78,6 +78,37 @@
     .drive-page .info-tile .tile-value { font-weight: 600; color: #0f172a; font-size: .9rem; line-height: 1.2; }
     .drive-page .info-tile .tile-sub { font-size: .72rem; color: #94a3b8; }
     @media (max-width: 575.98px) { .drive-page .info-tile { align-items: flex-start; } }
+
+    /* Form upload OAuth Client */
+    .drive-page .oauth-upload {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+        align-items: center;
+        column-gap: .75rem;
+        row-gap: .35rem;
+    }
+    .drive-page .oauth-upload .oauth-label { grid-column: 1 / -1; margin-bottom: 0; }
+    .drive-page .oauth-upload .oauth-file { grid-column: 1; }
+    .drive-page .oauth-upload .oauth-btn { grid-column: 2; width: 100%; }
+    .drive-page .oauth-upload .oauth-help { grid-column: 1; margin: 0; align-self: start; }
+    .drive-page .oauth-upload .oauth-status { grid-column: 2; margin: 0; align-self: start; display: block; font-size: .75rem; line-height: 1.35; }
+    .drive-page .oauth-upload .form-control,
+    .drive-page .oauth-upload .btn { height: 2.8125rem; min-height: 2.8125rem; }
+    .drive-page .oauth-upload .btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        gap: .35rem; padding: 0 1rem;
+    }
+    .drive-page .oauth-upload .form-text { margin: 0; font-size: .75rem; line-height: 1.35; }
+    @media (max-width: 767.98px) {
+        .drive-page .oauth-upload { grid-template-columns: minmax(0, 1fr); row-gap: .4rem; }
+        .drive-page .oauth-upload .oauth-label { grid-column: 1; grid-row: 1; }
+        .drive-page .oauth-upload .oauth-file { grid-column: 1; grid-row: 2; }
+        .drive-page .oauth-upload .oauth-help { grid-column: 1; grid-row: 3; }
+        .drive-page .oauth-upload .oauth-btn { grid-column: 1; grid-row: 4; }
+        .drive-page .oauth-upload .oauth-status { grid-column: 1; grid-row: 5; }
+        .drive-page .oauth-upload .form-control,
+        .drive-page .oauth-upload .btn { height: 2.625rem; min-height: 2.625rem; }
+    }
 </style>
 @endpush
 
@@ -172,20 +203,16 @@
 
                     <form method="POST" action="{{ route('admin.upload-oauth-client') }}" enctype="multipart/form-data" id="uploadOauthForm">
                         @csrf
-                        <div class="row align-items-end g-3">
-                            <div class="col-md-7">
-                                <label class="form-label" for="client_file">File OAuth Client (.json)</label>
-                                <input type="file" name="client_file" id="client_file" class="form-control" accept=".json,.txt" required>
-                                <div class="form-text">File JSON hasil download dari Google Cloud Console.</div>
-                            </div>
-                            <div class="col-md-5">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="bi bi-upload me-1"></i> Upload
-                                </button>
-                                @if ($clientExists)
-                                    <small class="text-success d-block mt-1"><i class="bi bi-check-circle me-1"></i>Sudah terpasang. Upload ulang untuk mengganti.</small>
-                                @endif
-                            </div>
+                        <div class="oauth-upload">
+                            <label class="form-label oauth-label" for="client_file">File OAuth Client (.json)</label>
+                            <input type="file" name="client_file" id="client_file" class="form-control oauth-file" accept=".json,.txt" required>
+                            <button type="submit" class="btn btn-primary oauth-btn">
+                                <i class="bi bi-upload"></i> Upload
+                            </button>
+                            <div class="form-text oauth-help">File JSON hasil download dari Google Cloud Console.</div>
+                            @if ($clientExists)
+                                <small class="text-success oauth-status"><i class="bi bi-check-circle me-1"></i>Sudah terpasang. Upload ulang untuk mengganti.</small>
+                            @endif
                         </div>
                     </form>
 

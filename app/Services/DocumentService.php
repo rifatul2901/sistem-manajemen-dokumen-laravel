@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\Settings;
 use PhpOffice\PhpWord\TemplateProcessor;
@@ -72,41 +73,25 @@ class DocumentService
             throw new \RuntimeException('Format template DOCX tidak valid.');
         }
 
-        $dom = new \DOMDocument();
-        $dom->load($docXmlPath);
-        $xpath = new \DOMXPath($dom);
-        $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
-
-        $paragraphs = $xpath->query('//w:p');
-        foreach ($paragraphs as $para) {
-            $textNodes = $xpath->query('.//w:t', $para);
-            if ($textNodes->length === 0) continue;
-
-            $fullText = '';
-            foreach ($textNodes as $tn) {
-                $fullText .= $tn->textContent;
+        $this->replacePlaceholdersInDocx($docXmlPath, function (string $full) use ($selectedData, $extraContext) {
+            if (preg_match('/^\{\{\s*data\s+(\d+)\s*\}\}$/i', $full, $m)) {
+                $idx = (int) $m[1] - 1;
+                if (array_key_exists($idx, $selectedData) && $selectedData[$idx] !== null) {
+                    return (string) $selectedData[$idx];
+                }
+                return null;
             }
 
-            if (!preg_match('/\{\{/', $fullText)) continue;
-
-            $fullText = preg_replace_callback('/\{\{\s*data\s+(\d+)\s*\}\}/', function ($match) use ($selectedData) {
-                $idx = (int)$match[1] - 1;
-                return $selectedData[$idx] ?? $match[0];
-            }, $fullText);
-
-            $fullText = preg_replace_callback('/\{\{\s*([\w\/-]+(?:\s+[\w\/-]+)*)\s*\}\}/', function ($match) use ($extraContext) {
-                $tag = trim($match[1]);
-                return $extraContext[$tag] ?? $match[0];
-            }, $fullText);
-
-            $textNodes->item(0)->nodeValue = $fullText;
-            for ($i = 1; $i < $textNodes->length; $i++) {
-                $tn = $textNodes->item($i);
-                $tn->parentNode->removeChild($tn);
+            if (preg_match('/^\{\{\s*(.+?)\s*\}\}$/s', $full, $m)) {
+                $tag = trim($m[1]);
+                if (isset($extraContext[$tag])) {
+                    return (string) $extraContext[$tag];
+                }
             }
-        }
 
-        $dom->save($docXmlPath);
+            return null;
+        });
+
         $this->zipDocx($tempDir, $outputPath);
         $this->rrmdir($tempDir);
 
@@ -140,34 +125,22 @@ class DocumentService
             throw new \RuntimeException('Format template DOCX tidak valid.');
         }
 
-        $dom = new \DOMDocument();
-        $dom->load($docXmlPath);
-        $xpath = new \DOMXPath($dom);
-        $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
-
-        $paragraphs = $xpath->query('//w:p');
-        foreach ($paragraphs as $para) {
-            $textNodes = $xpath->query('.//w:t', $para);
-            if ($textNodes->length === 0) continue;
-
-            $fullText = '';
-            foreach ($textNodes as $tn) {
-                $fullText .= $tn->textContent;
+        $this->replacePlaceholdersInDocx($docXmlPath, function (string $full) use ($orderedCols, $rowMap, $extraContext, $tagMapping, $lookup, $str) {
+            if (preg_match('/^\{\{\s*data\s+(\d+)\s*\}\}$/i', $full, $m)) {
+                $idx = (int) $m[1] - 1;
+                $col = $orderedCols[$idx] ?? null;
+                if ($col !== null) {
+                    return $str($rowMap[$col] ?? '');
+                }
             }
 
-            if (!preg_match('/\{\{/', $fullText)) continue;
+            if (preg_match('/^\{\{\s*(.+?)\s*\}\}$/s', $full, $m)) {
+                $tag = trim($m[1]);
 
-            $fullText = preg_replace_callback('/\{\{\s*data\s+(\d+)\s*\}\}/', function ($match) use ($orderedCols, $rowMap, $str) {
-                $idx = (int)$match[1] - 1;
-                $col = $orderedCols[$idx] ?? null;
-                return $col !== null ? $str($rowMap[$col] ?? '') : $match[0];
-            }, $fullText);
-
-            $fullText = preg_replace_callback('/\{\{\s*([\w\/-]+(?:\s+[\w\/-]+)*)\s*\}\}/', function ($match) use ($lookup, $rowMap, $extraContext, $tagMapping, $str) {
-                $tag = trim($match[1]);
                 if (isset($extraContext[$tag])) {
                     return $str($extraContext[$tag]);
                 }
+
                 $key = strtolower(preg_replace('/\s+/', '', $tag));
                 if (isset($tagMapping[$key]) && is_string($tagMapping[$key])) {
                     $mc = $tagMapping[$key];
@@ -178,22 +151,17 @@ class DocumentService
                     if (isset($lookup[$mk])) {
                         return $str($rowMap[$lookup[$mk]] ?? '');
                     }
-                    return $match[0];
+                    return null;
                 }
+
                 if (isset($lookup[$key])) {
                     return $str($rowMap[$lookup[$key]] ?? '');
                 }
-                return $match[0];
-            }, $fullText);
-
-            $textNodes->item(0)->nodeValue = $fullText;
-            for ($i = 1; $i < $textNodes->length; $i++) {
-                $tn = $textNodes->item($i);
-                $tn->parentNode->removeChild($tn);
             }
-        }
 
-        $dom->save($docXmlPath);
+            return null;
+        });
+
         $this->zipDocx($tempDir, $outputPath);
         $this->rrmdir($tempDir);
 
@@ -204,14 +172,274 @@ class DocumentService
         $templateProcessor->saveAs($outputPath);
     }
 
+    /**
+     * Mengganti placeholder langsung di dalam text run asli agar format
+     * (font, bold, italic, warna, dsb.) milik template tidak hilang.
+     */
+    protected function replacePlaceholdersInDocx(string $docXmlPath, callable $resolver): void
+    {
+        $dom = new \DOMDocument();
+        $dom->preserveWhiteSpace = true;
+        $dom->formatOutput = false;
+        $dom->encoding = 'UTF-8';
+
+        if (!$dom->load($docXmlPath, LIBXML_NONET | LIBXML_COMPACT)) {
+            throw new \RuntimeException('Format template DOCX tidak valid.');
+        }
+        $dom->xmlStandalone = true;
+
+        $xpath = new \DOMXPath($dom);
+        $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+
+        foreach ($xpath->query('//w:p') as $para) {
+            $textNodes = [];
+            foreach ($xpath->query('.//w:t', $para) as $tn) {
+                $textNodes[] = $tn;
+            }
+            if (!$textNodes) {
+                continue;
+            }
+
+            $text = '';
+            foreach ($textNodes as $tn) {
+                $text .= $tn->textContent;
+            }
+            if (strpos($text, '{{') === false) {
+                continue;
+            }
+
+            $this->applyReplacementsToParagraph($textNodes, $text, $resolver);
+        }
+
+        $dom->save($docXmlPath);
+    }
+
+    /**
+     * Menyisipkan nilai hanya pada rentang karakter placeholder, tanpa
+     * menggabungkan atau menghapus text run lain di paragraf yang sama.
+     *
+     * @param  \DOMElement[]  $textNodes
+     */
+    protected function applyReplacementsToParagraph(array $textNodes, string $text, callable $resolver): bool
+    {
+        if (!preg_match_all('/\{\{\s*[^{}]*?\s*\}\}/u', $text, $matches, PREG_OFFSET_CAPTURE)) {
+            return false;
+        }
+
+        $ranges = [];
+        $offset = 0;
+        foreach ($textNodes as $tn) {
+            $len = strlen($tn->textContent);
+            $ranges[] = [$offset, $offset + $len];
+            $offset += $len;
+        }
+
+        $changed = false;
+
+        // Proses dari belakang agar offset kecocokan sebelumnya tidak bergeser.
+        for ($i = count($matches[0]) - 1; $i >= 0; $i--) {
+            $full = $matches[0][$i][0];
+            $start = $matches[0][$i][1];
+            $end = $start + strlen($full);
+            if ($start < 0 || $end <= $start) {
+                continue;
+            }
+
+            $replacement = $resolver($full);
+            if ($replacement === null) {
+                continue;
+            }
+            $replacement = (string) $replacement;
+
+            $startIdx = null;
+            $endIdx = null;
+            $startOffset = 0;
+            $endOffset = 0;
+
+            foreach ($ranges as $idx => $range) {
+                if ($startIdx === null && $start >= $range[0] && $start < $range[1]) {
+                    $startIdx = $idx;
+                    $startOffset = $start - $range[0];
+                }
+                if ($endIdx === null && $end > $range[0] && $end <= $range[1]) {
+                    $endIdx = $idx;
+                    $endOffset = $end - $range[0];
+                }
+            }
+
+            if ($startIdx === null || $endIdx === null) {
+                continue;
+            }
+
+            $startText = $textNodes[$startIdx]->textContent;
+
+            if ($startIdx === $endIdx) {
+                $textNodes[$startIdx]->nodeValue = substr($startText, 0, $startOffset)
+                    . $replacement
+                    . substr($startText, $endOffset);
+            } else {
+                $textNodes[$startIdx]->nodeValue = substr($startText, 0, $startOffset) . $replacement;
+                for ($k = $startIdx + 1; $k < $endIdx; $k++) {
+                    if ($textNodes[$k]->textContent !== '') {
+                        $textNodes[$k]->nodeValue = '';
+                    }
+                }
+                $endText = $textNodes[$endIdx]->textContent;
+                $textNodes[$endIdx]->nodeValue = substr($endText, $endOffset);
+            }
+
+            $changed = true;
+        }
+
+        if ($changed) {
+            foreach ($textNodes as $tn) {
+                $tn->setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
+            }
+        }
+
+        return $changed;
+    }
+
     public function convertDocxToPdf(string $docxPath, string $pdfPath): void
     {
+        if (!file_exists($docxPath)) {
+            throw new \RuntimeException('File DOCX tidak ditemukan.');
+        }
+
+        if (DIRECTORY_SEPARATOR === '\\' && $this->convertWithWord($docxPath, $pdfPath)) {
+            return;
+        }
+
+        Log::warning('Konversi PDF memakai DomPDF; tata letak bisa berbeda dari DOCX.', [
+            'file' => basename($docxPath),
+        ]);
+
         Settings::setPdfRendererPath(base_path('vendor/dompdf/dompdf'));
         Settings::setPdfRendererName(Settings::PDF_RENDERER_DOMPDF);
 
         $phpWord = IOFactory::load($docxPath);
         $xmlWriter = IOFactory::createWriter($phpWord, 'PDF');
         $xmlWriter->save($pdfPath);
+    }
+
+    /**
+     * Konversi DOCX ke PDF memakai Microsoft Word (COM) agar font, tabel,
+     * pembungkusan baris, dan margin tetap sama seperti dokumen aslinya.
+     */
+    protected function convertWithWord(string $docxPath, string $pdfPath): bool
+    {
+        $powershell = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
+        if (!is_file($powershell)) {
+            return false;
+        }
+
+        $docxPath = realpath($docxPath) ?: $docxPath;
+        $pdfDir = realpath(dirname($pdfPath)) ?: dirname($pdfPath);
+        $pdfPath = $pdfDir . DIRECTORY_SEPARATOR . basename($pdfPath);
+        $docxPath = str_replace('/', '\\', $docxPath);
+        $pdfPath = str_replace('/', '\\', $pdfPath);
+
+        $scriptPath = sys_get_temp_dir() . '/docx2pdf_' . uniqid() . '.ps1';
+        $script = <<<'PS'
+param(
+    [Parameter(Mandatory=$true)][string]$In,
+    [Parameter(Mandatory=$true)][string]$Out
+)
+
+$ErrorActionPreference = 'Stop'
+$word = $null
+$doc = $null
+$code = 1
+
+try {
+    $word = New-Object -ComObject Word.Application
+    $word.Visible = $false
+    $word.DisplayAlerts = 0
+    $word.Options.DoNotPromptForConvert = $true
+
+    $doc = $word.Documents.Open($In, $false, $true, $false)
+    $doc.SaveAs2($Out, 17)
+    $doc.Close($false)
+    $doc = $null
+    $code = 0
+} catch {
+    [Console]::Error.WriteLine($_.Exception.Message)
+} finally {
+    if ($doc -ne $null) {
+        try { $doc.Close($false) } catch { }
+    }
+    if ($word -ne $null) {
+        try { $word.Quit() } catch { }
+    }
+}
+
+exit $code
+PS;
+
+        if (file_put_contents($scriptPath, $script) === false) {
+            return false;
+        }
+
+        $command = [
+            $powershell, '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
+            '-File', $scriptPath, '-In', $docxPath, '-Out', $pdfPath,
+        ];
+
+        $process = @proc_open($command, [
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ], $pipes);
+
+        if (!is_resource($process)) {
+            @unlink($scriptPath);
+            return false;
+        }
+
+        stream_set_blocking($pipes[1], false);
+        stream_set_blocking($pipes[2], false);
+
+        $started = microtime(true);
+        $exitCode = null;
+        $timedOut = false;
+
+        while (true) {
+            $status = proc_get_status($process);
+            if (!$status['running']) {
+                $exitCode = $status['exitcode'];
+                break;
+            }
+            if (microtime(true) - $started > 60) {
+                $timedOut = true;
+                proc_terminate($process, 9);
+                break;
+            }
+            usleep(100000);
+        }
+
+        $stderr = stream_get_contents($pipes[2]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        proc_close($process);
+        @unlink($scriptPath);
+
+        if ($timedOut) {
+            @unlink($pdfPath);
+            Log::warning('Konversi PDF via Word melebihi batas waktu.');
+            return false;
+        }
+
+        clearstatcache(true, $pdfPath);
+        $ok = $exitCode === 0
+            && is_file($pdfPath)
+            && filesize($pdfPath) > 0
+            && file_get_contents($pdfPath, false, null, 0, 5) === '%PDF-';
+
+        if (!$ok) {
+            @unlink($pdfPath);
+            Log::warning('Konversi PDF via Word gagal.', ['error' => trim($stderr)]);
+        }
+
+        return $ok;
     }
 
     public function createRevisionPdf(string $filename, array $catatan, string $outputPath, string $subfolder = '(folder utama)', string $userNama = '-', string $adminNama = '-'): string
