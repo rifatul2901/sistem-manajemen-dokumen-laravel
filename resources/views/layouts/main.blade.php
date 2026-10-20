@@ -401,20 +401,39 @@
         .login-card .btn-primary:hover { transform: translateY(-0.125rem); box-shadow: 0 0.5rem 1.5rem rgba(28,141,203,.35); }
         .login-card .btn-primary:active { transform: translateY(0); box-shadow: 0 0.125rem 0.5rem rgba(28,141,203,.25); }
         .login-alert {
-            display: flex; align-items: center; gap: .6rem;
-            padding: .65rem .85rem;
+            display: flex; align-items: flex-start; gap: .75rem;
+            width: 100%;
+            padding: .85rem .95rem;
             border-radius: 0.75rem;
             font-family: 'Open Sans', sans-serif;
             font-size: .8rem;
-            margin-bottom: 1.25rem;
-            backdrop-filter: blur(0.5rem);
-            -webkit-backdrop-filter: blur(0.5rem);
+            margin: 0 0 1.15rem;
+            animation: loginAlertIn .2s ease-out both;
         }
-        .login-alert-error { background: rgba(239,68,68,.12); color: #fca5a5; border: 1px solid rgba(239,68,68,.2); }
-        .login-alert-error i { font-size: .95rem; flex-shrink: 0; }
-        .login-alert-error ul { margin: 0; padding-left: 1.25rem; }
-        .login-alert-error ul li { margin-bottom: .15rem; }
-        .login-alert-error ul li:last-child { margin-bottom: 0; }
+        .login-alert-error { background: #211F35; border: 1px solid #6C394F; color: #D7D5E2; box-shadow: inset 0 1px 0 rgba(255,255,255,.035); }
+        .login-alert-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 1.65rem; height: 1.65rem; flex-shrink: 0;
+            border-radius: 0.5rem;
+            background: rgba(255,156,168,.1);
+            color: #FF9CA8;
+            font-size: .9rem;
+            margin-top: .05rem;
+        }
+        .login-alert-body { min-width: 0; }
+        .login-alert-title { margin: 0 0 .15rem; color: #FFB3BE; font-family: 'Poppins', sans-serif; font-size: .84rem; font-weight: 600; line-height: 1.4; }
+        .login-alert-text { margin: 0; color: #D7D5E2; font-size: .78rem; line-height: 1.55; }
+        .login-alert-text + .login-alert-text { margin-top: .3rem; }
+        .login-alert-list { margin: 0; padding-left: 1rem; color: #D7D5E2; font-size: .78rem; line-height: 1.55; }
+        .login-alert-list li { margin-bottom: .15rem; }
+        .login-alert-list li:last-child { margin-bottom: 0; }
+        @keyframes loginAlertIn {
+            from { opacity: 0; transform: translateY(-0.35rem); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .login-alert { animation: none; }
+        }
 
         .login-split {
             width: 100%;
@@ -478,6 +497,7 @@
             .login-split { grid-template-columns: 1fr; max-width: 26.25rem; }
             .login-panel-promo { display: none; }
             .login-panel-form > .card { padding: 2.5rem 1.5rem 2rem; }
+            .login-alert { padding: .78rem .85rem; gap: .65rem; }
         }
 
         .empty-state { padding: 3rem 1rem; text-align: center; }
@@ -644,6 +664,11 @@
                 </a>
             </div>
             @else
+            <div class="nav-item">
+                <a href="{{ route('dashboard.index') }}" class="nav-link {{ request()->routeIs('dashboard.index') ? 'active' : '' }}">
+                    <i class="bi bi-grid-1x2"></i> <span class="nav-text">Dashboard</span>
+                </a>
+            </div>
             <div class="nav-item">
                 <a href="{{ route('status.index') }}" class="nav-link {{ request()->routeIs('status*') ? 'active' : '' }}">
                     <i class="bi bi-check-circle"></i> <span class="nav-text">Status Berkas</span>

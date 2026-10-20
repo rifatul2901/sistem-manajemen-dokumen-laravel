@@ -29,23 +29,36 @@
                 <h1 class="login-title">Selamat Datang</h1>
                 <p class="login-subtitle">Masuk ke Sistem Manajemen Dokumen</p>
 
-                @if ($errors->any())
-                    <div class="login-alert login-alert-error" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        <ul class="mb-0 ps-3">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
+                @php
+                    $loginErrors = $errors->all();
+                    $invalidCredentials = count($loginErrors) === 1
+                        && $loginErrors[0] === 'Username atau password salah.';
+                    $hasSessionError = session()->has('error');
+                    $sessionError = session('error');
+                @endphp
+
+                @if ($errors->any() || $hasSessionError)
+                    <div class="login-alert login-alert-error" role="alert" aria-atomic="true">
+                        <span class="login-alert-icon" aria-hidden="true">
+                            <i class="bi bi-shield-exclamation"></i>
+                        </span>
+                        <div class="login-alert-body">
+                            <p class="login-alert-title">Login gagal</p>
+                            @if ($invalidCredentials)
+                                <p class="login-alert-text">Username atau password yang kamu masukkan tidak sesuai.</p>
+                            @elseif ($errors->any())
+                                <ul class="login-alert-list">
+                                    @foreach ($loginErrors as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                            @if ($hasSessionError)
+                                <p class="login-alert-text">{{ $sessionError }}</p>
+                            @endif
+                        </div>
                     </div>
                 @endif
-
-                @session('error')
-                    <div class="login-alert login-alert-error" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        <span>{{ $value }}</span>
-                    </div>
-                @endsession
 
                 <form method="POST" action="{{ route('login') }}">
                     @csrf

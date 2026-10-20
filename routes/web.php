@@ -23,8 +23,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/', function () {
         return auth()->user()->isAdmin()
             ? redirect()->route('admin.dashboard')
-            : redirect()->route('status.index');
+            : redirect()->route('dashboard.index');
     });
+
+    // Dashboard User
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
     // Upload Revisi
     Route::post('/upload-revisi', [DashboardController::class, 'uploadRevisi'])->name('dashboard.upload-revisi');
