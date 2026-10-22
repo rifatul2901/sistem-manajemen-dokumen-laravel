@@ -323,12 +323,14 @@ html body { background: #F3F7FC; }
 #completenessProgress.bg-gold { background: linear-gradient(135deg,#f59e0b,#d97706) !important; }
 .dash-progress-value { font-size: 1.35rem; font-weight: 700; color: var(--dash-text); min-width: 3.875rem; text-align: right; }
 
-.simado-dash #poinFilterBar { background: #fff; }
-.simado-dash #poinFilterBar .btn { border-radius: 62.4375rem; font-size: .72rem; padding: .28rem .7rem; }
-.simado-dash #poinFilterBar .btn-outline-secondary { border-color: var(--dash-border); color: var(--dash-muted); }
-.simado-dash #poinFilterBar .btn-outline-secondary:hover { background: var(--dash-bg); color: var(--dash-text); }
-.simado-dash #poinFilterBar .btn.active { background: #E7F1FF; border-color: var(--dash-blue); color: var(--dash-blue); font-weight: 600; }
-.simado-dash #poinFilterBar .btn.active::before { content: "\F26A"; font-family: "bootstrap-icons"; margin-right: 0.25rem; }
+.simado-dash #fileFilterBar { background: #fff; }
+.simado-dash .filter-group { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
+.simado-dash .filter-label { font-size: .72rem; color: var(--dash-muted); white-space: nowrap; }
+.simado-dash .filter-group .btn { border-radius: 62.4375rem; font-size: .72rem; padding: .28rem .7rem; }
+.simado-dash .filter-group .btn-outline-secondary { border-color: var(--dash-border); color: var(--dash-muted); }
+.simado-dash .filter-group .btn-outline-secondary:hover { background: var(--dash-bg); color: var(--dash-text); }
+.simado-dash .filter-group .btn.active { background: #E7F1FF; border-color: var(--dash-blue); color: var(--dash-blue); font-weight: 600; }
+.simado-dash .filter-group .btn.active::before { content: "\F26A"; font-family: "bootstrap-icons"; margin-right: 0.25rem; }
 
 .simado-dash #berkasCard .table { font-size: .8rem; table-layout: fixed; width: 100%; }
 .simado-dash #berkasCard .table thead th {
@@ -513,14 +515,24 @@ html body { background: #F3F7FC; }
             </div>
         </div>
         <div class="card-body p-0">
-            <div class="px-3 pt-3 pb-2 border-bottom d-flex flex-wrap align-items-center gap-1" id="poinFilterBar" style="display:none;">
-                <span class="text-muted small me-1">Filter Poin:</span>
-                <button class="btn btn-sm btn-outline-secondary active" data-filter="all">Semua</button>
-                <button class="btn btn-sm btn-outline-secondary" data-filter="poin_pengukuran_kinerja">Pengukuran Kinerja</button>
-                <button class="btn btn-sm btn-outline-secondary" data-filter="poin_dokumen_sumber">Dok. Sumber</button>
-                <button class="btn btn-sm btn-outline-secondary" data-filter="poin_rencana_tindak_lanjut">RTL</button>
-                <button class="btn btn-sm btn-outline-secondary" data-filter="poin_bukti_kegiatan">Kegiatan</button>
-                <button class="btn btn-sm btn-outline-secondary" data-filter="poin_bukti_media_kinerja">Media Kinerja</button>
+            <div class="px-3 pt-3 pb-2 border-bottom d-flex flex-wrap align-items-center gap-2" id="fileFilterBar" style="display:none;">
+                <div class="filter-group" id="statusFilterBar" aria-label="Filter status berkas">
+                    <span class="filter-label">Status:</span>
+                    <button class="btn btn-sm btn-outline-secondary active" data-status-filter="all" aria-pressed="true">Semua</button>
+                    <button class="btn btn-sm btn-outline-secondary" data-status-filter="pending" aria-pressed="false">Menunggu</button>
+                    <button class="btn btn-sm btn-outline-secondary" data-status-filter="approved" aria-pressed="false">Disetujui</button>
+                    <button class="btn btn-sm btn-outline-secondary" data-status-filter="revision" aria-pressed="false">Butuh Revisi</button>
+                </div>
+                <div class="filter-group" id="poinFilterBar" aria-label="Filter poin berkas">
+                    <span class="filter-label">Poin:</span>
+                    <button class="btn btn-sm btn-outline-secondary active" data-filter="all" aria-pressed="true">Semua</button>
+                    <button class="btn btn-sm btn-outline-secondary" data-filter="poin_pengukuran_kinerja" aria-pressed="false">Pengukuran Kinerja</button>
+                    <button class="btn btn-sm btn-outline-secondary" data-filter="poin_dokumen_sumber" aria-pressed="false">Dok. Sumber</button>
+                    <button class="btn btn-sm btn-outline-secondary" data-filter="poin_rencana_tindak_lanjut" aria-pressed="false">RTL</button>
+                    <button class="btn btn-sm btn-outline-secondary" data-filter="poin_bukti_kegiatan" aria-pressed="false">Kegiatan</button>
+                    <button class="btn btn-sm btn-outline-secondary" data-filter="poin_bukti_media_kinerja" aria-pressed="false">Media Kinerja</button>
+                </div>
+                <button type="button" class="btn btn-sm btn-link text-muted text-decoration-none ms-auto" id="resetFileFilters" style="display:none;">Reset</button>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0" id="uploadsTable">
@@ -639,6 +651,7 @@ var _allFiles = [];
 var _currentPage = 1;
 var _perPage = 20;
 var _activeFilter = 'all';
+var _statusFilter = 'all';
 
 window.toggleDashSidebar = function() {
     document.body.classList.toggle('sidebar-collapsed');
@@ -647,9 +660,36 @@ $(document).on('turbo:before-cache', function() {
     document.body.classList.remove('sidebar-collapsed');
 });
 
+function filesByStatusFilter() {
+    var files = _allFiles || [];
+    if (_statusFilter === 'all') return files;
+    return files.filter(function(f) { return f.status === _statusFilter; });
+}
+
+function filesByPoinFilter() {
+    var files = _allFiles || [];
+    if (_activeFilter === 'all') return files;
+    return files.filter(function(f) { return f[_activeFilter]; });
+}
+
 function getFilteredFiles() {
-    if (_activeFilter === 'all') return _allFiles;
-    return (_allFiles || []).filter(function(f) { return f[_activeFilter]; });
+    return (_allFiles || []).filter(function(f) {
+        var matchPoin = _activeFilter === 'all' || !!f[_activeFilter];
+        var matchStatus = _statusFilter === 'all' || f.status === _statusFilter;
+        return matchPoin && matchStatus;
+    });
+}
+
+function hasActiveFilters() {
+    return _activeFilter !== 'all' || _statusFilter !== 'all';
+}
+
+function updateFilterButtonState() {
+    $('#poinFilterBar [data-filter]').removeClass('active').attr('aria-pressed', 'false');
+    $('#poinFilterBar [data-filter="' + _activeFilter + '"]').addClass('active').attr('aria-pressed', 'true');
+    $('#statusFilterBar [data-status-filter]').removeClass('active').attr('aria-pressed', 'false');
+    $('#statusFilterBar [data-status-filter="' + _statusFilter + '"]').addClass('active').attr('aria-pressed', 'true');
+    $('#resetFileFilters').toggle(hasActiveFilters());
 }
 
 function pageInit() {
@@ -658,6 +698,7 @@ function pageInit() {
     _allFiles = [];
     _currentPage = 1;
     _activeFilter = 'all';
+    _statusFilter = 'all';
     $('#uploadsBody').html(
         '<tr id="scanPromptRow"><td colspan="8">' +
         '<div class="empty-state"><i class="bi bi-search"></i>' +
@@ -670,8 +711,9 @@ function pageInit() {
     updateStatCards();
     $('#scanTime').hide();
     $('#fileCount').hide();
-    $('#poinFilterBar').hide();
-    $('[data-filter="all"]').addClass('active').siblings().removeClass('active');
+    $('#fileFilterBar').hide();
+    $('#resetFileFilters').hide();
+    updateFilterButtonState();
     // auto-load anak Folder Utama tanpa scan file
     fetchSubfolders('', '(folder utama)');
 }
@@ -819,8 +861,23 @@ if (!window._dashboardEvents) {
 
     $(document).on('click', '#poinFilterBar [data-filter]', function() {
         _activeFilter = $(this).data('filter');
-        $(this).addClass('active').siblings().removeClass('active');
         _currentPage = 1;
+        updateFilterButtonState();
+        renderPage();
+    });
+
+    $(document).on('click', '#statusFilterBar [data-status-filter]', function() {
+        _statusFilter = $(this).attr('data-status-filter');
+        _currentPage = 1;
+        updateFilterButtonState();
+        renderPage();
+    });
+
+    $(document).on('click', '#resetFileFilters', function() {
+        _activeFilter = 'all';
+        _statusFilter = 'all';
+        _currentPage = 1;
+        updateFilterButtonState();
         renderPage();
     });
 
@@ -845,14 +902,9 @@ if (!window._dashboardEvents) {
                     return;
                 }
                 var f = res.file;
-                var $row = $('tr[data-db-id="' + f.database_id + '"]');
-                $row.attr('data-status', 'revision');
-                $row.find('td').eq(3).html(badgeHtml('revision'));
-                $row.find('td').eq(7).html(buildActions(f));
                 var matched = _allFiles.find(function(x) { return String(x.database_id) === String(f.database_id); });
-                if (matched) matched.status = 'revision';
-                updateProgress();
-                updateStatCards();
+                if (matched) Object.assign(matched, f, { status: 'revision' });
+                renderPage();
                 // Tutup modal hanya setelah berhasil, lalu bersihkan form untuk pemakaian berikutnya.
                 bootstrap.Modal.getOrCreateInstance(document.getElementById('revisionModal')).hide();
                 $form[0].reset();
@@ -919,14 +971,9 @@ function doApprove() {
                 return;
             }
             var f = res.file;
-            var $row = $('tr[data-db-id="' + id + '"]');
-            $row.attr('data-status', 'approved');
-            $row.find('td').eq(3).html(badgeHtml('approved'));
-            $row.find('td').eq(7).html(buildActions(f));
             var matched = _allFiles.find(function(x) { return String(x.database_id) === String(id); });
-            if (matched) matched.status = 'approved';
-            updateProgress();
-            updateStatCards();
+            if (matched) Object.assign(matched, f, { status: 'approved' });
+            renderPage();
             // Tutup modal hanya setelah berhasil.
             bootstrap.Modal.getOrCreateInstance(document.getElementById('approveModal')).hide();
             resetApproveButton();
@@ -990,6 +1037,10 @@ window.navigateToFolder = function(folderId, folderName) {
         '</div></td></tr>'
     );
     $('#paginationControls').empty();
+    $('#scanTime').hide();
+    $('#fileCount').hide();
+    $('#fileFilterBar').hide();
+    $('#resetFileFilters').hide();
     fetchSubfolders(folderId, folderName);
 };
 window.scanFolder = window.navigateToFolder; // backward compat
@@ -1063,18 +1114,18 @@ function doScan(folderId, folderName, scanAll) {
             window._currentPage = 1;
             window._perPage = 20;
             _activeFilter = 'all';
-            renderPage();
+            _statusFilter = 'all';
             if (res.files && res.files.length > 0) {
                 $('#scanTime').show().find('span').text(res.waktu || '-');
                 $('#fileCount').show().find('span').text(res.files.length + ' berkas');
-        $('#poinFilterBar').show();
-        $('[data-filter="all"]').addClass('active').siblings().removeClass('active');
-        updatePoinCounts();
+                $('#fileFilterBar').css('display', 'flex');
             } else {
                 $('#scanTime').hide();
                 $('#fileCount').hide();
-                $('#poinFilterBar').hide();
+                $('#fileFilterBar').hide();
             }
+            updateFilterButtonState();
+            renderPage();
 
             $('#currentFolderId').val(res.folder_id || '');
             $('#currentFolderName').val(res.folder_name || '(folder utama)');
@@ -1317,11 +1368,10 @@ function applyFilePoinUpdate(file) {
         $row.find('.poin-cell').replaceWith(buildPoinCell(file));
         initPoinTooltips();
 
-        var activeFilter = $('#poinFilterBar .active').data('filter');
-        if (activeFilter && activeFilter !== 'all' && !file[activeFilter]) $row.hide();
+        if (_activeFilter !== 'all' && !file[_activeFilter]) $row.hide();
     }
 
-    updatePoinCounts();
+    updateFilterCounts();
 }
 
 var poinTooltipOptions = {
@@ -1385,8 +1435,13 @@ function updateStatCards() {
     $('#statRevision').text(files.filter(function(f) { return f.status === 'revision'; }).length);
 }
 
+function updateFilterCounts() {
+    updatePoinCounts();
+    updateStatusCounts();
+}
+
 function updatePoinCounts() {
-    var files = _allFiles || [];
+    var files = filesByStatusFilter();
     var poinCounts = {}, totalFiles = files.length;
     files.forEach(function(f) {
         poinKeys.forEach(function(k) {
@@ -1398,6 +1453,20 @@ function updatePoinCounts() {
         var filter = btn.data('filter');
         var label = btn.text().replace(/\s*\(\d+\)$/, '');
         btn.text(label + ' (' + (filter === 'all' ? totalFiles : (poinCounts[filter] || 0)) + ')');
+    });
+}
+
+function updateStatusCounts() {
+    var files = filesByPoinFilter();
+    var counts = { all: files.length, pending: 0, approved: 0, revision: 0 };
+    files.forEach(function(f) {
+        if (counts[f.status] !== undefined) counts[f.status]++;
+    });
+    $('#statusFilterBar [data-status-filter]').each(function() {
+        var btn = $(this);
+        var filter = btn.attr('data-status-filter');
+        var label = btn.text().replace(/\s*\(\d+\)$/, '');
+        btn.text(label + ' (' + (counts[filter] || 0) + ')');
     });
 }
 
@@ -1422,6 +1491,7 @@ function renderPage() {
     initPoinTooltips();
     updateProgress();
     updateStatCards();
+    updateFilterCounts();
 }
 
 function renderPagination(total, page, perPage) {
@@ -1456,7 +1526,7 @@ function buildTableRows(files, page, perPage) {
         h += '<td>' + badgeHtml(f.status) + '</td>';
         h += buildPoinCell(f);
         h += '<td class="text-muted small">' + esc(f.upload_time ? f.upload_time : '-') + '</td>';
-        h += '<td class="text-muted small">' + esc(f.uploader_name || '-') + '</td>';
+        h += '<td class="text-muted small text-truncate" title="' + escAttr(f.uploader_name || '-') + '">' + esc(f.uploader_name || '-') + '</td>';
         h += '<td>' + buildActions(f) + '</td>';
         h += '</tr>';
     });

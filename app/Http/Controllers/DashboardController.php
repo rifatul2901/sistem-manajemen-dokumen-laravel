@@ -275,11 +275,12 @@ class DashboardController extends Controller
                 $upload->revisionHistories()->create([
                     'catatan_admin'       => $upload->catatan_admin,
                     'nama_file_sebelumnya' => $upload->filename,
-                    'submitted_by'        => $user->nama,
+                    'submitted_by'        => $user->nama ?: $user->username,
                     'tanggal'             => now()->format('d-m-Y H:i'),
                 ]);
 
                 $upload->filename = $revisionFileName;
+                $upload->uploader_name = $user->nama ?: $user->username;
                 $upload->status = 'pending';
                 $upload->catatan_admin = [];
 

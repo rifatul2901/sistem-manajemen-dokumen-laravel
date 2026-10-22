@@ -104,7 +104,7 @@ class AdminController extends Controller
                     $row['database_id'] = $meta->id;
                     $row['assigned_user_id'] = $meta->assigned_user_id;
                     $row['subfolder'] = $f['subfolder'];
-                    $row['uploader_name'] = $meta->user?->nama ?? $meta->user?->username ?? $meta->uploader_name;
+                    $row['uploader_name'] = $meta->uploaderLabel();
                     $row['revision_histories'] = $meta->revisionHistories->map(function ($r) {
                         return [
                             'tanggal' => ($r->tanggal ?? $r->created_at?->format('d/m/Y H:i')),
@@ -119,7 +119,7 @@ class AdminController extends Controller
                         'drive_file_id'  => $f['id'],
                         'filename'       => $f['name'],
                         'subfolder'      => $f['subfolder'],
-                        'uploader_name'  => 'Eksternal',
+                        'uploader_name'  => 'Google Drive',
                         'upload_time'    => isset($f['createdTime']) ? \Carbon\Carbon::parse($f['createdTime'])->setTimezone(config('app.timezone'))->format('d-m-Y H:i') : now()->format('d-m-Y H:i'),
                         'status'         => 'pending',
                     ])->fresh();
@@ -127,7 +127,7 @@ class AdminController extends Controller
                     $row['database_id'] = $upload->id;
                     $row['drive_file_id'] = $f['id'];
                     $row['subfolder'] = $f['subfolder'];
-                    $row['uploader_name'] = 'Eksternal';
+                    $row['uploader_name'] = 'Google Drive';
                     $row['revision_histories'] = [];
                     $gabungan[] = $row;
                 }
@@ -234,7 +234,6 @@ class AdminController extends Controller
         $upload->catatan_admin = [];
         $upload->notifikasi_pdf = null;
         $upload->approved_at = now();
-        $upload->uploader_name = 'Admin';
         $upload->save();
 
         if ($request->wantsJson()) {
@@ -242,7 +241,7 @@ class AdminController extends Controller
             $row = $upload->toArray();
             $row['database_id'] = $upload->id;
             $row['subfolder'] = $upload->subfolder;
-            $row['uploader_name'] = $upload->user?->nama ?? $upload->user?->username ?? $upload->uploader_name;
+            $row['uploader_name'] = $upload->uploaderLabel();
             $row['revision_histories'] = $upload->revisionHistories->map(function ($r) {
                 return [
                     'tanggal' => ($r->tanggal ?? $r->created_at?->format('d/m/Y H:i')),
@@ -307,7 +306,7 @@ class AdminController extends Controller
             $row = $upload->toArray();
             $row['database_id'] = $upload->id;
             $row['subfolder'] = $upload->subfolder;
-            $row['uploader_name'] = $upload->user?->nama ?? $upload->user?->username ?? $upload->uploader_name;
+            $row['uploader_name'] = $upload->uploaderLabel();
             $row['revision_histories'] = $upload->revisionHistories->map(function ($r) {
                 return [
                     'tanggal' => ($r->tanggal ?? $r->created_at?->format('d/m/Y H:i')),

@@ -53,4 +53,27 @@ class Upload extends Model
     {
         return $this->hasMany(RevisionHistory::class);
     }
+
+    public function uploaderLabel(): string
+    {
+        $lastRevision = $this->revisionHistories
+            ->sortByDesc('id')
+            ->first(fn ($revision) => filled($revision->submitted_by));
+
+        if ($lastRevision) {
+            return $lastRevision->submitted_by;
+        }
+
+        if ($this->user) {
+            return $this->user->nama ?: ($this->user->username ?: 'Pengguna');
+        }
+
+        if ($this->drive_file_id) {
+            return 'Google Drive';
+        }
+
+        return $this->uploader_name && $this->uploader_name !== 'Eksternal'
+            ? $this->uploader_name
+            : 'Google Drive';
+    }
 }
