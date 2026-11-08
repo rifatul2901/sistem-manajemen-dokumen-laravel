@@ -7,7 +7,6 @@ use Google\Client;
 use Google\Service\Sheets;
 use GuzzleHttp\Client as HttpClient;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class GoogleSheetsService
 {
@@ -25,7 +24,7 @@ class GoogleSheetsService
 
         $client = new Client();
         $client->setHttpClient(new HttpClient([
-            'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4],
+            'force_ip_resolve' => 'v4',
         ]));
         $client->setApplicationName('Sistem Manajemen Dokumen');
         $client->setScopes([Sheets::SPREADSHEETS_READONLY]);
@@ -38,52 +37,10 @@ class GoogleSheetsService
         }
 
         if ($this->driveToken) {
-            $accessToken = [
-                'access_token'  => $this->driveToken->access_token,
-                'refresh_token' => $this->driveToken->refresh_token ?? '',
-                'token_type'    => $this->driveToken->token_type ?? 'Bearer',
-                'expires_in'    => $this->driveToken->expires_in ?? 3600,
-                'created'       => $this->driveToken->created_at?->timestamp ?? time(),
-            ];
-
-            $client->setAccessToken($accessToken);
+            $client->setAccessToken(GoogleTokenService::accessTokenArray($this->driveToken));
         }
 
-        if ($client->isAccessTokenExpired()) {
-            if ($client->getRefreshToken()) {
-                $maxAttempts = 2;
-                $attempt = 0;
-                $newToken = null;
-
-                while ($attempt < $maxAttempts) {
-                    $attempt++;
-                    try {
-                        $newToken = $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-                        break;
-                    } catch (\Exception $e) {
-                        if ($attempt >= $maxAttempts) {
-                            throw $e;
-                        }
-                        Log::warning('Refresh token gagal (percobaan ' . $attempt . '), mencoba ulang...', [
-                            'error' => $e->getMessage(),
-                        ]);
-                        usleep(2000000);
-                    }
-                }
-
-                if ($this->driveToken) {
-                    $this->driveToken->update([
-                        'access_token' => $newToken['access_token'],
-                        'expires_in'   => $newToken['expires_in'] ?? null,
-                        'expires_at'   => isset($newToken['expires_in'])
-                            ? now()->addSeconds($newToken['expires_in'])
-                            : null,
-                    ]);
-                }
-            } else {
-                throw new \RuntimeException('Token Google tidak valid. Silakan hubungkan ulang akun Google Anda.');
-            }
-        }
+        GoogleTokenService::ensureFresh($client, $this->driveToken);
 
         $this->service = new Sheets($client);
     }

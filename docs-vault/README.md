@@ -4,13 +4,13 @@ Folder ini = vault Obsidian. Buka via Obsidian > Open folder as vault > pilih `d
 
 ## File
 - `00-Index.md` — peta isi
-- `01-Deployment-Runbook.md` — dari TODOS Sebelum/Sesudah Hosting
+- `01-Deployment-Runbook.md` — satu-satunya sumber checklist deployment
 - `02-Decision-Log.md` — dari Technical Debt
 - `03-Testing-Plan.md` — dari Rencana Testing
 
 ## Aturan
 1. Jangan taruh `.env`, `*.json` secret, `vendor/`, `storage/` di sini.
-2. `TODOS.md` di root tetap sumber mentah cepat. Kalau sudah rapi, pindah ke vault.
+2. `TODOS.md` di root hanya untuk technical debt/PR; checklist deployment ada di vault ini.
 3. Plugin disarankan: `Git`, `Tasks`.
 
 ## Git

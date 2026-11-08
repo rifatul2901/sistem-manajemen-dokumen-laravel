@@ -8,6 +8,7 @@ use App\Models\Upload;
 use App\Models\User;
 use App\Models\DriveIgnored;
 use App\Services\GoogleDriveService;
+use App\Services\GoogleTokenService;
 use App\Services\DocumentService;
 use Google\Client;
 use GuzzleHttp\Client as HttpClient;
@@ -73,7 +74,7 @@ class AdminController extends Controller
         }
 
         try {
-            $driveService = new GoogleDriveService();
+            $driveService = app(GoogleDriveService::class);
 
             $folderId   = $request->parent_id ?: $driveConfig->folder_id;
             $folderName = $request->parent_name ?: '(folder utama)';
@@ -92,46 +93,80 @@ class AdminController extends Controller
                 ->keyBy('drive_file_id');
             $diabaikan = Cache::remember('drive_ignored', 60, fn() => DriveIgnored::pluck('file_id')->toArray());
 
-            $gabungan = [];
-            foreach ($files as $f) {
-                if (in_array($f['id'], $diabaikan)) {
-                    continue;
+            // Seluruh penulisan database dibungkus satu transaksi. Pemanggilan
+            // API Google Drive sudah selesai di atas, jadi transaksi tidak
+            // menahan koneksi selama menunggu jaringan.
+            $gabungan = DB::transaction(function () use ($files, $uploads, $diabaikan) {
+                $hasil = [];
+
+                foreach ($files as $f) {
+                    if (in_array($f['id'], $diabaikan)) {
+                        continue;
+                    }
+                    $meta = $uploads->get($f['id']);
+                    if ($meta) {
+                        // Sinkronkan metadata yang bisa berubah di Drive.
+                        // Tanpa ini, file yang dipindah/di-rename tetap tampil
+                        // dengan nama dan folder lama di riwayat/rekapitulasi.
+                        $meta->filename = $f['name'];
+                        $meta->subfolder = $f['subfolder'];
+                        if ($meta->isDirty()) {
+                            $meta->save();
+                        }
+                        $row = $meta->toArray();
+                        $row['database_id'] = $meta->id;
+                        $row['assigned_user_id'] = $meta->assigned_user_id;
+                        $row['subfolder'] = $f['subfolder'];
+                        $row['uploader_name'] = $meta->uploaderLabel();
+                        $row['revision_histories'] = $meta->revisionHistories->map(function ($r) {
+                            return [
+                                'tanggal' => ($r->tanggal ?? $r->created_at?->format('d/m/Y H:i')),
+                                'catatan_admin' => $r->catatan_admin,
+                                'submitted_by' => $r->submitted_by,
+                            ];
+                        });
+                        $hasil[] = $row;
+                    } else {
+                        // firstOrCreate + unique index: scan yang berjalan
+                        // bersamaan tidak membuat baris ganda dan tidak gagal.
+                        $upload = Upload::firstOrCreate(
+                            ['drive_file_id' => $f['id']],
+                            [
+                                'user_id'        => null,
+                                'filename'       => $f['name'],
+                                'subfolder'      => $f['subfolder'],
+                                'uploader_name'  => 'Google Drive',
+                                'upload_time'    => isset($f['createdTime']) ? \Carbon\Carbon::parse($f['createdTime'])->setTimezone(config('app.timezone'))->format('d-m-Y H:i') : now()->format('d-m-Y H:i'),
+                                'status'         => 'pending',
+                            ]
+                        );
+
+                        if (!$upload->wasRecentlyCreated) {
+                            // Baris sudah dibuat proses lain; muat relasinya
+                            // agar data yang dikirim ke dashboard tetap lengkap.
+                            $upload->load('revisionHistories', 'user', 'assignedUser');
+                        }
+
+                        $row = $upload->toArray();
+                        $row['database_id'] = $upload->id;
+                        $row['drive_file_id'] = $f['id'];
+                        $row['subfolder'] = $f['subfolder'];
+                        $row['uploader_name'] = $upload->wasRecentlyCreated ? 'Google Drive' : $upload->uploaderLabel();
+                        $row['revision_histories'] = $upload->wasRecentlyCreated
+                            ? []
+                            : $upload->revisionHistories->map(function ($r) {
+                                return [
+                                    'tanggal' => ($r->tanggal ?? $r->created_at?->format('d/m/Y H:i')),
+                                    'catatan_admin' => $r->catatan_admin,
+                                    'submitted_by' => $r->submitted_by,
+                                ];
+                            });
+                        $hasil[] = $row;
+                    }
                 }
-                $meta = $uploads->get($f['id']);
-                if ($meta) {
-                    $meta->subfolder = $f['subfolder'];
-                    $row = $meta->toArray();
-                    $row['database_id'] = $meta->id;
-                    $row['assigned_user_id'] = $meta->assigned_user_id;
-                    $row['subfolder'] = $f['subfolder'];
-                    $row['uploader_name'] = $meta->uploaderLabel();
-                    $row['revision_histories'] = $meta->revisionHistories->map(function ($r) {
-                        return [
-                            'tanggal' => ($r->tanggal ?? $r->created_at?->format('d/m/Y H:i')),
-                            'catatan_admin' => $r->catatan_admin,
-                            'submitted_by' => $r->submitted_by,
-                        ];
-                    });
-                    $gabungan[] = $row;
-                } else {
-                    $upload = Upload::create([
-                        'user_id'        => null,
-                        'drive_file_id'  => $f['id'],
-                        'filename'       => $f['name'],
-                        'subfolder'      => $f['subfolder'],
-                        'uploader_name'  => 'Google Drive',
-                        'upload_time'    => isset($f['createdTime']) ? \Carbon\Carbon::parse($f['createdTime'])->setTimezone(config('app.timezone'))->format('d-m-Y H:i') : now()->format('d-m-Y H:i'),
-                        'status'         => 'pending',
-                    ])->fresh();
-                    $row = $upload->toArray();
-                    $row['database_id'] = $upload->id;
-                    $row['drive_file_id'] = $f['id'];
-                    $row['subfolder'] = $f['subfolder'];
-                    $row['uploader_name'] = 'Google Drive';
-                    $row['revision_histories'] = [];
-                    $gabungan[] = $row;
-                }
-            }
+
+                return $hasil;
+            });
 
             $subfolderData = [];
             foreach ($subfolders as $sf) {
@@ -167,7 +202,7 @@ class AdminController extends Controller
         }
 
         try {
-            $driveService = new GoogleDriveService();
+            $driveService = app(GoogleDriveService::class);
             $folderId = $request->parent_id ?: $driveConfig->folder_id;
             $folderName = $request->parent_name ?: '(folder utama)';
 
@@ -351,46 +386,11 @@ class AdminController extends Controller
             try {
                 $googleClient = new Client();
                 $googleClient->setHttpClient(new HttpClient([
-                    'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4],
+                    'force_ip_resolve' => 'v4',
                 ]));
                 $googleClient->setAuthConfig(storage_path('app/oauth_client_secret.json'));
-                $googleClient->setAccessToken([
-                    'access_token'  => $driveToken->access_token,
-                    'refresh_token' => $driveToken->refresh_token,
-                    'token_type'    => $driveToken->token_type ?? 'Bearer',
-                    'expires_in'    => $driveToken->expires_in ?? 3600,
-                    'created'       => $driveToken->created_at?->timestamp ?? time(),
-                ]);
-
-                if ($googleClient->isAccessTokenExpired()) {
-                    $maxAttempts = 2;
-                    $attempt = 0;
-                    $newToken = null;
-
-                    while ($attempt < $maxAttempts) {
-                        $attempt++;
-                        try {
-                            $newToken = $googleClient->fetchAccessTokenWithRefreshToken($driveToken->refresh_token);
-                            break;
-                        } catch (\Exception $e) {
-                            if ($attempt >= $maxAttempts) {
-                                throw $e;
-                            }
-                            Log::warning('Refresh token gagal (percobaan ' . $attempt . '), mencoba ulang...', [
-                                'error' => $e->getMessage(),
-                            ]);
-                            usleep(2000000);
-                        }
-                    }
-
-                    $driveToken->update([
-                        'access_token' => $newToken['access_token'],
-                        'expires_in'   => $newToken['expires_in'] ?? null,
-                        'expires_at'   => isset($newToken['expires_in'])
-                            ? now()->addSeconds($newToken['expires_in'])
-                            : null,
-                    ]);
-                }
+                $googleClient->setAccessToken(GoogleTokenService::accessTokenArray($driveToken));
+                GoogleTokenService::ensureFresh($googleClient, $driveToken);
             } catch (\Exception $e) {
                 Log::warning('Gagal refresh token Drive saat akses drive config', [
                     'error' => $e->getMessage(),
