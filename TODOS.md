@@ -25,6 +25,9 @@ Rencana lengkap (PSI, Clockwork, `EXPLAIN`, k6, keamanan/SEO): lihat
   TTFB 695 ms / 577 ms, HTML 110,8 kB tanpa kompresi, logo 35 kB tanpa cache TTL. Yang
   paling terasa adalah `/admin/list-subfolders` 1,7–1,9 dtk per panggilan. HTML perlu
   kompresi di produksi (Cloudflare). Trace mentah ada di luar repo.
+- **Perbaikan keamanan selesai (commit `bc1c1cc`)**: OAuth `state` sekali pakai divalidasi
+  sebelum memanggil Google; pesan error generate digenerik (detail tetap di `Log::error`);
+  `public/robots.txt` kini `Disallow: /`; tes OAuth baru membuat total **11 tes / 31 assertion**.
 
 ## Audit Teknis & Prioritas PR (dicatat 2026-11-04)
 
@@ -106,8 +109,24 @@ kompleksitas tanpa manfaat yang terukur.
 - Anti-duplikat: unique index `drive_file_id`, collation biner, transaksi, dan `firstOrCreate`.
 - Token Google diperbaiki: refresh tidak lagi terjadi di setiap request dan token kosong
   tidak bisa tersimpan (`GoogleTokenService`). Ini penyebab error "Gagal memuat subfolder".
-- Tes: `php artisan test` 9 lulus (25 assertions), memakai database tes terpisah.
+- Tes: `php artisan test` 11 lulus (31 assertion), memakai database tes terpisah (diperbarui 2026-11-25).
 - Detail teknis tidak dicatat lagi di sini; lihat riwayat commit dan file migrasi.
+
+## Tindak Lanjut Review Produksi (2026-11-25)
+
+| Item | Kapan | Status |
+|---|---|---|
+| `.env` server: `APP_DEBUG=false`, `APP_URL=https://...`, `SESSION_SECURE_COOKIE=true`, `SESSION_DRIVER=database`, `LOG_LEVEL=error` | Saat deploy | Sudah ada di [[01-Deployment-Runbook]] / [[04-Production-Env-Example]]; tidak diulang di sini |
+| OAuth `state`, pesan error generate, `robots.txt` | Selesai | Commit `bc1c1cc`, sudah ada tes |
+| 2FA admin **atau** pembatasan akses (IP / Cloudflare Access) | Sebelum dipublikasikan ke internet | **Perlu keputusan** (PR-09). Tanpa salah satunya, jangan buka publik |
+| `trustProxies('*')` dibatasi ke IP Cloudflare | Saat deploy / setelah stabil | Catatan saja, belum diubah |
+| Uji COEP/CORP & CSP agar ikon/font CDN tidak terblokir | Saat deploy | Sudah ada di checklist "Setelah Hosting" di runbook |
+| Validasi format `parent_id` folder Drive | Menyusul | Catatan saja, belum diubah |
+| Sanitasi path preview & containment download history | Menyusul | Risiko rendah, catatan saja |
+| Uji generate 50 baris (PR-16), tes approve/revisi/generate (PR-10), cache subfolder (PR-11) | Setelah stabil | Sudah ada di daftar PR; PR-11 opsional |
+| Sitemap, canonical URL, queue, audit trail, hash dokumen | Tidak perlu sekarang | Sesuai putusan yang sudah ada |
+
+Catatan: checklist deploy tetap satu-satunya checklist di [[01-Deployment-Runbook]]. Tabel ini hanya penanda waktu dan keputusan, bukan checklist kedua.
 
 ## Catatan Penting
 
