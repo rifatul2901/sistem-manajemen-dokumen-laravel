@@ -33,14 +33,28 @@ class GoogleAuthController extends Controller
 
     public function redirectToGoogle()
     {
+        $state = bin2hex(random_bytes(32));
+        session()->put('oauth_state', $state);
+
         $client = $this->getClient();
-        $authUrl = $client->createAuthUrl();
-        return redirect($authUrl);
+        $client->setState($state);
+
+        return redirect($client->createAuthUrl());
     }
 
     public function handleCallback(Request $request)
     {
-        $request->validate(['code' => 'required|string']);
+        $request->validate([
+            'code' => 'required|string',
+            'state' => 'required|string',
+        ]);
+
+        $expectedState = session()->pull('oauth_state');
+        if (!is_string($expectedState) || !hash_equals($expectedState, (string) $request->state)) {
+            Log::warning('OAuth state tidak cocok', ['user_id' => Auth::id()]);
+            return redirect()->route('admin.drive-config')
+                ->with('error', 'Autentikasi Google gagal. Silakan hubungkan kembali.');
+        }
 
         try {
             $client = $this->getClient();

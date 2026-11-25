@@ -324,9 +324,9 @@ class AdminGenerateController extends Controller
             }
             Log::error('Admin generate failed', ['error' => $e->getMessage()]);
             if ($request->expectsJson()) {
-                return response()->json(['error' => 'Gagal generate dokumen: ' . $e->getMessage()], 500);
+                return response()->json(['error' => 'Gagal generate dokumen. Silakan coba lagi atau hubungi admin.'], 500);
             }
-            return back()->with('error', 'Gagal generate dokumen: ' . $e->getMessage());
+            return back()->with('error', 'Gagal generate dokumen. Silakan coba lagi atau hubungi admin.');
         }
     }
 
@@ -508,7 +508,7 @@ class AdminGenerateController extends Controller
                 Storage::disk('local')->delete($templatePath);
             }
             Log::error('Admin generate bulk failed', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'Gagal generate massal: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Gagal generate massal. Silakan coba lagi atau hubungi admin.'], 500);
         }
     }
 
