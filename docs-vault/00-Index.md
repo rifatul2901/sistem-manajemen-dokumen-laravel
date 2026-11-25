@@ -11,6 +11,7 @@ Vault pendamping repo `Sistem Manajemen Versi Laravel`. Jangan simpan `.env`, `d
 - [[01-Deployment-Runbook]] — satu-satunya sumber checklist deployment: sebelum/sesudah hosting + Cloudflare + cron
 - [[02-Decision-Log]] — kenapa technical debt diselesaikan / dilewati
 - [[03-Testing-Plan]] — rencana PSI, Clockwork, EXPLAIN, k6 yang ditunda
+- [[04-Production-Env-Example]] — contoh nilai `.env` produksi berupa placeholder; checklist tetap di [[01-Deployment-Runbook]]
 
 ## Cara pakai di Obsidian
 1. Obsidian > Open folder as vault > pilih folder `docs-vault` ini

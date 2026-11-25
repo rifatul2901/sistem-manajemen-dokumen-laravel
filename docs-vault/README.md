@@ -7,6 +7,7 @@ Folder ini = vault Obsidian. Buka via Obsidian > Open folder as vault > pilih `d
 - `01-Deployment-Runbook.md` — satu-satunya sumber checklist deployment
 - `02-Decision-Log.md` — dari Technical Debt
 - `03-Testing-Plan.md` — dari Rencana Testing
+- `04-Production-Env-Example.md` — contoh nilai `.env` produksi (placeholder, bukan checklist)
 
 ## Aturan
 1. Jangan taruh `.env`, `*.json` secret, `vendor/`, `storage/` di sini.
