@@ -23,7 +23,6 @@ yarn-error.log
 /storage/app/drive_token.json
 .opencode/
 graphify-out/
-TODOS.md
 AGENTS.md
 *.bak
 optimize_logos.php
