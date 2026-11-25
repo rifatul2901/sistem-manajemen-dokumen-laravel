@@ -9,7 +9,22 @@ cron, Cloudflare, dan uji setelah deploy.
 ## Rencana Testing
 
 Rencana lengkap (PSI, Clockwork, `EXPLAIN`, k6, keamanan/SEO): lihat
-`docs-vault/03-Testing-Plan.md`. Status: **ditunda**, belum dikerjakan.
+`docs-vault/03-Testing-Plan.md`. Pengukuran dasar sudah dilakukan pada 2026-11-25 (lihat
+**Catatan Terkini** di bawah); item lain di rencana tersebut masih **ditunda**.
+
+## Catatan Terkini (2026-11-25)
+
+- **Tahap 1 selesai (belum deploy):** commit `cef3453` (kutipan bahasa Inggris) dan
+  `ad4e30d` (runbook + `docs-vault/04-Production-Env-Example.md` sebagai placeholder).
+  Perbaikan kode yang mendahului Tahap 1 ada di `e5be2da` (2026-11-09, lihat "Sudah Selesai").
+  `.env` lokal dan kode aplikasi tidak diubah, dan belum di-push ke remote.
+- **Dikerjakan di server saat deploy:** `APP_URL`, redirect URI Google OAuth, cookie
+  secure, cron, dan backup. Jangan disetel di lokal sekarang.
+- **Performa dashboard terukur** (Chrome DevTools pada `/admin/dashboard`, 2026-11-25,
+  tanpa throttle, `php artisan serve` lokal): LCP 991 ms dingin / 832 ms hangat, CLS 0,01,
+  TTFB 695 ms / 577 ms, HTML 110,8 kB tanpa kompresi, logo 35 kB tanpa cache TTL. Yang
+  paling terasa adalah `/admin/list-subfolders` 1,7–1,9 dtk per panggilan. HTML perlu
+  kompresi di produksi (Cloudflare). Trace mentah ada di luar repo.
 
 ## Audit Teknis & Prioritas PR (dicatat 2026-11-04)
 
@@ -20,7 +35,8 @@ risiko integritas data, kinerja pada skala besar, dan celah tata kelola. Beberap
 Legenda prioritas:
 
 - **P0** — kritis, perbaiki segera (kehilangan data / sistem mati / celah keamanan terbuka)
-- **P1** — perlu sebelum produksi atau sebelum dipakai ramai
+- **P1** — perlu sebelum produksi atau sebelum dipakai ramai; untuk PR-11/PR-16 berarti
+  "verifikasi dulu, baru kerjakan kalau memang perlu"
 - **P2** — terjadwal, penting tapi tidak mendesak
 - **P3** — tidak perlu sekarang, catat saja
 
@@ -36,10 +52,11 @@ Legenda prioritas:
 | PR-07 | Tidak ada audit trail | Tidak ada model `Audit`; hanya `Log::` | Tidak bisa membuktikan siapa mengubah apa | **P2** | Perlu untuk skripsi/tata kelola |
 | PR-08 | Tidak ada hash/integritas dokumen | Tidak ada `hash()` pada file | Perubahan dokumen tidak terdeteksi | **P2/P3** | P2 jika jadi fitur skripsi |
 | PR-09 | Belum ada 2FA | Tidak ada `two_factor` | Akun admin rentan jika password bocor | **P2** | Perlu sebelum dipublikasikan |
-| PR-10 | Tes alur kerja belum lengkap | `tests/Feature` baru mencakup scan | Regresi approve/revisi/generate tidak terdeteksi | **P2** | Tambah bertahap sebelum refactor |
+| PR-10 | Tes alur kerja belum lengkap | `ScanFolderMetadataSyncTest` + `GoogleTokenServiceTest`; approve/revisi/generate belum | Regresi approve/revisi/generate tidak terdeteksi | **P2** | Tambah bertahap sebelum refactor |
+| PR-11 | Cache daftar subfolder dashboard | `AdminController@listSubfolders` | ~1,8 dtk per buka dashboard (terukur 2026-11-25) | **P1 (opsional)** | Belum; lakukan dengan syarat scan tetap segar |
 | PR-12 | Tidak ada API | `routes/web.php` hanya route web | Integrasi mobile/pihak ketiga terbatas | **P3** | **Tidak perlu** sekarang |
 | PR-13 | Belum ada retensi & metadata standar | Tidak ada model terkait | Sulit diaudit secara kearsipan | **P2/P3** | Hanya jika domain kearsipan |
-| PR-14 | Belum ada observability | Hanya `Log::`, tanpa metrik/health check | Diagnosa produksi lambat | **P3** | **Tidak perlu** untuk skala ini |
+| PR-14 | Belum ada observability | Health `/up` sudah ada; metrik/alert belum | Diagnosa produksi lambat | **P3** | **Tidak perlu** untuk skala ini |
 | PR-15 | `getFolderSize` rekursif tiap 60 dtk | `AdminController:27` | I/O berulang jika hasil generate banyak | **P3** | **Tidak perlu** |
 | PR-16 | Generate massal 50 PDF berjalan sinkron | `AdminGenerateController@generateBulk` (belum diukur) | Berpotensi timeout di shared hosting | **P1 (verifikasi)** | Uji dulu 50 baris |
 
@@ -59,6 +76,10 @@ Legenda prioritas:
   rendah untuk operasional harian saat ini.
 - **PR-09** bisa ditunda, tetapi jangan dipublikasikan ke internet tanpa 2FA untuk akun admin.
 - **PR-10** kerjakan bertahap: tulis tes untuk bagian yang akan diubah, bukan seluruh aplikasi.
+- **PR-11** jangan di-cache mentah-mentah. Kunci cache harus menyertakan `folder_id` dan
+  TTL maksimal 60 detik; cache dibaca selama TTL masih valid, scan/buka folder wajib
+  menyegarkan cache, dan ganti `folder_id` wajib `Cache::forget` cache lama. Tanpa ini,
+  subfolder baru bisa tertunda atau tertukar.
 - **PR-12/PR-14** hanya perlu jika ada rencana integrasi atau tim operasi. Untuk sekarang,
   tidak sepadan.
 - **PR-16** belum ada bukti lambat. Uji 50 baris dulu; jika di atas 30 detik, baru
@@ -69,8 +90,9 @@ Legenda prioritas:
 1. **Ukur dulu** — Clockwork, `EXPLAIN`, dan k6 (lihat `docs-vault/03-Testing-Plan.md`).
 2. **PR-02** — hanya jika hasil ukur menunjukkan >5 dtk atau payload terlalu besar.
 3. **PR-10** — tes alur kerja untuk area yang akan disentuh.
-4. **PR-07** — audit trail, jika dilanjutkan menjadi skripsi.
-5. Sisanya sesuai kebutuhan dan hasil pengukuran.
+4. **PR-11** — opsional, setelah PR-10; hanya bila daftar folder masih terasa lambat.
+5. **PR-07** — audit trail, jika dilanjutkan menjadi skripsi.
+6. Sisanya sesuai kebutuhan dan hasil pengukuran.
 
 ### PR yang sengaja tidak dikerjakan sekarang
 
@@ -78,7 +100,7 @@ Legenda prioritas:
 tidak dikerjakan karena pemicunya belum ada. Mencatatnya di sini cukup; jangan menambah
 kompleksitas tanpa manfaat yang terukur.
 
-## Sudah Selesai (2026-11-06)
+## Sudah Selesai (2026-11-09, commit e5be2da)
 
 - Scan folder menyimpan perubahan nama file dan folder dari Drive.
 - Anti-duplikat: unique index `drive_file_id`, collation biner, transaksi, dan `firstOrCreate`.
@@ -89,7 +111,8 @@ kompleksitas tanpa manfaat yang terukur.
 
 ## Catatan Penting
 
-- Jangan jalankan `php artisan test` di server produksi; konfigurasi tes memakai kredensial
-  database dari `.env`.
+- Jangan jalankan `php artisan test` di server produksi. `phpunit.xml` memaksa nama
+  database tes (`sistem_manajemen_dokumen_test`), tetapi host/user/password tetap dibaca
+  dari `.env`; kredensial produksi akan terpakai dan database tes bisa jadi tidak ada.
 - Database tes lokal: `sistem_manajemen_dokumen_test`. Buat sekali jika belum ada:
   `CREATE DATABASE sistem_manajemen_dokumen_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`
