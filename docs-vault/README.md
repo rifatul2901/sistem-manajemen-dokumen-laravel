@@ -8,6 +8,7 @@ Folder ini = vault Obsidian. Buka via Obsidian > Open folder as vault > pilih `d
 - `02-Decision-Log.md` — dari Technical Debt
 - `03-Testing-Plan.md` — dari Rencana Testing
 - `04-Production-Env-Example.md` — contoh nilai `.env` produksi (placeholder, bukan checklist)
+- `05-Tahap-Deploy.md` — peta tahap deploy 2 & 3 (status, bukan checklist teknis)
 
 ## Aturan
 1. Jangan taruh `.env`, `*.json` secret, `vendor/`, `storage/` di sini.

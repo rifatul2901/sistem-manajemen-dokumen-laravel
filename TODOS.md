@@ -6,6 +6,8 @@ Checklist deployment lengkap dan satu-satunya sumber ada di
 `docs-vault/01-Deployment-Runbook.md` — mencakup `.env`, migrasi database,
 cron, Cloudflare, dan uji setelah deploy.
 
+Peta tahap 2 (deploy) dan 3 (setelah stabil) ada di `docs-vault/05-Tahap-Deploy.md`.
+
 ## Rencana Testing
 
 Rencana lengkap (PSI, Clockwork, `EXPLAIN`, k6, keamanan/SEO): lihat
