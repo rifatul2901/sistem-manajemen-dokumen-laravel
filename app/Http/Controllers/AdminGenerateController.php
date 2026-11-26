@@ -139,7 +139,9 @@ class AdminGenerateController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Fetch spreadsheet failed', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'Gagal membaca spreadsheet. Pastikan spreadsheet sudah di-share ke email admin yang terhubung.'], 500);
+            $response = GoogleSheetsService::fetchErrorResponse($e);
+
+            return response()->json(['error' => $response['message']], $response['status']);
         }
     }
 

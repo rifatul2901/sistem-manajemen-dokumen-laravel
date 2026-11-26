@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\DriveToken;
 use Google\Client;
+use Google\Service\Exception as GoogleServiceException;
 use Google\Service\Sheets;
 use GuzzleHttp\Client as HttpClient;
 use Illuminate\Support\Facades\Auth;
@@ -82,5 +83,77 @@ class GoogleSheetsService
             }
         }
         return 26;
+    }
+
+    /**
+     * Petakan error Google Sheets API ke pesan & status HTTP yang informatif.
+     *
+     * @return array{message: string, status: int}
+     */
+    public static function fetchErrorResponse(\Throwable $e): array
+    {
+        $raw = $e->getMessage();
+        $message = strtolower($raw);
+
+        $code = (int) $e->getCode();
+        $reason = '';
+
+        if ($e instanceof GoogleServiceException) {
+            foreach ($e->getErrors() ?? [] as $err) {
+                $candidate = strtolower((string) ($err['reason'] ?? ''));
+                if ($candidate !== '') {
+                    $reason = $candidate;
+                    break;
+                }
+            }
+        }
+
+        $isOfficeFile = stripos($raw, 'Office file') !== false
+            || (
+                stripos($raw, 'Office') !== false
+                && (
+                    $reason === 'failedprecondition'
+                    || stripos($raw, 'FAILED_PRECONDITION') !== false
+                    || stripos($raw, 'failedPrecondition') !== false
+                )
+            );
+
+        if ($isOfficeFile) {
+            return [
+                'message' => 'File ini adalah file Office (XLSX/XLS) di Google Drive, bukan Google Sheets native. Buka file di Drive → File → Simpan sebagai Google Sheets lalu pakai link sheet tersebut. Atau gunakan menu Upload Excel.',
+                'status' => 400,
+            ];
+        }
+
+        $isForbidden = $code === 403
+            || $reason === 'forbidden'
+            || $reason === 'permissiondenied'
+            || str_contains($message, '403')
+            || str_contains($message, 'permission')
+            || str_contains($message, 'forbidden');
+
+        if ($isForbidden) {
+            return [
+                'message' => 'Akses ditolak. Pastikan spreadsheet sudah di-share ke email Google yang terhubung di halaman Drive Config.',
+                'status' => 403,
+            ];
+        }
+
+        $isNotFound = $code === 404
+            || $reason === 'notfound'
+            || str_contains($message, '404')
+            || str_contains($message, 'not found');
+
+        if ($isNotFound) {
+            return [
+                'message' => 'Spreadsheet tidak ditemukan. Periksa kembali link dan pastikan file belum dihapus.',
+                'status' => 404,
+            ];
+        }
+
+        return [
+            'message' => 'Gagal membaca spreadsheet. Pastikan link benar dan spreadsheet sudah di-share ke email Google yang terhubung.',
+            'status' => 500,
+        ];
     }
 }
