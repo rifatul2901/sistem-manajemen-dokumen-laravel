@@ -6,7 +6,7 @@ tags: [simado, deployment, roadmap, tahap]
 
 Catatan ini hanya **peta tahap dan status**, bukan checklist teknis. Checklist teknis tetap satu-satunya di [[01-Deployment-Runbook]]. `TODOS.md` di root tetap untuk technical debt dan PR; nilai `.env` produksi ada di [[04-Production-Env-Example]].
 
-Diperbarui: 2026-11-25.
+Diperbarui: 2026-11-26.
 
 ## Prasyarat
 
@@ -40,6 +40,7 @@ Sebelum website dibuka ke internet, pilih salah satu:
 - [ ] Pembatasan akses, misalnya Cloudflare Access / whitelist IP.
 
 **Status:** keputusan belum diambil. Tanpa salah satunya, jangan publikasikan.
+Detail checklist teknis produksi (termasuk LibreOffice dan fallback PDF) ada di [[01-Deployment-Runbook]].
 
 ## Tahap 3 — Setelah sistem stabil
 

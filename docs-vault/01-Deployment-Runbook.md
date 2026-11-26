@@ -30,15 +30,28 @@ Satu-satunya sumber checklist deployment (hosting + Cloudflare).
 - [ ] Jalankan `php artisan view:cache`
 - [ ] (Opsional) Jalankan `php artisan storage:link` — file diunduh lewat controller, bukan URL `/storage`
 
+### Khusus generate PDF di Linux
+- [ ] Pasang `libreoffice-writer` (`soffice`) — jalur utama konversi DOCX → PDF; tanpa ini aplikasi jatuh ke fallback DomPDF
+- [ ] Pastikan path `/usr/bin/soffice` ada dan executable (kode memakai `is_executable('/usr/bin/soffice')`; jika hosting beda path, perlu disesuaikan)
+- [ ] Pastikan `exec()` tidak masuk `disable_functions` dan perintah `timeout` tersedia (kode memakai `timeout 90`)
+- [ ] (Disarankan) Pasang `ttf-mscorefonts-installer` agar PDF benar-benar memakai Times New Roman; tanpa ini Linux memakai substitusi Liberation Serif
+- [ ] Pastikan `/tmp` writable untuk workdir konversi dan `storage/app/hasil_generate/` writable untuk file antara
+- [ ] Uji generate sekali: ukuran kertas mengikuti template (A4/Letter), halaman 2 mulai di `IV. RINGKASAN PROJECT`, dan label `Catatan:` tidak terpisah dari paragrafnya
+
 ## Setelah Hosting
 - [ ] Tambahkan cron di panel hosting:
   `* * * * * cd /path/ke/project && php artisan schedule:run >> /dev/null 2>&1`
 - [ ] Buka `/login`, uji scan folder dan satu alur approval
-- [ ] Uji generate dokumen/PDF — di Linux memakai DomPDF, tata letak bisa berbeda dari Word
+- [ ] Uji generate dokumen/PDF — di Linux memakai LibreOffice bila tersedia, jika tidak baru fallback DomPDF
 - [ ] Aktifkan backup database otomatis dan uji restore sekali
 - [ ] Cek `curl -I https://<domain>/` — jangan biarkan Cloudflare/cache proxy menyimpan HTML dinamis; hormati `Cache-Control: no-cache, private` dari Laravel
 - [ ] Uji ikon Bootstrap & Google Fonts tampil; jika hilang, periksa header COEP/CORP di `app/Http/Middleware/SecurityHeaders.php`
 - [ ] Cek `storage/logs/laravel.log` setelah pemakaian pertama
+
+## Sebelum Publikasi ke Internet
+- [ ] Putuskan dan terapkan salah satu: **2FA untuk akun admin** (PR-09) **atau** pembatasan akses (Cloudflare Access / whitelist IP)
+- [ ] Status saat ini: **belum diputuskan**. Tanpa salah satunya, jangan publikasikan.
+- [ ] Peta status dan tahap terkait ada di [[05-Tahap-Deploy]]
 
 ## Cloudflare (pasang saat production, bukan sekarang)
 1. Daftar Cloudflare (gratis)
